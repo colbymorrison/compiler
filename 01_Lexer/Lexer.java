@@ -61,11 +61,93 @@ public class Lexer {
                 default:
                     return new Token<String>(type);
             }
-        } else {
-            return new Token<>(TokenType.IDENTIFIER);
+        } else
+            return new Token<String>(TokenType.IDENTIFIER, str);
     }
 
-    private void initTable() {
+    private Token readDigit(char ch) throws LexicalException {
+        // We know we've got one digit
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(ch);
+
+        // Here, the DFA is a bit more complex so we'll define the transition table
+        // instead of using loops
+        // digit = 0, dot = 1, E = 2, +/- = 3, else 4
+        boolean[] accept_state = new boolean[]{true, false, true, false, false, true};
+        int error = 6;
+        int state = 0;
+        int[][] trans = new int[][]{
+                new int[]{0, 1, 6, 6, 6}, // State 0
+                new int[]{2, 6, 6, 6, 6}, // State 1
+                new int[]{2, 6, 3, 6, 6}, // State 2
+                new int[]{5, 6, 6, 4, 6},
+                new int[]{5, 6, 6, 6, 6},
+                new int[]{5, 6, 6, 6, 6},
+                new int[]{} // Error state
+        };
+
+        while(true){
+            ch = scan.getNextChar();
+            // Index into state table
+            int idx;
+            if(Character.isDigit(ch))
+                idx = 0;
+            else if(ch == '.')
+                idx = 1;
+            else if(ch == 'E')
+                idx = 2;
+            else if(ch == '+' || ch == '-')
+                idx = 3;
+            // Done with lexeme
+            else
+                break;
+            // Add character to buffer
+            buffer.append(ch);
+
+            // Are we going to error state or not?
+            int next = trans[state][idx];
+            if(next == error)
+                break;
+            state = next;
+        }
+
+        // If we only saw digits, then we have an int
+        if(accept_state[state]) {
+            if(state == 0)
+                return new Token<>(TokenType.INTCONSTANT, Integer.parseInt(buffer.toString()));
+            else
+                return new Token<>(TokenType.REALCONSTANT, buffer.toString());
+        }
+        else {
+            throw new LexicalException("Invalid input");
+        }
+    }
+
+    private Token readSymbol(char ch) throws LexicalException{
+        switch(ch) {
+            case '*':
+                return new Token<>(TokenType.MULOP, 1);
+            case '/':
+                return new Token<>(TokenType.MULOP, 2);
+            case ',':
+                return new Token<>(TokenType.COMMA);
+            case ';':
+                return new Token<>(TokenType.SEMICOLON);
+            case'(':
+                return new Token<>(TokenType.RIGHTPAREN);
+            case')':
+                return new Token<>(TokenType.LEFTPAREN);
+            case'[':
+                return new Token<>(TokenType.LEFTBRACKET);
+            case']':
+                return new Token<>(TokenType.RIGHTBRACKET);
+            default:
+                throw new LexicalException("Invalid Character");
+        }
+    }
+
+
+    private void initTable(){
         table.put("PROGRAM", TokenType.PROGRAM);
         table.put("BEGIN", TokenType.BEGIN);
         table.put("END", TokenType.END);

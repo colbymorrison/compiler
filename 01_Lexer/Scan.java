@@ -13,17 +13,18 @@ public class Scan {
     private InputStream stream;
     private int lineNumber = 0;
     private int linePos = 0;
+    private BufferedReader reader;
 
     public Scan(String fileName) throws LexicalException, IOException {
         try {
-            this.stream = new FileInputStream(fileName);
+//            this.stream = new FileInputStream(fileName);
+            reader = new BufferedReader(new FileReader(fileName));
         } catch (FileNotFoundException e) {
             throw new LexicalException("This file does not exist");
         }
-
-        buffers = new CharBuffer[]{CharBuffer.allocate(blockSize + 1), CharBuffer.allocate(blockSize + 1)};
-        reloadBuffer(buffers[0]);
-
+//
+//        buffers = new CharBuffer[]{CharBuffer.allocate(blockSize + 1), CharBuffer.allocate(blockSize + 1)};
+//        reloadBuffer(buffers[0]);
     }
 
     // Reloads buffer from input stream
@@ -40,59 +41,66 @@ public class Scan {
 
 
     // Gets the next char from a buffer and reloads buffer if we're at the end
-    public char getNextChar() throws LexicalException{
-        boolean isLexeme = true;
+    public char getNextChar() throws LexicalException {
         char ch;
-        // Get array for correct variable, position 0 is index in buffer,
-        // position 1 is current buffer
-        int[] idxArr = isLexeme ? lexemeBegin : forward;
-        int idx = idxArr[0]++;
-        CharBuffer buf = buffers[idxArr[1]];
-
-
-        // Get next character from buffer and increment
-        ch = buf.get(idx);
-
-        // Is this character valid?
-        if ()
-            throw new LexicalException("Invalid Character");
-
-        switch (ch) {
-            // This is eof,
-            case (char) 3:
-                // If we're at the end of a buffer, move to other buffer
-                if (idx == blockSize) {
-                    int bufferPlus = (idxArr[1] + 1) % 2;
-                    idxArr[1] = bufferPlus;
-
-                    // If its a lexeme
-                    if (isLexeme) {
-                        idxArr[0] = idx + 1;
-                        lexemeBegin = idxArr;
-                    } else {
-                        idxArr[0] = 0;
-                        reloadBuffer(buffers[bufferPlus]);
-                        forward = idxArr;
-                    }
-
-                    break;
-                } else {
-                    return (char) 2;
-                }
-                //white space: comments, spaces, tabs, carriage returns, and newlines
-            case 'w':
-                //TODO
-                break;
-            case VALID_CHARS.indexOf(ch) == -1:
-
-            default:
-                if (isLexeme)
-                    lexemeBegin = idxArr;
-                else
-                    forward = idxArr;
-                break;
+        try {
+            ch = (char) reader.read();
+        } catch (IOException e) {
+            throw new LexicalException("IO error");
         }
         return ch;
+//        boolean isLexeme = true;
+//        char ch;
+//        // Get array for correct variable, position 0 is index in buffer,
+//        // position 1 is current buffer
+//        int[] idxArr = isLexeme ? lexemeBegin : forward;
+//        int idx = idxArr[0]++;
+//        CharBuffer buf = buffers[idxArr[1]];
+//
+//
+//        // Get next character from buffer and increment
+//        ch = buf.get(idx);
+//
+//        // Is this character valid?
+//        if ()
+//            throw new LexicalException("Invalid Character");
+//
+//        switch (ch) {
+//            // This is eof,
+//            case (char) 3:
+//                // If we're at the end of a buffer, move to other buffer
+//                if (idx == blockSize) {
+//                    int bufferPlus = (idxArr[1] + 1) % 2;
+//                    idxArr[1] = bufferPlus;
+//
+//                    // If its a lexeme
+//                    if (isLexeme) {
+//                        idxArr[0] = idx + 1;
+//                        lexemeBegin = idxArr;
+//                    } else {
+//                        idxArr[0] = 0;
+//                        reloadBuffer(buffers[bufferPlus]);
+//                        forward = idxArr;
+//                    }
+//
+//                    break;
+//                } else {
+//                    return (char) 2;
+//                }
+//                //white space: comments, spaces, tabs, carriage returns, and newlines
+//            case 'w':
+//                //TODO
+//                break;
+//            case VALID_CHARS.indexOf(ch) == -1:
+//
+//            default:
+//                if (isLexeme)
+//                    lexemeBegin = idxArr;
+//                else
+//                    forward = idxArr;
+//                break;
+//        }
+//        return ch;
     }
 
     public static void main(String[] args) {
