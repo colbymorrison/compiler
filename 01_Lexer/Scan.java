@@ -1,13 +1,11 @@
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
-
 import java.io.*;
 import java.nio.CharBuffer;
 
-public class Scannar {
+public class Scan {
     private static final String VALID_CHARS =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +
                     ".,;:<>/*[]+-=()}{\t ";
-    private final int blockSize = 10;
+    private final int blockSize = 4096;
     // Pointers to buffer, array is [index, bufferNo]
     private int[] lexemeBegin = new int[]{0, 0};
     private int[] forward = new int[]{1, 0};
@@ -16,7 +14,7 @@ public class Scannar {
     private int lineNumber = 0;
     private int linePos = 0;
 
-    public Scannar(String fileName) throws LexicalException, IOException {
+    public Scan(String fileName) throws LexicalException, IOException {
         try {
             this.stream = new FileInputStream(fileName);
         } catch (FileNotFoundException e) {
@@ -42,7 +40,8 @@ public class Scannar {
 
 
     // Gets the next char from a buffer and reloads buffer if we're at the end
-    public char getNextChar(boolean isLexeme) throws LexicalException, IOException {
+    public char getNextChar() throws LexicalException{
+        boolean isLexeme = true;
         char ch;
         // Get array for correct variable, position 0 is index in buffer,
         // position 1 is current buffer
@@ -97,9 +96,9 @@ public class Scannar {
     }
 
     public static void main(String[] args) {
-        Scannar s = null;
+        Scan s = null;
         try {
-            s = new Scannar("/Users/Colby/jr/Compilers/project/Test/test.txt");
+            s = new Scan("/Users/Colby/jr/Compilers/project/Test/test.txt");
             System.out.println(s.getNextChar(true));
 
             for (int i = 0; i < 13; i++)
