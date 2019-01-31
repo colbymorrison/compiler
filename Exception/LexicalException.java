@@ -1,7 +1,7 @@
-public class LexcicalException extends CompilerException{
+public class LexicalException extends CompilerException{
     private static final long serialVersionUID = 1L;
 
-    public LexcicalException(String message) {
+    public LexicalException(String message) {
         super(message);
     }
 } 
