@@ -1,5 +1,8 @@
+package project.Lexer;
+
 import java.io.IOException;
 import java.util.Hashtable;
+import project.Exception.LexicalException;
 
 public class Lexer {
     private Scan scan;

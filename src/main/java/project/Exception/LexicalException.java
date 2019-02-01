@@ -1,3 +1,5 @@
+package project.Exception;
+
 public class LexicalException extends CompilerException{
     private static final long serialVersionUID = 1L;
 

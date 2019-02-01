@@ -1,3 +1,5 @@
+package project.Lexer;
+
 public class Token<T> {
     private TokenType type;
     private T value = null;
