@@ -110,19 +110,19 @@ public class Scan {
 //        return ch;
     }
 
-    public static void main(String[] args) {
-        Scan s = null;
-        try {
-            s = new Scan("/Users/Colby/jr/Compilers/project/Test/test.txt");
-            System.out.println(s.getNextChar(true));
-
-            for (int i = 0; i < 13; i++)
-                System.out.println(s.getNextChar(false));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-    }
+//    public static void main(String[] args) {
+//        Scan s = null;
+//        try {
+//            s = new Scan("/Users/Colby/jr/Compilers/project/Test/test.txt");
+//            System.out.println(s.getNextChar(true));
+//
+//            for (int i = 0; i < 13; i++)
+//                System.out.println(s.getNextChar(false));
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//
+//    }
 }

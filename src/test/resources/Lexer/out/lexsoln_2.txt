@@ -1,0 +1,18 @@
+['INTCONSTANT', '7']
+['MULOP', 1]
+['INTCONSTANT', '7']
+['ASSIGNOP', None]
+['INTCONSTANT', '49']
+['REALCONSTANT', '0.45454544']
+['IDENTIFIER', 'IDENTIFIER']
+['COLON', None]
+['FUNCTION', None]
+['COLON', None]
+['FUNCTION', None]
+['IDENTIFIER', 'FOO']
+['ADDOP', 1]
+['UMINUS', None]
+['IDENTIFIER', 'BAR']
+['REALCONSTANT', '0.2E1']
+
+??? Lexer error: Bad character at line 14, character 11.

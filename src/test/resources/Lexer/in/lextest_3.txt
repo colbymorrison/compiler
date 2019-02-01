@@ -1,0 +1,42 @@
+{================================================}
+{ a test with some semblance of Pascal structure }
+{================================================}
+
+program Test;
+
+var
+    { a comment }
+    one: Integer;
+    two: Real;
+
+    { another comment }
+    allIsWellIfEqualTo1: Integer;
+begin
+    one = 1
+    two = 2000.00e-3
+
+    if one + one = two then
+        allIsWellIfEqualTo1 := (two + -one)
+    else
+        allIsWellIfEqualTo1 := 123.456e789 +-+ 0.0
+end.
+
+
+{=======================================}
+{ a more edge-case-y/brute-force-y test }
+{=======================================}
+
+{ look ahead }
+12.34e-SURPRISE
+1234E-SURPRISE
+
+{ tokens with ambiguous non-empty prefixes }
+<<<>><<><>><<><>><<><><<>
+===::==:::=::=:=:=:==:::::
+........... { <-- note: an odd number of dots }
+<><=>===><<><><<==><=<==>>=<<>=><>
++--++ident++--+++ident-+--++--++-
+
+{ max identifier length }
+{ uncomment the 'g' to push over 32-character limit }
+abcdefghijklmnopqrstuvwxyzabcdef{g}

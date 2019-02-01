@@ -29,6 +29,10 @@ public class Token<T> {
         this.value = value;
     }
 
+    public String toString(){
+        return "["+type+","+value+"]";
+    }
+
 //    // Method to create new tokens, sets value to right type based on tokentype
 //    public static Token createToken(TokenType t){
 //       if(t == TokenType.IDENTIFIER)

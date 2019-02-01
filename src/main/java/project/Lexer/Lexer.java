@@ -8,6 +8,7 @@ public class Lexer {
     private Scan scan;
     // This should be done in the symbol table, but we haven't made that yet
     private final Hashtable<String, TokenType> table = new Hashtable<>();
+    private final String WHITESPACE = " \t\n";
     private Token prevToken;
 
     public Lexer(String s) throws LexicalException, IOException {
@@ -15,17 +16,28 @@ public class Lexer {
         initTable();
     }
 
+    /**
+     * This method is called to get the next Token from the input. This implements
+     * a DFA by calling a read...() method according to the character read. Each
+     * read...() method implements a DFA to parse lexemes beginning with their
+     * respective character.
+     *
+     * @return The parsed token
+     * @throws LexicalException if an error occured
+     */
     public Token getNextToken() throws LexicalException {
-        Token token = null;
+        Token token;
         char c = scan.getNextChar();
-        if (c == Token.WHITESPACE)
+        if(WHITESPACE.contains(Character.toString(c)))
             c = scan.getNextChar();
         if (Character.isLetter(c))
             token = readIdentifier(c);
         else if (Character.isDigit(c))
             token = readDigit(c);
-        else if (c == '<' || c == '>')
-            token = readRelOp(c);
+        else if (c == '<')
+            token = readLeftAngle(c);
+        else if (c == '>')
+            token = readRightAngle(c);
         else if (c == '+' || c == '-')
             token = readPlusMinus(c);
         else if (c == '.')
@@ -51,7 +63,7 @@ public class Lexer {
             ch = scan.getNextChar();
         }
 
-        if (!(ch == WHITESPACE)) {
+        if (!WHITESPACE.contains(Character.toString(ch))) {
             // Reset stream
             try {
                 scan.getReader().reset();
@@ -136,11 +148,30 @@ public class Lexer {
         }
     }
 
-    private Token readRelOp(char ch) throws LexicalException {
+    private Token readLeftAngle() throws LexicalException {
+        scan.getReader().mark(1);
+        char ch = scan.getNextChar();
+        if(ch == '>')
+            return new Token<>(TokenType.RELOP, 2);
+        else if(ch == '=')
+            return new Token<>(TokenType.RELOP, 5);
+        else{
+           scan.getReader().reset();
+           return new Token<>(TokenType.RELOP, 3);
+        }
     }
 
-    private Token readDot(char ch) throws LexicalException{}
-    
+    private Token readRightAngle() throws LexicalException{
+        scan.getReader().mark(1);
+        char ch = scan.getNextChar();
+        if(ch == '=')
+            return new Token<>(TokenType.RELOP, 6);
+        else{
+            scan.getReader().reset();
+            return new Token<>(TokenType.RELOP, 4);
+        }
+    }
+
     private Token readPlusMinus(char ch) {
         TokenType type = prevToken.getType();
 
@@ -152,6 +183,7 @@ public class Lexer {
 
     }
 
+    // ALl symbols where there is only one type option for the symbol
     private Token readSymbol(char ch) throws LexicalException {
         switch (ch) {
             case '*':
@@ -170,6 +202,8 @@ public class Lexer {
                 return new Token<>(TokenType.LEFTBRACKET);
             case ']':
                 return new Token<>(TokenType.RIGHTBRACKET);
+            case '=':
+                return new Token<>(TokenType.RELOP, 1)
             default:
                 throw new LexicalException("Invalid Character");
         }
@@ -201,4 +235,3 @@ public class Lexer {
 }
 
 
-}
