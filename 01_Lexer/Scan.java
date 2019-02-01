@@ -39,6 +39,10 @@ public class Scan {
         buf.put(blockSize, (char) 3);
     }
 
+    public BufferedReader getReader(){
+        return reader;
+    }
+
 
     // Gets the next char from a buffer and reloads buffer if we're at the end
     public char getNextChar() throws LexicalException {
