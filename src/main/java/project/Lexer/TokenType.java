@@ -1,6 +1,6 @@
 package project.Lexer;
 
-enum TokenType {
+public enum TokenType {
         PROGRAM, RESULT, IF, INTCONSTANT, COMMA, LEFTBRACKET,
         BEGIN, THEN, REALCONSTANT, SEMICOLON, RIGHTBRACKET,
         END, REAL, ELSE, RELOP, COLON, UNARYMINUS,

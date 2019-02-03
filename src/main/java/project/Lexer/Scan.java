@@ -2,18 +2,19 @@ package project.Lexer;
 
 import java.io.*;
 import java.nio.CharBuffer;
+
 import project.Exception.LexicalException;
 
 public class Scan {
     private static final String VALID_CHARS =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +
-                    ".,;:<>/*[]+-=()}{\t ";
+                    ".,;:<>/*[]+-=()}{\t\n ";
     private final int blockSize = 4096;
     // Pointers to buffer, array is [index, bufferNo]
-    private int[] lexemeBegin = new int[]{0, 0};
-    private int[] forward = new int[]{1, 0};
-    private CharBuffer[] buffers;
-    private InputStream stream;
+//    private int[] lexemeBegin = new int[]{0, 0};
+//    private int[] forward = new int[]{1, 0};
+//    private CharBuffer[] buffers;
+//    private InputStream stream;
     private int lineNumber = 0;
     private int linePos = 0;
     private BufferedReader reader;
@@ -31,29 +32,42 @@ public class Scan {
     }
 
     // Reloads buffer from input stream
-    private void reloadBuffer(CharBuffer buf) throws IOException {
-        byte[] bytes = new byte[blockSize];
-        int read = stream.read(bytes);
-        if (read == -1)
-            return;
+//    private void reloadBuffer(CharBuffer buf) throws IOException {
+//        byte[] bytes = new byte[blockSize];
+//        int read = stream.read(bytes);
+//        if (read == -1)
+//            return;
+//
+//        String text = new String(bytes);
+//        buf.put(text.toCharArray());
+//        buf.put(blockSize, (char) 3);
+//    }
 
-        String text = new String(bytes);
-        buf.put(text.toCharArray());
-        buf.put(blockSize, (char) 3);
-    }
-
-    public BufferedReader getReader(){
+    public BufferedReader getReader() {
         return reader;
     }
 
 
     // Gets the next char from a buffer and reloads buffer if we're at the end
-    public char getNextChar() throws LexicalException {
-        char ch;
-        try {
+    public char getNextChar() throws LexicalException, IOException {
+        int read = reader.read();
+        char ch = (char) read;
+        //If -1, we've reached the end of the file
+        if(read == -1) {
+            ch = (char) 3;
+            reader.close();
+        }
+        else if (!VALID_CHARS.contains(Character.toString(ch)))
+            throw new LexicalException("Invalid character: " + ch);
+        if (ch == '\n')
+            lineNumber++;
+        // Comment
+        if (ch == '{') {
+            do {
+                ch = (char) reader.read();
+            } while (ch != '}');
+            // Read 1 past '}'
             ch = (char) reader.read();
-        } catch (IOException e) {
-            throw new LexicalException("IO error");
         }
         return ch;
 //        boolean isLexeme = true;
@@ -110,7 +124,7 @@ public class Scan {
 //        return ch;
     }
 
-//    public static void main(String[] args) {
+   // public static void main(String[] args) {
 //        Scan s = null;
 //        try {
 //            s = new Scan("/Users/Colby/jr/Compilers/project/Test/test.txt");
@@ -122,7 +136,7 @@ public class Scan {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
-//
-//
-//    }
+
+
+   // }
 }

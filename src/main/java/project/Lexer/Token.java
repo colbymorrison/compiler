@@ -30,7 +30,15 @@ public class Token<T> {
     }
 
     public String toString(){
-        return "["+type+","+value+"]";
+        // Make print in same format as testfiles for easy testing
+        String val;
+        if(value == null){
+            val = "None";
+        }
+        else{
+            val = "'"+value+"'";
+        }
+        return "['"+type+"', "+val+"]";
     }
 
 //    // Method to create new tokens, sets value to right type based on tokentype

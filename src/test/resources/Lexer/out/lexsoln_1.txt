@@ -2,4 +2,3 @@
 ['REALCONSTANT', '47.6']
 ['PROGRAM', None]
 ['ENDOFFILE', None]
-

@@ -2,6 +2,8 @@ package project.Lexer;
 
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.Stack;
+
 import project.Exception.LexicalException;
 
 public class Lexer {
@@ -9,6 +11,7 @@ public class Lexer {
     // This should be done in the symbol table, but we haven't made that yet
     private final Hashtable<String, TokenType> table = new Hashtable<>();
     private final String WHITESPACE = " \t\n";
+    private Stack<Character> pushBack = new Stack<>();
     private Token prevToken;
 
     public Lexer(String s) throws LexicalException, IOException {
@@ -27,26 +30,52 @@ public class Lexer {
      */
     public Token getNextToken() throws LexicalException {
         Token token;
-        char c = scan.getNextChar();
-        if(WHITESPACE.contains(Character.toString(c)))
-            c = scan.getNextChar();
-        if (Character.isLetter(c))
+        char c = getNextChar();
+        //System.out.println("Character: "+c);
+        // Skip whitespace
+        while(c == ' ' || c == '\t' || c == '\n')
+            c = getNextChar();
+        if((int) c == 3)
+            token =  new Token<>(TokenType.ENDOFFILE);
+        else if (Character.isLetter(c))
             token = readIdentifier(c);
         else if (Character.isDigit(c))
             token = readDigit(c);
         else if (c == '<')
-            token = readLeftAngle(c);
+            token = readLeftAngle();
         else if (c == '>')
-            token = readRightAngle(c);
+            token = readRightAngle();
         else if (c == '+' || c == '-')
             token = readPlusMinus(c);
-        else if (c == '.')
-            token = readDot(c);
-        // TODO handle
+        else if (c == '.'){
+            c = getNextChar();
+            if(c == '.')
+                token = new Token<>(TokenType.DOUBLEDOT);
+            else
+                throw new LexicalException("Invalid input");
+        }
+        else if (c == ':'){
+            token = readColon();
+        }
         else
             token = readSymbol(c);
         prevToken = token;
         return token;
+    }
+
+    private char getNextChar() throws LexicalException{
+        char ch;
+        if(pushBack.isEmpty()){
+            try{
+                ch = scan.getNextChar();
+            }
+            catch(IOException ioe){
+                throw new LexicalException("IO Error");
+            }
+        }
+        else
+            ch = pushBack.pop();
+        return ch;
     }
 
     private Token readIdentifier(char ch) throws LexicalException {
@@ -60,7 +89,7 @@ public class Lexer {
             } catch (IOException ioe) {
                 throw new LexicalException("IO error");
             }
-            ch = scan.getNextChar();
+            ch = getNextChar();
         }
 
         if (!WHITESPACE.contains(Character.toString(ch))) {
@@ -98,22 +127,23 @@ public class Lexer {
 
         // Here, the DFA is a bit more complex so we'll define the transition table
         // instead of using loops
-        // digit = 0, dot = 1, E = 2, +/- = 3, else 4
-        boolean[] accept_state = new boolean[]{true, false, true, false, false, true};
-        int error = 6;
+        // Index in each state array: digit = 0, dot = 1, E = 2, +/- = 3, else 4
+        boolean[] accept_state = new boolean[]{true, false, true, false, false, true, true};
+        int err = 7;
         int state = 0;
         int[][] trans = new int[][]{
-                new int[]{0, 1, 6, 6, 6}, // State 0
-                new int[]{2, 6, 6, 6, 6}, // State 1
-                new int[]{2, 6, 3, 6, 6}, // State 2
-                new int[]{5, 6, 6, 4, 6},
-                new int[]{5, 6, 6, 6, 6},
-                new int[]{5, 6, 6, 6, 6},
+                new int[]{0, 1, 3, err, err}, // State 0
+                new int[]{2, err, err, err, err}, // State 1
+                new int[]{2, err, 3, err, err}, // State 2
+                new int[]{5, err, err, 4, err}, // State 3
+                new int[]{5, err, err, err, err},// State 4
+                new int[]{5, err, err, err, err},// State 5
+                new int[]{err, err, err, err, err},// State 6
                 new int[]{} // Error state
         };
 
         while (true) {
-            ch = scan.getNextChar();
+            ch = getNextChar();
             // Index into state table
             int idx;
             if (Character.isDigit(ch))
@@ -132,7 +162,7 @@ public class Lexer {
 
             // Are we going to error state or not?
             int next = trans[state][idx];
-            if (next == error)
+            if (next == err)
                 break;
             state = next;
         }
@@ -141,33 +171,36 @@ public class Lexer {
         if (accept_state[state]) {
             if (state == 0)
                 return new Token<>(TokenType.INTCONSTANT, Integer.parseInt(buffer.toString()));
-            else
+            else if (state == 2 || state == 5)
                 return new Token<>(TokenType.REALCONSTANT, buffer.toString());
-        } else {
+            // We have double dot, push back
+            else{
+                pushBack.push(ch);
+                pushBack.push('.');
+                return new Token<>(TokenType.INTCONSTANT, Integer.parseInt(Character.toString(buffer.charAt(0))));
+            }
+        } else
             throw new LexicalException("Invalid input");
-        }
     }
 
     private Token readLeftAngle() throws LexicalException {
-        scan.getReader().mark(1);
-        char ch = scan.getNextChar();
+        char ch = getNextChar();
         if(ch == '>')
             return new Token<>(TokenType.RELOP, 2);
         else if(ch == '=')
             return new Token<>(TokenType.RELOP, 5);
         else{
-           scan.getReader().reset();
+            pushBack.push(ch);
            return new Token<>(TokenType.RELOP, 3);
         }
     }
 
     private Token readRightAngle() throws LexicalException{
-        scan.getReader().mark(1);
-        char ch = scan.getNextChar();
+        char ch = getNextChar();
         if(ch == '=')
             return new Token<>(TokenType.RELOP, 6);
         else{
-            scan.getReader().reset();
+            pushBack.push(ch);
             return new Token<>(TokenType.RELOP, 4);
         }
     }
@@ -183,6 +216,15 @@ public class Lexer {
 
     }
 
+    private Token readColon() throws LexicalException{
+        char ch = getNextChar();
+        if(ch == '=')
+            return new Token<>(TokenType.ASSIGNOP);
+        else{
+            pushBack.push(ch);
+            return new Token<>(TokenType.COLON);
+        }
+    }
     // ALl symbols where there is only one type option for the symbol
     private Token readSymbol(char ch) throws LexicalException {
         switch (ch) {
@@ -203,7 +245,7 @@ public class Lexer {
             case ']':
                 return new Token<>(TokenType.RIGHTBRACKET);
             case '=':
-                return new Token<>(TokenType.RELOP, 1)
+                return new Token<>(TokenType.RELOP, 1);
             default:
                 throw new LexicalException("Invalid Character");
         }
@@ -218,7 +260,6 @@ public class Lexer {
         table.put("PROCEDURE", TokenType.PROCEDURE);
         table.put("RESULT", TokenType.RESULT);
         table.put("INTEGER", TokenType.INTCONSTANT);
-        table.put("REAL", TokenType.REALCONSTANT);
         table.put("ARRAY", TokenType.ARRAY);
         table.put("OF", TokenType.OF);
         table.put("NOT", TokenType.NOT);
@@ -227,6 +268,7 @@ public class Lexer {
         table.put("ELSE", TokenType.ELSE);
         table.put("WHILE", TokenType.WHILE);
         table.put("DO", TokenType.DO);
+        table.put("REAL", TokenType.REAL);
         table.put("DIV", TokenType.MULOP);
         table.put("MOD", TokenType.MULOP);
         table.put("AND", TokenType.MULOP);
