@@ -1,8 +1,6 @@
 package project.Lexer;
 
 import java.io.*;
-import java.nio.CharBuffer;
-
 import project.Exception.LexicalException;
 
 public class Scan {
@@ -10,38 +8,26 @@ public class Scan {
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +
                     ".,;:<>/*[]+-=()}{\t\n ";
     private final int blockSize = 4096;
-    // Pointers to buffer, array is [index, bufferNo]
-//    private int[] lexemeBegin = new int[]{0, 0};
-//    private int[] forward = new int[]{1, 0};
-//    private CharBuffer[] buffers;
-//    private InputStream stream;
-    private int lineNumber = 0;
-    private int linePos = 0;
+    // TODO: make these right
+    private int col = 0;
+    private int row = 0;
     private BufferedReader reader;
 
     public Scan(String fileName) throws LexicalException, IOException {
         try {
-//            this.stream = new FileInputStream(fileName);
             reader = new BufferedReader(new FileReader(fileName));
         } catch (FileNotFoundException e) {
-            throw new LexicalException("This file does not exist");
+            throw LexicalException.ioError(e.getMessage());
         }
-//
-//        buffers = new CharBuffer[]{CharBuffer.allocate(blockSize + 1), CharBuffer.allocate(blockSize + 1)};
-//        reloadBuffer(buffers[0]);
     }
 
-    // Reloads buffer from input stream
-//    private void reloadBuffer(CharBuffer buf) throws IOException {
-//        byte[] bytes = new byte[blockSize];
-//        int read = stream.read(bytes);
-//        if (read == -1)
-//            return;
-//
-//        String text = new String(bytes);
-//        buf.put(text.toCharArray());
-//        buf.put(blockSize, (char) 3);
-//    }
+    public int getRow(){
+        return row;
+    }
+
+    public int getCol(){
+        return col;
+    }
 
     public BufferedReader getReader() {
         return reader;
@@ -53,15 +39,16 @@ public class Scan {
         int read = reader.read();
         char ch = (char) read;
         //If -1, we've reached the end of the file
-        if(read == -1) {
+        if (read == -1) {
             ch = (char) 3;
             reader.close();
+        } else if (!VALID_CHARS.contains(Character.toString(ch)))
+            throw LexicalException.invalidCharacter(ch, row, col);
+        if (ch == '\n') {
+            col = 0;
+            row++;
         }
-        else if (!VALID_CHARS.contains(Character.toString(ch)))
-            throw new LexicalException("Invalid character: " + ch);
-        if (ch == '\n')
-            lineNumber++;
-        // Comment
+        // Comment TODO: look over specification
         if (ch == '{') {
             do {
                 ch = (char) reader.read();
@@ -69,74 +56,7 @@ public class Scan {
             // Read 1 past '}'
             ch = (char) reader.read();
         }
+        col++;
         return ch;
-//        boolean isLexeme = true;
-//        char ch;
-//        // Get array for correct variable, position 0 is index in buffer,
-//        // position 1 is current buffer
-//        int[] idxArr = isLexeme ? lexemeBegin : forward;
-//        int idx = idxArr[0]++;
-//        CharBuffer buf = buffers[idxArr[1]];
-//
-//
-//        // Get next character from buffer and increment
-//        ch = buf.get(idx);
-//
-//        // Is this character valid?
-//        if ()
-//            throw new LexicalException("Invalid Character");
-//
-//        switch (ch) {
-//            // This is eof,
-//            case (char) 3:
-//                // If we're at the end of a buffer, move to other buffer
-//                if (idx == blockSize) {
-//                    int bufferPlus = (idxArr[1] + 1) % 2;
-//                    idxArr[1] = bufferPlus;
-//
-//                    // If its a lexeme
-//                    if (isLexeme) {
-//                        idxArr[0] = idx + 1;
-//                        lexemeBegin = idxArr;
-//                    } else {
-//                        idxArr[0] = 0;
-//                        reloadBuffer(buffers[bufferPlus]);
-//                        forward = idxArr;
-//                    }
-//
-//                    break;
-//                } else {
-//                    return (char) 2;
-//                }
-//                //white space: comments, spaces, tabs, carriage returns, and newlines
-//            case 'w':
-//                //TODO
-//                break;
-//            case VALID_CHARS.indexOf(ch) == -1:
-//
-//            default:
-//                if (isLexeme)
-//                    lexemeBegin = idxArr;
-//                else
-//                    forward = idxArr;
-//                break;
-//        }
-//        return ch;
     }
-
-   // public static void main(String[] args) {
-//        Scan s = null;
-//        try {
-//            s = new Scan("/Users/Colby/jr/Compilers/project/Test/test.txt");
-//            System.out.println(s.getNextChar(true));
-//
-//            for (int i = 0; i < 13; i++)
-//                System.out.println(s.getNextChar(false));
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
-
-   // }
 }

@@ -6,4 +6,8 @@ public class CompilerException extends Exception{
     public CompilerException(String message){
         super(message);
     }
+
+    protected static String rowCol(int row, int col){
+        return "at line " + row + ", character " + col;
+    }
 }

@@ -52,7 +52,7 @@ public class Lexer {
             if(c == '.')
                 token = new Token<>(TokenType.DOUBLEDOT);
             else
-                throw new LexicalException("Invalid input");
+                throw LexicalException.illFormedConstant(scan.getRow(), scan.getCol());
         }
         else if (c == ':'){
             token = readColon();
@@ -70,7 +70,7 @@ public class Lexer {
                 ch = scan.getNextChar();
             }
             catch(IOException ioe){
-                throw new LexicalException("IO Error");
+                throw LexicalException.ioError(ioe.getMessage());
             }
         }
         else
@@ -87,7 +87,7 @@ public class Lexer {
             try {
                 scan.getReader().mark(1);
             } catch (IOException ioe) {
-                throw new LexicalException("IO error");
+                throw LexicalException.ioError(ioe.getMessage());
             }
             ch = getNextChar();
         }
@@ -97,7 +97,7 @@ public class Lexer {
             try {
                 scan.getReader().reset();
             } catch (IOException ioe) {
-                throw new LexicalException("IO error");
+                throw LexicalException.ioError(ioe.getMessage());
             }
         }
 
@@ -180,7 +180,7 @@ public class Lexer {
                 return new Token<>(TokenType.INTCONSTANT, Integer.parseInt(Character.toString(buffer.charAt(0))));
             }
         } else
-            throw new LexicalException("Invalid input");
+            throw LexicalException.illFormedConstant(scan.getRow(), scan.getCol());
     }
 
     private Token readLeftAngle() throws LexicalException {
@@ -247,7 +247,7 @@ public class Lexer {
             case '=':
                 return new Token<>(TokenType.RELOP, 1);
             default:
-                throw new LexicalException("Invalid Character");
+                throw LexicalException.invalidCharacter(ch, scan.getRow(), scan.getCol());
         }
     }
 
