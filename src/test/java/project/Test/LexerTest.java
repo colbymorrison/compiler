@@ -39,23 +39,35 @@ class LexerTest {
         getNextToken(5);
     }
 
+    // Tests lexer against provided testfiles
     private void getNextToken(int fileNo) {
         ArrayList<String> tokens = new ArrayList<>();
+        ArrayList<String> out;
+
+        // Run lexer on testfile into tokens List
         try {
             Lexer l = new Lexer(PATH + "in/lextest_" + fileNo + ".txt");
             Token tok;
             do {
                 tok = l.getNextToken();
                 tokens.add(tok.toString());
-            }while(tok.getType() != TokenType.ENDOFFILE);
-            ArrayList<String> out = readLines(PATH + "out/lexsoln_" + fileNo + ".txt");
+            } while (tok.getType() != TokenType.ENDOFFILE);
+        } catch (LexicalException | IOException e) {
+            System.out.println(e);
+        }
+
+        // Read textfile into out list
+        try {
+            out = readLines(PATH + "out/lexsoln_" + fileNo + ".txt");
+            // Compare the lists
             assertArrayEquals(tokens.toArray(), out.toArray());
-        } catch (LexicalException | IOException ioe) {
+        } catch (IOException ioe) {
             ioe.printStackTrace();
         }
+
     }
 
-
+    // Reads testfile into a list of token strings
     static ArrayList<String> readLines(String filename) throws IOException {
         FileReader fileReader = new FileReader(filename);
 
@@ -64,6 +76,7 @@ class LexerTest {
         String line;
 
         while ((line = bufferedReader.readLine()) != null) {
+            if(line.indexOf('[') != 0) continue;
             lines.add(line);
         }
 

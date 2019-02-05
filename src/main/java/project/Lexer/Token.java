@@ -32,12 +32,13 @@ public class Token<T> {
     public String toString(){
         // Make print in same format as testfiles for easy testing
         String val;
-        if(value == null){
+        if(value == null)
             val = "None";
-        }
-        else{
+        else if (type == TokenType.ADDOP || type == TokenType.ASSIGNOP || type == TokenType.RELOP || type == TokenType.MULOP)
+            val = value.toString();
+        else
             val = "'"+value+"'";
-        }
+
         return "['"+type+"', "+val+"]";
     }
 

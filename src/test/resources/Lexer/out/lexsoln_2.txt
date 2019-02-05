@@ -11,7 +11,7 @@
 ['FUNCTION', None]
 ['IDENTIFIER', 'FOO']
 ['ADDOP', 1]
-['UMINUS', None]
+['UNARYMINUS', None]
 ['IDENTIFIER', 'BAR']
 ['REALCONSTANT', '0.2E1']
 
