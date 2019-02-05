@@ -1,4 +1,4 @@
-package project.Exception;
+package compiler.Exception;
 
 public class LexerError extends CompilerError {
     private static final long serialVersionUID = 1L;

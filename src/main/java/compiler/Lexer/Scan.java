@@ -1,8 +1,8 @@
-package project.Lexer;
+package compiler.Lexer;
 
 import java.io.*;
 
-import project.Exception.LexerError;
+import compiler.Exception.LexerError;
 
 public class Scan {
     private static final String VALID_CHARS =

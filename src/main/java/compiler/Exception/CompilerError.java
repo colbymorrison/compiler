@@ -1,4 +1,4 @@
-package project.Exception;
+package compiler.Exception;
 
 public class CompilerError extends Exception{
     private static final long serialVersionUID = 1L;

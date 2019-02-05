@@ -1,11 +1,11 @@
-package project.Lexer;
+package compiler.Lexer;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Stack;
 
-import project.Exception.LexerError;
+import compiler.Exception.LexerError;
 
 public class Lexer {
     private Scan scan;

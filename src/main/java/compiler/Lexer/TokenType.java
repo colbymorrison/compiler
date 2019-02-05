@@ -1,4 +1,4 @@
-package project.Lexer;
+package compiler.Lexer;
 
 public enum TokenType {
     PROGRAM, RESULT, IF, INTCONSTANT, COMMA,LBRACKET,

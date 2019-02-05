@@ -1,10 +1,10 @@
-package project.Test;
+package compiler.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-import project.Lexer.*;
-import project.Exception.LexerError;
+import compiler.Lexer.*;
+import compiler.Exception.LexerError;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

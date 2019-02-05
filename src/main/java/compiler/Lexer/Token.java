@@ -1,4 +1,4 @@
-package project.Lexer;
+package compiler.Lexer;
 
 public class Token<T> {
     private TokenType type;
