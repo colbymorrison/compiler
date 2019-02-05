@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import project.Lexer.*;
-import project.Exception.LexicalException;
+import project.Exception.LexerError;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -54,7 +54,7 @@ class LexerTest {
                 long endTime = System.nanoTime();
                 tokens.add(tok.toString());
             } while (tok.getType() != TokenType.ENDOFFILE);
-        } catch (LexicalException | IOException e) {
+        } catch (LexerError | IOException e) {
             e.printStackTrace();
            // System.out.println(e);
         }

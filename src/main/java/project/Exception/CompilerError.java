@@ -1,9 +1,9 @@
 package project.Exception;
 
-public class CompilerException extends Exception{
+public class CompilerError extends Exception{
     private static final long serialVersionUID = 1L;
 
-    public CompilerException(String message){
+    public CompilerError(String message){
         super(message);
     }
 

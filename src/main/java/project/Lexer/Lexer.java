@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Stack;
 
-import project.Exception.LexicalException;
+import project.Exception.LexerError;
 
 public class Lexer {
     private Scan scan;
@@ -14,7 +14,7 @@ public class Lexer {
     private Stack<Character> pushBack = new Stack<>();
     private Token prevToken;
 
-    public Lexer(String s) throws LexicalException, IOException {
+    public Lexer(String s) throws LexerError, IOException {
         scan = new Scan(s);
         initTable();
     }
@@ -26,9 +26,9 @@ public class Lexer {
      * respective character.
      *
      * @return The parsed token
-     * @throws LexicalException if an error occured
+     * @throws LexerError if an error occured
      */
-    public Token getNextToken() throws LexicalException {
+    public Token getNextToken() throws LexerError {
         Token token;
         char c = getNextChar();
 //        System.out.println("Character: "+c);
@@ -61,7 +61,7 @@ public class Lexer {
     /**
      *  Gets the next char to feed into the DFA.
      */
-    private char getNextChar() throws LexicalException {
+    private char getNextChar() throws LexerError {
         char ch;
         // If the stack is empty, get the next character from the reader.
         // Otherwise, we push back buy popping a character off the stack.
@@ -69,7 +69,7 @@ public class Lexer {
             try {
                 ch = scan.getNextChar();
             } catch (IOException ioe) {
-                throw LexicalException.ioError(ioe.getMessage());
+                throw LexerError.ioError(ioe.getMessage());
             }
         } else
             ch = pushBack.pop();
@@ -77,7 +77,10 @@ public class Lexer {
         return ch;
     }
 
-    private Token readIdentifier(char ch) throws LexicalException {
+    /**
+     * Implements a DFA to read identifiers and keywords
+     */
+    private Token readIdentifier(char ch) throws LexerError {
         StringBuilder buffer = new StringBuilder();
 
         while (Character.isDigit(ch) || Character.isLetter(ch)) {
@@ -85,21 +88,21 @@ public class Lexer {
             ch = getNextChar();
         }
 
-        System.out.println("Char after num "+ch);
-        // Make this right, if is non alpha numeric or eof
         Character[] nonAlpha = new Character[]{'.',',',';',':','<','>','/','*','[',']','+','-','=','(',')','}','{','\\'};
         Character chCp = ch;
-        if(Arrays.stream(nonAlpha).anyMatch(c -> c == chCp))
+        // If next character is non-alpha-numeric or eof, pushback
+        if(Arrays.stream(nonAlpha).anyMatch(c -> c == chCp) || (int) ch == 3)
             pushBack.push(ch);
-
+        // If the next character is not whitespace, it's invalid, otherwise ignore the whitespace
         else if(!(ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'))
-            throw LexicalException.invalidCharacter(ch, scan.getRow(), scan.getCol());
+            throw LexerError.invalidCharacter(ch, scan.getRow(), scan.getCol());
 
-
+        // Cap keywords at length 32
         if(buffer.length() >= 32)
-            throw LexicalException.idTooLong(scan.getRow(), scan.getCol());
+            throw LexerError.idTooLong(scan.getRow(), scan.getCol());
 
         String str = buffer.toString();
+        // Check in table to see if we have a keyword, otherwise its an identifier
         if (table.containsKey(str)) {
             TokenType type = table.get(str);
             switch (str) {
@@ -118,10 +121,10 @@ public class Lexer {
     }
 
     /**
-     * DFA to read a digit and decide if theres an int, float, or double dot.
+     * DFA to read a digit and decide if there's an int, float, or double dot.
      * Here, the DFA is a bit more complex so we'll define a transition table.
      */
-    private Token readDigit(char ch) throws LexicalException {
+    private Token readDigit(char ch) throws LexerError {
         // Buffer to build string
         StringBuilder buffer = new StringBuilder();
         buffer.append(ch);
@@ -181,10 +184,10 @@ public class Lexer {
                 return new Token<>(TokenType.INTCONSTANT, Integer.parseInt(Character.toString(buffer.charAt(0))));
             }
         } else
-            throw LexicalException.illFormedConstant(scan.getRow(), scan.getCol());
+            throw LexerError.illFormedConstant(scan.getRow(), scan.getCol());
     }
 
-    private Token readLeftAngle() throws LexicalException {
+    private Token readLeftAngle() throws LexerError {
         char ch = getNextChar();
         if (ch == '>')
             return new Token<>(TokenType.RELOP, 2);
@@ -196,7 +199,7 @@ public class Lexer {
         }
     }
 
-    private Token readRightAngle() throws LexicalException {
+    private Token readRightAngle() throws LexerError {
         char ch = getNextChar();
         if (ch == '=')
             return new Token<>(TokenType.RELOP, 6);
@@ -217,7 +220,7 @@ public class Lexer {
 
     }
 
-    private Token readColon() throws LexicalException {
+    private Token readColon() throws LexerError {
         char ch = getNextChar();
         if (ch == '=')
             return new Token<>(TokenType.ASSIGNOP);
@@ -227,7 +230,7 @@ public class Lexer {
         }
     }
 
-    private Token readDot() throws LexicalException {
+    private Token readDot() throws LexerError {
         char ch = getNextChar();
         if (ch == '.')
             return new Token<>(TokenType.DOUBLEDOT);
@@ -236,7 +239,7 @@ public class Lexer {
     }
 
     // ALl symbols where there is only one type option for the symbol
-    private Token readSymbol(char ch) throws LexicalException {
+    private Token readSymbol(char ch) throws LexerError {
         switch (ch) {
             case '*':
                 return new Token<>(TokenType.MULOP, 1);
@@ -257,7 +260,7 @@ public class Lexer {
             case '=':
                 return new Token<>(TokenType.RELOP, 1);
             default:
-                throw LexicalException.invalidCharacter(ch, scan.getRow(), scan.getCol());
+                throw LexerError.invalidCharacter(ch, scan.getRow(), scan.getCol());
         }
     }
 

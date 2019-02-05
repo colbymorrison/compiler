@@ -2,7 +2,7 @@ package project.Lexer;
 
 import java.io.*;
 
-import project.Exception.LexicalException;
+import project.Exception.LexerError;
 
 public class Scan {
     private static final String VALID_CHARS =
@@ -13,11 +13,11 @@ public class Scan {
     private int row = 1;
     private BufferedReader reader;
 
-    public Scan(String fileName) throws LexicalException, IOException {
+    public Scan(String fileName) throws LexerError, IOException {
         try {
             reader = new BufferedReader(new FileReader(fileName));
         } catch (FileNotFoundException e) {
-            throw LexicalException.ioError(e.getMessage());
+            throw LexerError.ioError(e.getMessage());
         }
     }
 
@@ -42,7 +42,7 @@ public class Scan {
 
 
     // Gets the next char from a buffer and reloads buffer if we're at the end
-    public char getNextChar() throws LexicalException, IOException {
+    public char getNextChar() throws LexerError, IOException {
         int read = reader.read();
         char ch = (char) read;
         col++;
@@ -51,7 +51,7 @@ public class Scan {
             ch = (char) 3;
             reader.close();
         } else if (!VALID_CHARS.contains(Character.toString(ch)))
-            throw LexicalException.invalidCharacter(ch, row, col);
+            throw LexerError.invalidCharacter(ch, row, col);
         updateLines(ch);
         // We have a comment
         if (ch == '{') {
@@ -63,7 +63,7 @@ public class Scan {
         return Character.toUpperCase(ch);
     }
 
-    private void readComments() throws LexicalException, IOException {
+    private void readComments() throws LexerError, IOException {
         char ch;
         do {
             ch = (char) reader.read();
@@ -72,7 +72,7 @@ public class Scan {
                 reader.mark(1);
                 ch = (char) reader.read();
                 if (ch == '}')
-                    throw LexicalException.invalidCharacter('}', row, col);
+                    throw LexerError.invalidCharacter('}', row, col);
                 else {
                     reader.reset();
                     ch = lookahead;
