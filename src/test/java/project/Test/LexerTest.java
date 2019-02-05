@@ -49,11 +49,14 @@ class LexerTest {
             Lexer l = new Lexer(PATH + "in/lextest_" + fileNo + ".txt");
             Token tok;
             do {
+                long startTime = System.nanoTime();
                 tok = l.getNextToken();
+                long endTime = System.nanoTime();
                 tokens.add(tok.toString());
             } while (tok.getType() != TokenType.ENDOFFILE);
         } catch (LexicalException | IOException e) {
-            System.out.println(e);
+            e.printStackTrace();
+           // System.out.println(e);
         }
 
         // Read textfile into out list

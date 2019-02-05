@@ -1,6 +1,7 @@
 package project.Lexer;
 
 import java.io.*;
+
 import project.Exception.LexicalException;
 
 public class Scan {
@@ -8,7 +9,6 @@ public class Scan {
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +
                     ".,;:<>/*[]+-=()}{\t\n ";
     private final int blockSize = 4096;
-    // TODO: make these right
     private int col = 0;
     private int row = 1;
     private BufferedReader reader;
@@ -21,11 +21,11 @@ public class Scan {
         }
     }
 
-    public int getRow(){
+    public int getRow() {
         return row;
     }
 
-    public int getCol(){
+    public int getCol() {
         return col;
     }
 
@@ -33,8 +33,8 @@ public class Scan {
         return reader;
     }
 
-    private void updateLines(char ch){
-        if(ch == '\n'){
+    private void updateLines(char ch) {
+        if (ch == '\n') {
             col = 0;
             row++;
         }
@@ -53,17 +53,33 @@ public class Scan {
         } else if (!VALID_CHARS.contains(Character.toString(ch)))
             throw LexicalException.invalidCharacter(ch, row, col);
         updateLines(ch);
-        // Comment TODO: look over specification
+        // We have a comment
         if (ch == '{') {
-            do {
-                ch = (char) reader.read();
-                updateLines(ch);
-            } while (ch != '}');
-            // Read 1 past '}'
-            ch = (char) reader.read();
-            updateLines(ch);
+            readComments();
+            // Return whitespace for comment
+            ch = ' ';
         }
+        // Case is not signifigant
         return Character.toUpperCase(ch);
+    }
+
+    private void readComments() throws LexicalException, IOException {
+        char ch;
+        do {
+            ch = (char) reader.read();
+            char lookahead = ch;
+            if (ch == '}') {
+                reader.mark(1);
+                ch = (char) reader.read();
+                if (ch == '}')
+                    throw LexicalException.invalidCharacter('}', row, col);
+                else {
+                    reader.reset();
+                    ch = lookahead;
+                }
+            }
+            updateLines(ch);
+        } while (ch != '}');
     }
 
 }

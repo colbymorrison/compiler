@@ -9,7 +9,6 @@ import project.Exception.LexicalException;
 
 public class Lexer {
     private Scan scan;
-    private static final char[] whitespace = new char[]{' ', '\t', '\n', '\r'};
     // This should be done in the symbol table, but we haven't made that yet
     private final Hashtable<String, TokenType> table = new Hashtable<>();
     private Stack<Character> pushBack = new Stack<>();
@@ -34,7 +33,7 @@ public class Lexer {
         char c = getNextChar();
 //        System.out.println("Character: "+c);
         // Skip whitespace
-        while (c == ' ' || c == '\t' || c == '\n')
+        while (c == ' ' || c == '\t' || c == '\n' || c == '\r')
             c = getNextChar();
         if ((int) c == 3)
             token = new Token<>(TokenType.ENDOFFILE);
@@ -59,8 +58,13 @@ public class Lexer {
         return token;
     }
 
+    /**
+     *  Gets the next char to feed into the DFA.
+     */
     private char getNextChar() throws LexicalException {
         char ch;
+        // If the stack is empty, get the next character from the reader.
+        // Otherwise, we push back buy popping a character off the stack.
         if (pushBack.isEmpty()) {
             try {
                 ch = scan.getNextChar();
@@ -69,6 +73,7 @@ public class Lexer {
             }
         } else
             ch = pushBack.pop();
+
         return ch;
     }
 
@@ -77,23 +82,19 @@ public class Lexer {
 
         while (Character.isDigit(ch) || Character.isLetter(ch)) {
             buffer.append(ch);
-            // Set a mark at stream
-            try {
-                scan.getReader().mark(1);
-            } catch (IOException ioe) {
-                throw LexicalException.ioError(ioe.getMessage());
-            }
             ch = getNextChar();
         }
 
-        if (!(ch == ' ' || ch == '\t' || ch == '\n')){
-            // Reset stream
-            try {
-                scan.getReader().reset();
-            } catch (IOException ioe) {
-                throw LexicalException.ioError(ioe.getMessage());
-            }
-        }
+        System.out.println("Char after num "+ch);
+        // Make this right, if is non alpha numeric or eof
+        Character[] nonAlpha = new Character[]{'.',',',';',':','<','>','/','*','[',']','+','-','=','(',')','}','{','\\'};
+        Character chCp = ch;
+        if(Arrays.stream(nonAlpha).anyMatch(c -> c == chCp))
+            pushBack.push(ch);
+
+        else if(!(ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'))
+            throw LexicalException.invalidCharacter(ch, scan.getRow(), scan.getCol());
+
 
         if(buffer.length() >= 32)
             throw LexicalException.idTooLong(scan.getRow(), scan.getCol());
@@ -116,13 +117,16 @@ public class Lexer {
             return new Token<>(TokenType.IDENTIFIER, str);
     }
 
+    /**
+     * DFA to read a digit and decide if theres an int, float, or double dot.
+     * Here, the DFA is a bit more complex so we'll define a transition table.
+     */
     private Token readDigit(char ch) throws LexicalException {
-        // We know we've got one digit
+        // Buffer to build string
         StringBuilder buffer = new StringBuilder();
         buffer.append(ch);
 
-        // Here, the DFA is a bit more complex so we'll define the transition table
-        // instead of using loops
+
         // Index in each state array: digit = 0, dot = 1, E = 2, +/- = 3, else 4
         boolean[] accept_state = new boolean[]{true, false, true, false, true, true, true};
         int err = 7;
