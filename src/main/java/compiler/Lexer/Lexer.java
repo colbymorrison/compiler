@@ -3,7 +3,6 @@ package compiler.Lexer;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Stack;
-
 import compiler.Exception.LexerError;
 
 /**
@@ -47,7 +46,7 @@ public class Lexer {
         // Check for eof
         if ((int) c == 3)
             token = new Token<>(TokenType.ENDOFFILE);
-            // Otherwise, call correct method
+        // Otherwise, call correct method
         else if (Character.isLetter(c))
             token = readIdentifier(c);
         else if (Character.isDigit(c))
@@ -58,11 +57,11 @@ public class Lexer {
             token = readRightAngle();
         else if (c == '+' || c == '-')
             token = readPlusMinus(c);
-        else if (c == '.') {
+        else if (c == '.')
             token = readDot();
-        } else if (c == ':') {
+        else if (c == ':')
             token = readColon();
-        } else
+        else
             token = readSymbol(c);
         prevToken = token;
         return token;

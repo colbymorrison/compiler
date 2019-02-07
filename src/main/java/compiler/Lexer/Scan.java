@@ -9,14 +9,11 @@ import compiler.Exception.LexerError;
  * and keeps track of the current row and column.
  */
 public class Scan {
-    private static final String VALID_CHARS =
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +
-                    ".,;:<>/*[]+-=()}{\t\n ";
-    // --Commented out by Inspection (2019-02-05 18:24):private final int blockSize = 4096;
+    private static final String VALID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +
+                                              ".,;:<>/*[]+-=()}{\t\r\n ";
     private int col = 0;
     private int row = 1;
     private BufferedReader reader;
-
 
     /**
      * Constructor
@@ -69,29 +66,31 @@ public class Scan {
             // Ensure character is valid
         } else if (!VALID_CHARS.contains(Character.toString(ch)))
             throw LexerError.invalidCharacter(ch, row, col);
+
         // Check for newline
-        if (ch == '\n') {
+        else if (ch == '\n') {
             col = 0;
             row++;
         }
         // We have a comment
-        if (ch == '{') {
-            readComments();
+        else if (ch == '{') {
+            readComment();
             // Return whitespace for comment
             ch = ' ';
         }
+
         // Case is not signifigant
         return Character.toUpperCase(ch);
     }
 
     /**
      * Reads through a comment and ensures it is valid.
+     * @return the next char after the comment.
      */
-    private void readComments() throws LexerError, IOException {
+    private void readComment() throws LexerError, IOException {
         char ch;
-        do {
+        do{
             ch = (char) reader.read();
-            char lookahead = ch;
             if (ch == '}') {
                 // Lookahead one character because we can't have }} in a comment
                 reader.mark(1);
@@ -100,7 +99,7 @@ public class Scan {
                     throw LexerError.invalidComment(row, col);
                 else {
                     reader.reset();
-                    ch = lookahead;
+                    return;
                 }
             }
             // Check for newline
@@ -108,7 +107,7 @@ public class Scan {
                 col = 0;
                 row++;
             }
-        } while (ch != '}');
+        } while (true);
     }
 
 }

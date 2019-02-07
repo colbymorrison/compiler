@@ -81,7 +81,7 @@ class LexerTest {
         long totalTime = timing.stream().mapToLong(x -> x).sum();
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(PATH + "timing.txt", true));
-            writer.write("" + totalTime + "\n");
+            writer.write("Testfile " + fileNo + ": " + totalTime + "\n");
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
