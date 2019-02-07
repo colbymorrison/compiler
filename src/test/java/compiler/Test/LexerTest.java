@@ -6,60 +6,69 @@ import org.junit.jupiter.api.Test;
 import compiler.Lexer.*;
 import compiler.Exception.LexerError;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
+/**
+ * Tests for lexer. We compare against provided test files and time the lexer.
+ */
 class LexerTest {
     private static final String PATH = "src/test/resources/Lexer/";
+    private final ArrayList<Long> timing = new ArrayList<>();
 
+    // Set up one test per test file
     @Test
     void testFile1() {
-        getNextToken(1);
+        testAgainstFile(1);
     }
 
     @Test
     void testFile2() {
-        getNextToken(2);
+        testAgainstFile(2);
     }
 
     @Test
     void testFile3() {
-        getNextToken(3);
+        testAgainstFile(3);
     }
 
     @Test
     void testFile4() {
-        getNextToken(4);
+        testAgainstFile(4);
     }
 
     @Test
     void testFile5() {
-        getNextToken(5);
+        testAgainstFile(5);
     }
 
-    // Tests lexer against provided testfiles
-    private void getNextToken(int fileNo) {
+    /**
+     * Tests lexer against test file
+     *
+     * @param fileNo the test file no to test against
+     */
+    private void testAgainstFile(int fileNo) {
         ArrayList<String> tokens = new ArrayList<>();
         ArrayList<String> out;
+        long startTime = 0;
+        long endTime = 0;
 
-        // Run lexer on testfile into tokens List
+        // Run lexer on test file into tokens List
         try {
             Lexer l = new Lexer(PATH + "in/lextest_" + fileNo + ".txt");
             Token tok;
             do {
-                long startTime = System.nanoTime();
+                startTime = System.nanoTime();
                 tok = l.getNextToken();
-                long endTime = System.nanoTime();
+                endTime = System.nanoTime();
                 tokens.add(tok.toString());
             } while (tok.getType() != TokenType.ENDOFFILE);
-        } catch (LexerError | IOException e) {
-            e.printStackTrace();
-           // System.out.println(e);
+        } catch (LexerError e) {
+            System.out.println(e.getMessage());
         }
+        timing.add(endTime - startTime);
 
-        // Read textfile into out list
+        // Read text file into out list
         try {
             out = readLines(PATH + "out/lexsoln_" + fileNo + ".txt");
             // Compare the lists
@@ -68,9 +77,20 @@ class LexerTest {
             ioe.printStackTrace();
         }
 
+        // Calculate the time to read all tokens
+        long totalTime = timing.stream().mapToLong(x -> x).sum();
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(PATH + "timing.txt", true));
+            writer.write("" + totalTime + "\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    // Reads testfile into a list of token strings
+    /**
+     * Reads test file into a list of token strings
+     */
     static ArrayList<String> readLines(String filename) throws IOException {
         FileReader fileReader = new FileReader(filename);
 
@@ -79,7 +99,7 @@ class LexerTest {
         String line;
 
         while ((line = bufferedReader.readLine()) != null) {
-            if(line.indexOf('[') != 0) continue;
+            if (line.indexOf('[') != 0) continue;
             lines.add(line);
         }
 

@@ -4,16 +4,27 @@ import java.io.*;
 
 import compiler.Exception.LexerError;
 
+/**
+ * This class scans input and returns the next non-comment character in the file
+ * and keeps track of the current row and column.
+ */
 public class Scan {
     private static final String VALID_CHARS =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +
                     ".,;:<>/*[]+-=()}{\t\n ";
-    private final int blockSize = 4096;
+    // --Commented out by Inspection (2019-02-05 18:24):private final int blockSize = 4096;
     private int col = 0;
     private int row = 1;
     private BufferedReader reader;
 
-    public Scan(String fileName) throws LexerError, IOException {
+
+    /**
+     * Constructor
+     *
+     * @param fileName of file to parse
+     * @throws LexerError if one occurred
+     */
+    public Scan(String fileName) throws LexerError {
         try {
             reader = new BufferedReader(new FileReader(fileName));
         } catch (FileNotFoundException e) {
@@ -21,38 +32,48 @@ public class Scan {
         }
     }
 
+    /**
+     * Getter for current row of file
+     *
+     * @return row
+     */
     public int getRow() {
         return row;
     }
 
+    /**
+     * Getter for current column of file.
+     *
+     * @return col
+     */
     public int getCol() {
         return col;
     }
 
-    public BufferedReader getReader() {
-        return reader;
-    }
-
-    private void updateLines(char ch) {
-        if (ch == '\n') {
-            col = 0;
-            row++;
-        }
-    }
-
-
-    // Gets the next char from a buffer and reloads buffer if we're at the end
+    /**
+     * Reads next character from input and ensures it is valid and not part of a comment
+     *
+     * @return the next non-comment character from the file
+     * @throws LexerError
+     * @throws IOException
+     */
     public char getNextChar() throws LexerError, IOException {
         int read = reader.read();
         char ch = (char) read;
         col++;
         //If -1, we've reached the end of the file
         if (read == -1) {
+            // We're using (char)3 as eof character
             ch = (char) 3;
             reader.close();
+            // Ensure character is valid
         } else if (!VALID_CHARS.contains(Character.toString(ch)))
             throw LexerError.invalidCharacter(ch, row, col);
-        updateLines(ch);
+        // Check for newline
+        if (ch == '\n') {
+            col = 0;
+            row++;
+        }
         // We have a comment
         if (ch == '{') {
             readComments();
@@ -63,22 +84,30 @@ public class Scan {
         return Character.toUpperCase(ch);
     }
 
+    /**
+     * Reads through a comment and ensures it is valid.
+     */
     private void readComments() throws LexerError, IOException {
         char ch;
         do {
             ch = (char) reader.read();
             char lookahead = ch;
             if (ch == '}') {
+                // Lookahead one character because we can't have }} in a comment
                 reader.mark(1);
                 ch = (char) reader.read();
                 if (ch == '}')
-                    throw LexerError.invalidCharacter('}', row, col);
+                    throw LexerError.invalidComment(row, col);
                 else {
                     reader.reset();
                     ch = lookahead;
                 }
             }
-            updateLines(ch);
+            // Check for newline
+            if (ch == '\n') {
+                col = 0;
+                row++;
+            }
         } while (ch != '}');
     }
 

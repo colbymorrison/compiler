@@ -1,54 +1,55 @@
 package compiler.Lexer;
 
+/**
+ * Class to model tokens
+ *
+ * @param <T> type of value, default is null
+ */
 public class Token<T> {
-    private TokenType type;
+    private final TokenType type;
     private T value = null;
 
-    public Token(TokenType tokenType){
+    /**
+     * Constructor that accepts just a type. Used to create tokens with no value
+     *
+     * @param tokenType type of this token.
+     */
+    public Token(TokenType tokenType) {
         this.type = tokenType;
     }
 
-    public Token(TokenType tokenType, T value){
+    /**
+     * Overloaded constructor that accepts a type and value.
+     *
+     * @param tokenType type of this token
+     * @param value     value associated with this token
+     */
+    public Token(TokenType tokenType, T value) {
         this.type = tokenType;
         this.value = value;
     }
 
+    /**
+     * Getter for type
+     *
+     * @return type
+     */
     public TokenType getType() {
         return type;
     }
 
-    public void setType(TokenType type) {
-        this.type = type;
-    }
 
-    public T getValue() {
-        return value;
-    }
-
-    public void setValue(T value) {
-        this.value = value;
-    }
-
-    public String toString(){
-        // Make print in same format as testfiles for easy testing
+    public String toString() {
+        // Make sure we print in same format as testfiles for easy testing
         String val;
-        if(value == null)
+        if (value == null)
             val = "None";
         else if (type == TokenType.ADDOP || type == TokenType.ASSIGNOP || type == TokenType.RELOP || type == TokenType.MULOP)
             val = value.toString();
         else
-            val = "'"+value+"'";
+            val = "'" + value + "'";
 
-        return "['"+type+"', "+val+"]";
+        return "['" + type + "', " + val + "]";
     }
 
-//    // Method to create new tokens, sets value to right type based on tokentype
-//    public static Token createToken(TokenType t){
-//       if(t == TokenType.IDENTIFIER)
-//           return new Token<String>(t);
-//       else if(t == TokenType.RELOP || t == TokenType.MULOP || t == TokenType.ADDOP)
-//           return new Token<Integer>(t);
-//       else
-//           return new Token<>(t);
-//    }
 }

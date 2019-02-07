@@ -1,13 +1,21 @@
 package compiler.Exception;
 
-public class CompilerError extends Exception{
-    private static final long serialVersionUID = 1L;
-
-    public CompilerError(String message){
+/**
+ * Generic compiler error
+ */
+public class CompilerError extends Exception {
+    public CompilerError(String message) {
         super(message);
     }
 
-    protected static String rowCol(int row, int col){
-        return "at line " + row + ", character " + col;
+    /**
+     * Prints out row and column nicely.
+     *
+     * @param row row of file error occurred
+     * @param col column of file error occurred
+     * @return String in nice format.
+     */
+    protected static String rowCol(int row, int col) {
+        return " at line " + row + ", character " + col;
     }
 }

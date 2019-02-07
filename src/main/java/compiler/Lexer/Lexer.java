@@ -1,21 +1,31 @@
 package compiler.Lexer;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Stack;
 
 import compiler.Exception.LexerError;
 
+/**
+ * This class implements a Lexer for the Vascal language
+ */
 public class Lexer {
     private Scan scan;
-    // This should be done in the symbol table, but we haven't made that yet
+    // HashTable mapping keywords to their Types, this should be in the symbol table
+    // but we haven't written that yet
     private final Hashtable<String, TokenType> table = new Hashtable<>();
-    private Stack<Character> pushBack = new Stack<>();
+    private final Stack<Character> pushBack = new Stack<>();
     private Token prevToken;
 
-    public Lexer(String s) throws LexerError, IOException {
-        scan = new Scan(s);
+    /**
+     * Constructor
+     *
+     * @param pathName The pathname of the file to read
+     * @throws LexerError if something has gone wrong
+     */
+    public Lexer(String pathName) throws LexerError {
+        // Create a new scan object from the pathname
+        scan = new Scan(pathName);
         initTable();
     }
 
@@ -26,17 +36,18 @@ public class Lexer {
      * respective character.
      *
      * @return The parsed token
-     * @throws LexerError if an error occured
+     * @throws LexerError any error thrown by a read method
      */
     public Token getNextToken() throws LexerError {
         Token token;
         char c = getNextChar();
-//        System.out.println("Character: "+c);
         // Skip whitespace
         while (c == ' ' || c == '\t' || c == '\n' || c == '\r')
             c = getNextChar();
+        // Check for eof
         if ((int) c == 3)
             token = new Token<>(TokenType.ENDOFFILE);
+            // Otherwise, call correct method
         else if (Character.isLetter(c))
             token = readIdentifier(c);
         else if (Character.isDigit(c))
@@ -54,12 +65,11 @@ public class Lexer {
         } else
             token = readSymbol(c);
         prevToken = token;
-        System.out.println(token);
         return token;
     }
 
     /**
-     *  Gets the next char to feed into the DFA.
+     * Gets the next char to feed into the DFA.
      */
     private char getNextChar() throws LexerError {
         char ch;
@@ -83,23 +93,20 @@ public class Lexer {
     private Token readIdentifier(char ch) throws LexerError {
         StringBuilder buffer = new StringBuilder();
 
+        // If we have a digit or letter, add it to the string
         while (Character.isDigit(ch) || Character.isLetter(ch)) {
             buffer.append(ch);
             ch = getNextChar();
         }
 
-        Character[] nonAlpha = new Character[]{'.',',',';',':','<','>','/','*','[',']','+','-','=','(',')','}','{','\\'};
-        Character chCp = ch;
-        // If next character is non-alpha-numeric or eof, pushback
-        if(Arrays.stream(nonAlpha).anyMatch(c -> c == chCp) || (int) ch == 3)
+        // If the next character is not whitespace, it's non-aphanumeric, and
+        // so we push it back
+        if (!(ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'))
             pushBack.push(ch);
-        // If the next character is not whitespace, it's invalid, otherwise ignore the whitespace
-        else if(!(ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'))
-            throw LexerError.invalidCharacter(ch, scan.getRow(), scan.getCol());
 
         // Cap keywords at length 32
-        if(buffer.length() >= 32)
-            throw LexerError.idTooLong(scan.getRow(), scan.getCol());
+        if (buffer.length() >= 32)
+            throw LexerError.idTooLong(buffer.toString(), scan.getRow(), scan.getCol());
 
         String str = buffer.toString();
         // Check in table to see if we have a keyword, otherwise its an identifier
@@ -130,19 +137,21 @@ public class Lexer {
         buffer.append(ch);
 
 
-        // Index in each state array: digit = 0, dot = 1, E = 2, +/- = 3, else 4
         boolean[] accept_state = new boolean[]{true, false, true, false, true, true, true};
         int err = 7;
         int state = 0;
+        // Transition table, each inner int[] represents a state. Each possible character
+        // in the DFA is associated with an index into a state array that contains the next state
+        // if that character is read while in that state.
+        // The indices are: digit = 0, dot = 1, E = 2, +/- = 3, else 4
         int[][] trans = new int[][]{
-                new int[]{0, 1, 3, err, err}, // State 0
-                new int[]{2, 6, err, err, err}, // State 1
-                new int[]{2, err, 3, err, err}, // State 2
-                new int[]{5, err, err, 4, err}, // State 3
-                new int[]{5, err, err, err, err},// State 4
-                new int[]{5, err, err, err, err},// State 5
-                new int[]{err, err, err, err, err},// State 6
-                new int[]{} // Error state
+                new int[]{0, 1, 3, err}, // State 0
+                new int[]{2, 6, err, err}, // State 1
+                new int[]{2, err, 3, err}, // State 2
+                new int[]{5, err, err, 4}, // State 3
+                new int[]{5, err, err, err},// State 4
+                new int[]{5, err, err, err},// State 5
+                new int[]{err, err, err, err},// State 6
         };
 
         while (true) {
@@ -157,37 +166,46 @@ public class Lexer {
                 idx = 2;
             else if (ch == '+' || ch == '-')
                 idx = 3;
-                // Done with lexeme
+                // Invalid character for int or real, break
             else
                 break;
             // Add character to buffer
             buffer.append(ch);
 
-            // Are we going to error state or not?
+            // Are we going to error state?
             int next = trans[state][idx];
             if (next == err)
                 break;
             state = next;
         }
 
+        // If we ended in an accept state, add int or real constant based on which state
         if (accept_state[state]) {
             // Push back last character
             pushBack.push(ch);
+            // If we only saw digits, we have an int
             if (state == 0)
                 return new Token<>(TokenType.INTCONSTANT, buffer.toString());
-            else if (state == 2 || state == 4|| state == 5)
+                // Here we have a real
+            else if (state == 2 || state == 4 || state == 5)
                 return new Token<>(TokenType.REALCONSTANT, buffer.toString());
-                // We have double dot, push back extra dot
+                // Must be state 6, double dot.
             else {
                 pushBack.push('.');
                 pushBack.push('.');
-                return new Token<>(TokenType.INTCONSTANT, Integer.parseInt(Character.toString(buffer.charAt(0))));
+                // Buffer looks like 'INT..x' where x is some char, so our int is the start of the buffer
+                // Until 4 from the end
+                return new Token<>(TokenType.INTCONSTANT, buffer.substring(0, buffer.length() - 3));
             }
         } else
-            throw LexerError.illFormedConstant(scan.getRow(), scan.getCol());
+            throw LexerError.invalidConstant(scan.getRow(), scan.getCol());
     }
 
+    /**
+     * Reads tokens beginning with '<'
+     */
     private Token readLeftAngle() throws LexerError {
+        // Lookahead one char to see if '<>' or '<='
         char ch = getNextChar();
         if (ch == '>')
             return new Token<>(TokenType.RELOP, 2);
@@ -199,7 +217,11 @@ public class Lexer {
         }
     }
 
+    /**
+     * Reads tokens beginning with '<'
+     */
     private Token readRightAngle() throws LexerError {
+        // Lookahead one char to see if '<='
         char ch = getNextChar();
         if (ch == '=')
             return new Token<>(TokenType.RELOP, 6);
@@ -209,18 +231,26 @@ public class Lexer {
         }
     }
 
+    /**
+     * Reads tokens beginning with '+' or '-'
+     */
     private Token readPlusMinus(char ch) {
         TokenType type = prevToken.getType();
 
+        // Use previous token to determine if we have an addop or unaryop
         if (type == TokenType.RPAREN || type == TokenType.RBRACKET || type == TokenType.IDENTIFIER ||
                 type == TokenType.INTCONSTANT || type == TokenType.REALCONSTANT)
             return new Token<>(TokenType.ADDOP, ch == '+' ? 1 : 2);
         else
-            return new Token<>(ch == '+' ? TokenType.UNARYPLUS : TokenType.UNARYMINUS); //TODO could also be a constant
+            return new Token<>(ch == '+' ? TokenType.UNARYPLUS : TokenType.UNARYMINUS);
 
     }
 
+    /**
+     * Reads tokens beginning with ':'
+     */
     private Token readColon() throws LexerError {
+        // Lookahead one char to see if ':='
         char ch = getNextChar();
         if (ch == '=')
             return new Token<>(TokenType.ASSIGNOP);
@@ -230,15 +260,24 @@ public class Lexer {
         }
     }
 
+    /**
+     * Reads tokens beginning with '.'
+     */
     private Token readDot() throws LexerError {
+        // Lookahead one char to see if '..'
         char ch = getNextChar();
         if (ch == '.')
             return new Token<>(TokenType.DOUBLEDOT);
-        else
+        else {
+            pushBack.push(ch);
             return new Token<>(TokenType.ENDMARKER);
+        }
     }
 
-    // ALl symbols where there is only one type option for the symbol
+    /**
+     * Reads token where type and value is unambiguous on reading character
+     * i.e. no lookahead/pushback
+     */
     private Token readSymbol(char ch) throws LexerError {
         switch (ch) {
             case '*':
@@ -264,6 +303,9 @@ public class Lexer {
         }
     }
 
+    /**
+     * Initializes HashTable mapping keywords to their token type
+     */
     private void initTable() {
         table.put("PROGRAM", TokenType.PROGRAM);
         table.put("BEGIN", TokenType.BEGIN);
