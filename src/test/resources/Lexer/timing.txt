@@ -9,3 +9,13 @@
 -62576
 -11475
 73141
+Testfile 1: 62407
+Testfile 2: -2959
+Testfile 3: -1119
+Testfile 4: -5580
+Testfile 5: 73338
+Testfile 1: 88526
+Testfile 2: -6733
+Testfile 3: -2203
+Testfile 4: -2646
+Testfile 5: 310668
