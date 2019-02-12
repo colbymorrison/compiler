@@ -8,6 +8,8 @@ package compiler.Lexer;
 public class Token<T> {
     private final TokenType type;
     private T value = null;
+    private int row;
+    private int col;
 
     /**
      * Constructor that accepts just a type. Used to create tokens with no value
@@ -52,4 +54,20 @@ public class Token<T> {
         return "['" + type + "', " + val + "]";
     }
 
+//TODO add this functionality
+    public int getCol() {
+        return col;
+    }
+
+    public void setCol(int col) {
+        this.col = col;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public void setRow(int row) {
+        this.row = row;
+    }
 }

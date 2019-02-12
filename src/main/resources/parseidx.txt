@@ -36,8 +36,7 @@ NULL
 <factor-tail>
 <actual-parameters>
 <Goal>
-constant>
-
+<constant>
 program
 begin
 end

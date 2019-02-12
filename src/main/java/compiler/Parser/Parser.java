@@ -1,16 +1,20 @@
 package compiler.Parser;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import compiler.Lexer.Lexer;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class Parser {
-    private static final String resPath = "src/main/resources";
-    private static final int GRAMLINES = 67;
+    private static final int NUMPRODS = 67;
     private static final int TBLROWS = 35;
-    private static final int TBLCOLS = 38;
-    private String[] grammar;
-    private int[][] parseTbl;
+    private static final int TBLCOLS = 39;
+    private final String EPSILON = "*E*";
+    private ArrayList[] productions = new ArrayList[NUMPRODS];
+    private HashMap<Integer, Integer>[] parseTbl = new HashMap[TBLROWS];
+    private Lexer lexer;
 
     public Parser() {
         try {
@@ -20,21 +24,44 @@ public class Parser {
         }
     }
 
+//    private parse() {
+//        Stack<> ;
+//        Token input = lexer.getNextToken();
+//    }
+
     private void initTables() throws IOException {
-        grammar = new String[GRAMLINES];
-        parseTbl = new int[TBLROWS][TBLCOLS];
-        BufferedReader reader = new BufferedReader(new FileReader(resPath + "grammar.txt"));
-        int count = 0;
-        for(int i = 0; i < GRAMLINES; i++){
-            grammar[count] = reader.readLine();
+        productions[0] = null;
+        String[] lines = readFile("grammar.txt");
+        //TODO replace with streams??
+        ArrayList<String> production = new ArrayList<>();
+        for (int i = 0; i < lines.length; i++) {
+            String[] split = lines[i].split("::= ");
+            if (split.length == 2) {
+                production.add(split[1]);
+                productions[i] = production;
+                production = new ArrayList<>();
+            }
+            else
+                production.add(EPSILON);
         }
 
-        reader = new BufferedReader(new FileReader(resPath + "parsetable.txt"));
-        reader.readLine();
-        for(int i = 0; i < TBLROWS; i++) {
-            String[] line = reader.readLine().split(",", TBLCOLS-1);
-            for (int j = 0; j < TBLCOLS; j++)
-                parseTbl[i][j] = Integer.parseInt(line[j]);
+        lines = readFile("parsetable.txt");
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            parseTbl[i] = new HashMap<>();
+            String[] elts = line.split(",");
+            for (int j = 0; j < elts.length; j++) {
+                int elt = Integer.parseInt(elts[j]);
+                if (elt != 999)
+                    parseTbl[i].put(j, elt);
+            }
         }
     }
+
+    private String[] readFile(String path) throws IOException{
+        try (Stream<String> stream = Files.lines(Paths.get("src", "main", "resources", path))) {
+            return stream.toArray(String[]::new);
+        }
+    }
+
 }
