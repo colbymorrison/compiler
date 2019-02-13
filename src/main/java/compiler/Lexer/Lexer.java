@@ -63,6 +63,8 @@ public class Lexer {
             token = readColon();
         else
             token = readSymbol(c);
+        token.setCol(scan.getCol());
+        token.setRow(scan.getRow());
         prevToken = token;
         return token;
     }
