@@ -1,12 +1,19 @@
 package compiler.Exception;
 
+import compiler.Lexer.Token;
+
 /**
  * Lexer errors, we define static methods to create various specific error cases.
  */
 public class LexerError extends CompilerError {
+    //Constructors
 
     private LexerError(String message) {
         super(message);
+    }
+
+    private LexerError(String message, int row, int col) {
+        super(message, row, col);
     }
 
     /**
@@ -18,7 +25,7 @@ public class LexerError extends CompilerError {
      * @return LexerError object to be thrown
      */
     public static LexerError invalidCharacter(char ch, int row, int col) {
-        return new LexerError("Invalid character " + ch + rowCol(row, col));
+        return new LexerError("Invalid character " + ch, row, col);
     }
 
     /**
@@ -29,7 +36,7 @@ public class LexerError extends CompilerError {
      * @return LexerError object to be thrown
      */
     public static LexerError invalidConstant(int row, int col) {
-        return new LexerError("Invalid Constant" + rowCol(row, col));
+        return new LexerError("Invalid Constant", row, col);
     }
 
     /**
@@ -40,7 +47,7 @@ public class LexerError extends CompilerError {
      * @return LexerError object to be thrown
      */
     public static LexerError invalidComment(int row, int col) {
-        return new LexerError("Invalid Comment" + rowCol(row, col));
+        return new LexerError("Invalid Comment", row, col);
     }
 
     /**
@@ -51,7 +58,7 @@ public class LexerError extends CompilerError {
      * @return LexerError object to be thrown
      */
     public static LexerError idTooLong(String id, int row, int col) {
-        return new LexerError("Intentifier '" + id + "' is too long" + rowCol(row, col));
+        return new LexerError("Intentifier '" + id + "' is too long", row, col);
     }
 
     /**

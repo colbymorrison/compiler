@@ -1,36 +1,40 @@
 package compiler.Parser;
+
 import compiler.Exception.CompilerError;
+import compiler.Exception.ParserError;
 import compiler.Lexer.Lexer;
 import compiler.Lexer.Token;
 import compiler.Lexer.TokenType;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.SQLOutput;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Stack;
-import java.util.stream.Collectors;
+import java.util.*;
 import java.util.stream.Stream;
 
-public class Parser {
-    private static final int NUMPRODS = 67;
-    private static final int TBLROWS = 35;
-    private static final int TBLCOLS = 39;
+class Parser {
     private final String EPSILON = "*E*";
-    private List<String> productions = new ArrayList<>();
-    private List<String> nTerms = new ArrayList<>();
-    private List<String> terms = new ArrayList<>();
-    private HashMap<Integer, Integer>[] parseTbl = new HashMap[TBLROWS];
-    private Stack<String> stack = new Stack<>();
-    private Lexer lexer;
+    private final List<Token> errors = new ArrayList<>();
+    private final List<String> productions = new ArrayList<>();
+    private final HashMap<List<String>, Integer> parseTbl = new HashMap<>();
+    private final Stack<String> stack = new Stack<>();
+    private final Lexer lexer;
+    private final boolean debug;
 
-    //TODO do much better error handling
-    public Parser(Lexer lexer) {
+    /**
+     * Constructor for the Parser
+     *
+     * @param lexer the lexer which the parser will get tokens from
+     * @param debug weather to print out stack contents at each token or not
+     */
+    Parser(Lexer lexer, boolean debug) {
         this.lexer = lexer;
+        this.debug = debug;
+        stack.push(TokenType.ENDOFFILE.toString());
+        stack.push("<Goal>");
         try {
             initTables();
         } catch (IOException e) {
@@ -39,108 +43,149 @@ public class Parser {
     }
 
 
-    private void dumpStack(String top, String inType, boolean mth){
-        String out = "";
-        out += "Stack " + stack + "\nPopped " + top + " with token " + inType + "\n";
-        if(mth)
-            out += "Match! \n";
-        else
-            out += "Pushing \n";
-        System.out.println(out);
-    }
-
-    private void parse() throws CompilerError{
-        stack.push(TokenType.ENDOFFILE.toString());
-        stack.push("<Goal>");
+    /**
+     * Implements the parsing algorithm which ensures that the stream of tokens
+     * Conforms to the grammar for the Vascal language.
+     *
+     * @throws CompilerError
+     */
+    void parse() throws CompilerError {
         Token input = lexer.getNextToken();
         // Get the next token, if it's EOF, stop
-        while(input.getType() != TokenType.ENDOFFILE){
+        while (input.getType() != TokenType.ENDOFFILE) {
             // Get the type as a string as the stack is of Strings
             String inType = input.getType().name();
             String top = stack.pop();
-            // If it's a terminal, the input token must be the same
-            if(isTerminal(top)) {
-                if (!inType.equals(top))
-                    throw new CompilerError("Bad string");
-                else {
+            // If the top of the stack a terminal (i.e. it matches a TokenType value),
+            // then the input token must be that terminal
+            if (Stream.of(TokenType.values()).anyMatch(x -> x.name().equals(top))) {
+                if (!inType.equals(top)) {
+                    panicMode(input);
                     input = lexer.getNextToken();
-                    dumpStack(top, inType, true);
+                } else {
+                    input = lexer.getNextToken();
+                    if (debug)
+                        dumpStack(top, inType, "");
+                }
+            } else {
+                // If it's a non-terminal, consult the parse table
+                List<String> pair = Arrays.asList(top, inType);
+                // TODO make parse tree
+                // Is the token, non-terminal pair in the parse table?
+                if (parseTbl.containsKey(pair)) {
+                    // The index of the production rule is the entry in the parse table
+                    Integer prodIdx = parseTbl.get(pair);
+                    // Check for epsilons
+                    if (prodIdx < 0)
+                        continue;
+                    // Get the production rule
+                    String[] rules = productions.get(prodIdx).split(" ");
+                    if (!rules[0].equals(EPSILON)) {
+                        // Push rules in reverse order
+                        for (int i = rules.length - 1; i >= 0; i--)
+                            stack.push(rules[i]);
+                        if (debug)
+                            dumpStack(top, inType, Arrays.toString(rules));
+                    }
+                } else {
+                    panicMode(input);
+                    input = lexer.getNextToken();
                 }
             }
-            else{
-                // If it's a non-terminal, get the parse table row for the token
-                // By looking up the index in the list of terminals
-                HashMap<Integer,Integer> tblRow = parseTbl[terms.indexOf(inType)];
-                // Get the parse table column by looking into the list of non-terminals
-                int colIdx = nTerms.indexOf(top) - 1;
-                // If there's a mapping to an entry, its valid
-                if(tblRow.containsKey(colIdx)){
-                   // The production rule is the entry in the parse table
-                   Integer prodIdx = tblRow.get(colIdx);
-                   // Check for epsilon transition
-                   if(prodIdx < 0)
-                       continue;
-                   String[] rules = productions.get(prodIdx).split(" ");
-                   // Check for epsilon rule
-                   if(rules[0].equals(""))
-                       continue;
-                   // Push rules in reverse order
-                   for(int i = rules.length - 1; i >= 0; i--)
-                       stack.push(rules[i]);
-                   dumpStack(top, inType, false);
-                }
-                else
-                    throw new CompilerError("Error state");
-            }
+        }
+        // If there were errors during parsing, throw them
+        if (!errors.isEmpty())
+            throw new ParserError(errors);
+    }
+
+    /**
+     * Implements "Panic Mode" error recovery, which skips to the next semicolon
+     * In the event of an error.
+     *
+     * @param token the token that did not match the grammar
+     * @throws ParserError
+     */
+    private void panicMode(Token token) throws ParserError {
+        // Add the token to the list of error token
+        errors.add(token);
+
+        // Get tokens until a semicolon or the end of the file is reached
+        do {
+            token = lexer.getNextToken();
+            System.out.println(token.getType() != TokenType.SEMICOLON && token.getType() != TokenType.ENDOFFILE);
+        } while (token.getType() != TokenType.SEMICOLON && token.getType() != TokenType.ENDOFFILE);
+
+        // If its the end of the file, nothing we can do, throw the errors
+        if (token.getType() == TokenType.ENDOFFILE)
+            throw new ParserError(errors);
+
+            // Otherwise, continue parsing
+        else {
+            while (!stack.isEmpty() && !stack.peek().equals("<statement-list-tail>"))
+                stack.pop();
+
+            stack.push("SEMICOLON");
+            stack.push("<statement>");
         }
     }
 
-    private boolean isTerminal(String s){
-        return Stream.of(TokenType.values()).anyMatch(x -> x.name().equals(s));
-    }
-
+    /**
+     * Reads the parseTable and grammar from disk
+     *
+     * @throws IOException
+     */
     private void initTables() throws IOException {
         Path path = Paths.get("src", "main", "resources");
         productions.add(null);
+        // Read the grammar, empty lines are epsilons
         try (Stream<String> stream = Files.lines(path.resolve("grammar.txt"))) {
-            productions.addAll(stream.collect(Collectors.toList()));
+            stream.forEach(line -> {
+                if (line.isEmpty())
+                    productions.add(EPSILON);
+                else
+                    productions.add(line);
+            });
         }
 
-        String[] lines;
-        try (Stream<String> stream = Files.lines(path.resolve("parsetable.txt"))) {
-            lines = stream.toArray(String[]::new);
-        }
+        // Read the parseTable
+        try (BufferedReader reader = new BufferedReader(new FileReader(path.resolve("parsetable.txt").toString()))) {
+            // The first line is the non terminals
+            String line = reader.readLine();
+            String[] nTerms = line.split(",");
 
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-            parseTbl[i] = new HashMap<>();
-            String[] elts = line.split(",");
-            for (int j = 0; j < elts.length; j++) {
-                int elt = Integer.parseInt(elts[j]);
-                if (elt != 999)
-                    parseTbl[i].put(j, elt);
+            while ((line = reader.readLine()) != null) {
+                String[] idxs;
+                // For each line, the terminal is the first column
+                idxs = line.split(",");
+                String term = idxs[0];
+                // Read through the values (indexes into productions array) on that line
+                for (int j = 1; j < idxs.length; j++) {
+                    int idx = Integer.parseInt(idxs[j]);
+                    // For the non-error values, add to the parseTable the nonTerminal,terminal pair
+                    // Mapping to the index
+                    if (idx != 999) {
+                        parseTbl.put(Arrays.asList(nTerms[j], term.toUpperCase()), idx);
+                    }
+                }
             }
-        }
-
-        try (Stream<String> stream = Files.lines(path.resolve("parseidx.txt"))) {
-            List<String> list = stream.collect(Collectors.toList());
-            nTerms = list.subList(0, TBLCOLS);
-            terms = list.subList(TBLCOLS, list.size());
         }
     }
 
-
-    //TODO testfile instead of just running
-    public static void main(String[] args){
-        try {
-            Lexer lexer = new Lexer("src/test/resources/parser/ex1.txt");
-            Parser parser = new Parser(lexer);
-            parser.parse();
-        }
-        catch(CompilerError e){
-            e.printStackTrace();
-        }
-
+    /**
+     * Print out relevant debug info
+     *
+     * @param top    top of the stack
+     * @param inType type of input
+     * @param push   what (if anything) to push onto stack
+     */
+    private void dumpStack(String top, String inType, String push) {
+        String out = "";
+        out += "Stack: " + stack + "\nPopped " + top + " with token " + inType + "\n";
+        if (push.isEmpty())
+            out += "Match! \n";
+        else
+            out += "Pushing " + push + " \n";
+        System.out.println(out);
     }
 
 }

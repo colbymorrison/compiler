@@ -50,22 +50,19 @@ class LexerTest {
     private void testAgainstFile(int fileNo) {
         ArrayList<String> tokens = new ArrayList<>();
         ArrayList<String> out;
-        long startTime = 0;
-        long endTime = 0;
+        long startTime;
+        long endTime;
 
         // Run lexer on test file into tokens List
-        try {
-            Lexer l = new Lexer(PATH + "in/lextest_" + fileNo + ".txt");
-            Token tok;
-            do {
-                startTime = System.nanoTime();
-                tok = l.getNextToken();
-                endTime = System.nanoTime();
-                tokens.add(tok.toString());
-            } while (tok.getType() != TokenType.ENDOFFILE);
-        } catch (LexerError e) {
-            System.out.println(e.getMessage());
-        }
+
+        Lexer l = new Lexer(PATH + "in/lextest_" + fileNo + ".txt");
+        Token tok;
+        do {
+            startTime = System.nanoTime();
+            tok = l.getNextToken();
+            endTime = System.nanoTime();
+            tokens.add(tok.toString());
+        } while (tok.getType() != TokenType.ENDOFFILE);
         timing.add(endTime - startTime);
 
         // Read text file into out list
@@ -78,14 +75,14 @@ class LexerTest {
         }
 
         // Calculate the time to read all tokens
-        long totalTime = timing.stream().mapToLong(x -> x).sum();
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(PATH + "timing.txt", true));
-            writer.write("Testfile " + fileNo + ": " + totalTime + "\n");
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        long totalTime = timing.stream().mapToLong(x -> x).sum();
+//        try {
+//            BufferedWriter writer = new BufferedWriter(new FileWriter(PATH + "timing.txt", true));
+//            writer.write("Testfile " + fileNo + ": " + totalTime + "\n");
+//            writer.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     /**

@@ -19,3 +19,8 @@ Testfile 2: -6733
 Testfile 3: -2203
 Testfile 4: -2646
 Testfile 5: 310668
+Testfile 1: 83185
+Testfile 2: -3150
+Testfile 3: -1009
+Testfile 4: -2157
+Testfile 5: 315656

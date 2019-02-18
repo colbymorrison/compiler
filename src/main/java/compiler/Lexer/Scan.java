@@ -60,8 +60,8 @@ public class Scan {
         col++;
         //If -1, we've reached the end of the file
         if (read == -1) {
-            // We're using (char)3 as eof character
-            ch = (char) 3;
+            // We're using $ as eof character
+            ch = '$';
             reader.close();
             // Ensure character is valid
         } else if (!VALID_CHARS.contains(Character.toString(ch)))
@@ -85,7 +85,6 @@ public class Scan {
 
     /**
      * Reads through a comment and ensures it is valid.
-     * @return the next char after the comment.
      */
     private void readComment() throws LexerError, IOException {
         char ch;
