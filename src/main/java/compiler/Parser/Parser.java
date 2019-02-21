@@ -172,7 +172,7 @@ public class Parser {
     private void dumpStack(String top, Token token, String push) {
         String out = "";
         out += "Popped " + top + " with token " + token.getType() +
-                " at " + token.getCol() + ":" + token.getRow() + "\n";
+                " at " + token.getRow() + ":" + token.getCol() + "\n";
         if (push.isEmpty())
             out += "Match! \n";
         else
