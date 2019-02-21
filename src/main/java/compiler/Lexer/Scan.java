@@ -8,9 +8,8 @@ import compiler.Exception.LexerError;
  * This class scans input and returns the next non-comment character in the file
  * and keeps track of the current row and column.
  */
-public class Scan {
-    private static final String VALID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +
-                                              ".,;:<>/*[]+-=()}{\t\r\n ";
+class Scan {
+
     private int col = 0;
     private int row = 1;
     private BufferedReader reader;
@@ -21,7 +20,7 @@ public class Scan {
      * @param fileName of file to parse
      * @throws LexerError if one occurred
      */
-    public Scan(String fileName) throws LexerError {
+    Scan(String fileName) throws LexerError {
         try {
             reader = new BufferedReader(new FileReader(fileName));
         } catch (FileNotFoundException e) {
@@ -34,8 +33,20 @@ public class Scan {
      *
      * @return row
      */
-    public int getRow() {
+    int getRow() {
         return row;
+    }
+
+    void setRow(int row) {
+        this.row = row;
+    }
+
+    void setCol(int col) {
+        this.col = col;
+    }
+
+    void setMinCol(int col) {
+        this.col -= col;
     }
 
     /**
@@ -43,7 +54,7 @@ public class Scan {
      *
      * @return col
      */
-    public int getCol() {
+    int getCol() {
         return col;
     }
 
@@ -54,7 +65,7 @@ public class Scan {
      * @throws LexerError
      * @throws IOException
      */
-    public char getNextChar() throws LexerError, IOException {
+    char getNextChar() throws IOException {
         int read = reader.read();
         char ch = (char) read;
         col++;
@@ -64,20 +75,19 @@ public class Scan {
             ch = '$';
             reader.close();
             // Ensure character is valid
-        } else if (!VALID_CHARS.contains(Character.toString(ch)))
-            throw LexerError.invalidCharacter(ch, row, col);
+        }
 
         // Check for newline
         else if (ch == '\n') {
             col = 0;
             row++;
         }
-        // We have a comment
-        else if (ch == '{') {
-            readComment();
-            // Return whitespace for comment
-            ch = ' ';
-        }
+//        // We have a comment
+//        else if (ch == '{') {
+//            readComment();
+//            // Return whitespace for comment
+//            ch = ' ';
+//        }
 
         // Case is not signifigant
         return Character.toUpperCase(ch);

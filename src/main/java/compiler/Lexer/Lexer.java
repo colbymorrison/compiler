@@ -3,6 +3,7 @@ package compiler.Lexer;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Stack;
+
 import compiler.Exception.LexerError;
 
 /**
@@ -12,6 +13,8 @@ public class Lexer {
     private Scan scan;
     // HashTable mapping keywords to their Types, this should be in the symbol table
     // but we haven't written that yet
+    private static final String VALID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +
+            ".,;:<>/*[]+-=()}{$\t\r\n ";
     private final Hashtable<String, TokenType> table = new Hashtable<>();
     private final Stack<Character> pushBack = new Stack<>();
     private Token prevToken;
@@ -42,12 +45,25 @@ public class Lexer {
      */
     public Token getNextToken() {
         Token token = null;
+        int row = 0;
+        int col = 0;
         try {
             char c = getNextChar();
 
+            if (!VALID_CHARS.contains(Character.toString(c)))
+                throw LexerError.invalidCharacter(c, scan.getRow(), scan.getCol());
+
             // Skip whitespace
-            while (c == ' ' || c == '\t' || c == '\n' || c == '\r')
-                c = getNextChar();
+            while (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '{') {
+                if (c == '{')
+                    // c will be set to next char after comment
+                    c = readComment();
+                else
+                    c = getNextChar();
+            }
+
+            row = scan.getRow();
+            col = scan.getCol();
             // Check for eof
             if (c == '$')
                 token = new Token<>(TokenType.ENDOFFILE);
@@ -72,11 +88,31 @@ public class Lexer {
             lexerError.printStackTrace();
             System.exit(0);
         }
-        token.setCol(scan.getCol());
-        token.setRow(scan.getRow());
-        System.out.println("Token: " + token + " at " + scan.getRow() + ":" + scan.getCol());
+        token.setCol(col);
+        token.setRow(row);
         prevToken = token;
         return token;
+    }
+
+    /**
+     * Reads through a comment and ensures it is valid.
+     */
+    private char readComment() throws LexerError {
+        char ch;
+        do {
+            ch = getNextChar();
+            if (ch == '}') {
+                // Lookahead one character because we can't have }} in a comment
+//                pushBack.push(ch);
+                ch = getNextChar();
+                if (ch == '}')
+                    throw LexerError.invalidComment(scan.getRow(), scan.getCol());
+                else
+                    break;
+            }
+//            ch = getNextChar();
+        } while (ch != '$');
+        return ch;
     }
 
     /**
@@ -93,8 +129,8 @@ public class Lexer {
                 throw LexerError.ioError(ioe.getMessage());
             }
         } else {
-            System.out.println("!!");
             ch = pushBack.pop();
+            scan.setMinCol(-1);
         }
 
         return ch;
@@ -114,8 +150,10 @@ public class Lexer {
 
         // If the next character is not whitespace, it's non-aphanumeric, and
         // so we push it back
-        if (!(ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'))
+        if (!(ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')) {
             pushBack.push(ch);
+            scan.setMinCol(1);
+        }
 
         // Cap keywords at length 32
         if (buffer.length() >= 32)
@@ -196,6 +234,7 @@ public class Lexer {
         if (accept_state[state]) {
             // Push back last character
             pushBack.push(ch);
+            scan.setMinCol(1);
             // If we only saw digits, we have an int
             if (state == 0)
                 return new Token<>(TokenType.INTCONSTANT, buffer.toString());
@@ -206,6 +245,7 @@ public class Lexer {
             else {
                 pushBack.push('.');
                 pushBack.push('.');
+                scan.setMinCol(2);
                 // Buffer looks like 'INT..x' where x is some char, so our int is the start of the buffer
                 // Until 4 from the end
                 return new Token<>(TokenType.INTCONSTANT, buffer.substring(0, buffer.length() - 3));

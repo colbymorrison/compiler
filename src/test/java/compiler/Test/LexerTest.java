@@ -59,9 +59,14 @@ class LexerTest {
         Token tok;
         do {
             startTime = System.nanoTime();
-            tok = l.getNextToken();
-            endTime = System.nanoTime();
+            try {
+                tok = l.getNextToken();
+            } catch (NullPointerException e) {
+                endTime = System.nanoTime();
+                break;
+            }
             tokens.add(tok.toString());
+            endTime = System.nanoTime();
         } while (tok.getType() != TokenType.ENDOFFILE);
         timing.add(endTime - startTime);
 
