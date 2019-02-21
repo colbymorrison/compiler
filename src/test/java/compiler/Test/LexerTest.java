@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import compiler.Lexer.*;
-import compiler.Exception.LexerError;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -80,14 +79,14 @@ class LexerTest {
         }
 
         // Calculate the time to read all tokens
-//        long totalTime = timing.stream().mapToLong(x -> x).sum();
-//        try {
-//            BufferedWriter writer = new BufferedWriter(new FileWriter(PATH + "timing.txt", true));
-//            writer.write("Testfile " + fileNo + ": " + totalTime + "\n");
-//            writer.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        long totalTime = timing.stream().mapToLong(x -> x).sum();
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(PATH + "timing.txt", true));
+            writer.write("Testfile " + fileNo + ": " + totalTime + "\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

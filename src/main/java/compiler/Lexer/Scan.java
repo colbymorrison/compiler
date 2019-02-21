@@ -37,14 +37,6 @@ class Scan {
         return row;
     }
 
-    void setRow(int row) {
-        this.row = row;
-    }
-
-    void setCol(int col) {
-        this.col = col;
-    }
-
     void setMinCol(int col) {
         this.col -= col;
     }
@@ -82,41 +74,7 @@ class Scan {
             col = 0;
             row++;
         }
-//        // We have a comment
-//        else if (ch == '{') {
-//            readComment();
-//            // Return whitespace for comment
-//            ch = ' ';
-//        }
-
         // Case is not signifigant
         return Character.toUpperCase(ch);
     }
-
-    /**
-     * Reads through a comment and ensures it is valid.
-     */
-    private void readComment() throws LexerError, IOException {
-        char ch;
-        do{
-            ch = (char) reader.read();
-            if (ch == '}') {
-                // Lookahead one character because we can't have }} in a comment
-                reader.mark(1);
-                ch = (char) reader.read();
-                if (ch == '}')
-                    throw LexerError.invalidComment(row, col);
-                else {
-                    reader.reset();
-                    return;
-                }
-            }
-            // Check for newline
-            if (ch == '\n') {
-                col = 0;
-                row++;
-            }
-        } while (true);
-    }
-
 }

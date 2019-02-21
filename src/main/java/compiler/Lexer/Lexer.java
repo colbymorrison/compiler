@@ -103,14 +103,12 @@ public class Lexer {
             ch = getNextChar();
             if (ch == '}') {
                 // Lookahead one character because we can't have }} in a comment
-//                pushBack.push(ch);
                 ch = getNextChar();
                 if (ch == '}')
                     throw LexerError.invalidComment(scan.getRow(), scan.getCol());
                 else
                     break;
             }
-//            ch = getNextChar();
         } while (ch != '$');
         return ch;
     }

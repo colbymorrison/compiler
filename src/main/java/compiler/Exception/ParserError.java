@@ -5,10 +5,6 @@ import compiler.Lexer.Token;
 import java.util.List;
 
 public class ParserError extends CompilerError {
-    public ParserError(String message) {
-        super(message);
-    }
-
     public ParserError(List<Token> tokens) {
         super(getMessage(tokens));
     }

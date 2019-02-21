@@ -1,6 +1,6 @@
 package compiler.Test;
 
-import compiler.Exception.CompilerError;
+import compiler.Exception.ParserError;
 import compiler.Lexer.Lexer;
 import compiler.Parser.Parser;
 import org.junit.jupiter.api.Test;
@@ -12,10 +12,10 @@ class ParserTest {
      * Tests the source files first for parser specific test files
      * Then for general test files.
      *
-     * @throws CompilerError
+     * @throws
      */
     @Test
-    void testFiles() throws CompilerError {
+    void testFiles() throws ParserError {
         String resPath = "src/test/resources/";
         testParser(new File(resPath + "Parser"));
         testParser(new File(resPath + "Code"));
@@ -23,14 +23,13 @@ class ParserTest {
     }
 
 
-    private void testParser(File dir) throws CompilerError {
+    private void testParser(File dir) throws ParserError {
         for (File f : dir.listFiles()) {
             System.out.println(f.getAbsolutePath());
             Lexer lexer = new Lexer(f.getAbsolutePath());
-            Parser parser = new Parser(lexer, false);
+            Parser parser = new Parser(lexer, true);
             parser.parse();
         }
     }
-
 
 }

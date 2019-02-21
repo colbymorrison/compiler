@@ -1,6 +1,5 @@
 package compiler.Parser;
 
-import compiler.Exception.CompilerError;
 import compiler.Exception.ParserError;
 import compiler.Lexer.Lexer;
 import compiler.Lexer.Token;
@@ -17,7 +16,7 @@ import java.util.stream.Stream;
 
 public class Parser {
     private final String EPSILON = "*E*";
-    private final List<Token> errors = new ArrayList<>();
+    private final List<Token> errors = new ArrayList<>(); // List of tokens that caused error states to be invoked
     private final List<String> productions = new ArrayList<>();
     private final HashMap<List<String>, Integer> parseTbl = new HashMap<>();
     private final Stack<String> stack = new Stack<>();
@@ -28,7 +27,7 @@ public class Parser {
      * Constructor for the Parser
      *
      * @param lexer the lexer which the parser will get tokens from
-     * @param debug weather to print out stack contents at each token or not
+     * @param debug weather to print debug information at each token or not
      */
     public Parser(Lexer lexer, boolean debug) {
         this.lexer = lexer;
@@ -47,13 +46,13 @@ public class Parser {
      * Implements the parsing algorithm which ensures that the stream of tokens
      * Conforms to the grammar for the Vascal language.
      *
-     * @throws CompilerError
+     * @throws ParserError when we've reached the end of the file and if any errors occured.
      */
-    public void parse() throws CompilerError {
+    public void parse() throws ParserError {
         Token input = lexer.getNextToken();
-        // Get the next token, if it's EOF, stop
+        // If the next token is EOF, stop
         while (input.getType() != TokenType.ENDOFFILE) {
-            // Get the type as a string as the stack is of Strings
+            // Get the token's type as a string as the stack is of Strings
             String inType = input.getType().name();
             String top = stack.pop();
             // If the top of the stack a terminal (i.e. it matches a TokenType value),
@@ -65,11 +64,11 @@ public class Parser {
                     dumpStack(top, input, "");
                 input = lexer.getNextToken();
             } else {
-                // If it's a non-terminal, consult the parse table
+                // Top of the stack is a non-terminal
                 List<String> pair = Arrays.asList(top, inType);
-                // Is the token, non-terminal pair in the parse table?
+                // Is the <top of stack, input token> pair in the parse table?
                 if (parseTbl.containsKey(pair)) {
-                    // The index of the production rule is the entry in the parse table
+                    // The index of the production rule is the entry in the parse table for the pair
                     Integer prodIdx = parseTbl.get(pair);
                     // Check for epsilons
                     if (prodIdx < 0)
@@ -99,10 +98,10 @@ public class Parser {
      * In the event of an error.
      *
      * @param token the token that did not match the grammar
-     * @throws ParserError
+     * @throws ParserError if the end of file is reached
      */
     private void panicMode(Token token) throws ParserError {
-        // Add the token to the list of error token
+        // Add the token to the list of error tokens
         errors.add(token);
 
         // Get tokens until a semicolon or the end of the file is reached
@@ -155,11 +154,9 @@ public class Parser {
                 // Read through the values (indexes into productions array) on that line
                 for (int j = 1; j < idxs.length; j++) {
                     int idx = Integer.parseInt(idxs[j]);
-                    // For the non-error values, add to the parseTable the nonTerminal,terminal pair
-                    // Mapping to the index
-                    if (idx != 999) {
+                    // For the non-error values, map the <nonTerminal,terminal> pair to the production index
+                    if (idx != 999)
                         parseTbl.put(Arrays.asList(nTerms[j], term.toUpperCase()), idx);
-                    }
                 }
             }
         }
@@ -169,18 +166,18 @@ public class Parser {
      * Print out relevant debug info
      *
      * @param top   top of the stack
-     * @param token that caused the exception
+     * @param token token from the lexer
      * @param push  what (if anything) to push onto stack
      */
     private void dumpStack(String top, Token token, String push) {
         String out = "";
-        out += "Stack: " + stack + "\nPopped " + top + " with token " + token.getType() +
-                "at " + token.getCol() + ":" + token.getRow() + "\n";
+        out += "Popped " + top + " with token " + token.getType() +
+                " at " + token.getCol() + ":" + token.getRow() + "\n";
         if (push.isEmpty())
             out += "Match! \n";
         else
             out += "Pushing " + push + " \n";
+        out += "Stack: " + stack + "\n";
         System.out.println(out);
     }
-
 }

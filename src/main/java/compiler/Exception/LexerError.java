@@ -1,7 +1,5 @@
 package compiler.Exception;
 
-import compiler.Lexer.Token;
-
 /**
  * Lexer errors, we define static methods to create various specific error cases.
  */

@@ -9,6 +9,7 @@
 plugins {
     // Apply the java-library plugin to add support for Java Library
     id 'java-library'
+    id 'application'
 }
 
 repositories {
@@ -29,4 +30,7 @@ test{
     useJUnitPlatform()
 }
 
+application{
+    mainClassName = 'compiler.Main'
+}
 
