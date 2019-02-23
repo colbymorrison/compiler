@@ -132,7 +132,7 @@ public class Parser {
         Path path = Paths.get("src", "main", "resources");
         productions.add(null);
         // Read the grammar, empty lines are epsilons
-        try (Stream<String> stream = Files.lines(path.resolve("grammar.txt"))) {
+        try (Stream<String> stream = Files.lines(path.resolve("grammar_aug.txt"))) {
             stream.forEach(line -> {
                 if (line.isEmpty())
                     productions.add(EPSILON);
