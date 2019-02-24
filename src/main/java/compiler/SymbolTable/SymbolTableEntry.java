@@ -1,6 +1,8 @@
 package compiler.SymbolTable;
 
 public abstract class SymbolTableEntry {
+    String name;
+
     public boolean isVariable() {
         return false;
     }

@@ -15,4 +15,8 @@ public class FunctionEntry extends SymbolTableEntry {
         this.result = result;
     }
 
+    @Override
+    public boolean isFunction() {
+        return true;
+    }
 }

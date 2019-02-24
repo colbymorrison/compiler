@@ -4,6 +4,7 @@ import compiler.Exception.ParserError;
 import compiler.Lexer.Lexer;
 import compiler.Lexer.Token;
 import compiler.Lexer.TokenType;
+import compiler.SemanticAction.SemanticAction;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -20,8 +21,10 @@ public class Parser {
     private final List<String> productions = new ArrayList<>();
     private final HashMap<List<String>, Integer> parseTbl = new HashMap<>();
     private final Stack<String> stack = new Stack<>();
+    private final SemanticAction action = new SemanticAction();
     private final boolean debug;
     private final Lexer lexer;
+    private Token prevToken;
 
     /**
      * Constructor for the Parser
@@ -59,12 +62,13 @@ public class Parser {
             // then the input token must be that terminal
             if (Stream.of(TokenType.values()).anyMatch(x -> x.name().equals(top))) {
                 if (!inType.equals(top))
-                    panicMode(input);
+                    panicMode();
                 else if (debug)
                     dumpStack(top, input, "");
+                prevToken = input;
                 input = lexer.getNextToken();
-            } else {
-                // Top of the stack is a non-terminal
+            // Top of the stack is a non-terminal
+            } else if (top.charAt(0) == '<'){
                 List<String> pair = Arrays.asList(top, inType);
                 // Is the <top of stack, input token> pair in the parse table?
                 if (parseTbl.containsKey(pair)) {
@@ -83,9 +87,14 @@ public class Parser {
                             dumpStack(top, input, Arrays.toString(rules));
                     }
                 } else {
-                    panicMode(input);
+                    panicMode();
                     input = lexer.getNextToken();
                 }
+            }
+            // Otherwise its a semantic action
+            else{
+                action.execute(Integer.parseInt(top.substring(1)), input, prevToken);
+                dumpStack(top, input, "");
             }
         }
         // If there were errors during parsing, throw them
@@ -97,13 +106,13 @@ public class Parser {
      * Implements "Panic Mode" error recovery, which skips to the next semicolon
      * In the event of an error.
      *
-     * @param token the token that did not match the grammar
      * @throws ParserError if the end of file is reached
      */
-    private void panicMode(Token token) throws ParserError {
-        // Add the token to the list of error tokens
-        errors.add(token);
+    private void panicMode() throws ParserError {
+        // Add the previous token to the list of error tokens
+        errors.add(prevToken);
 
+        Token token;
         // Get tokens until a semicolon or the end of the file is reached
         do {
             token = lexer.getNextToken();
@@ -174,7 +183,11 @@ public class Parser {
         out += "Popped " + top + " with token " + token.getType() +
                 " at " + token.getRow() + ":" + token.getCol() + "\n";
         if (push.isEmpty())
-            out += "Match! \n";
+            if (top.charAt(0) == '#')
+                out += "Semantic Action " + top.substring(1) + "\n" +
+                       "Semantic Stack " + action.getStack() + "\n";
+            else
+                out += "Match! \n";
         else
             out += "Pushing " + push + " \n";
         out += "Stack: " + stack + "\n";

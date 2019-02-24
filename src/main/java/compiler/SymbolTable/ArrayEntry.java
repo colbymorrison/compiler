@@ -3,7 +3,6 @@ package compiler.SymbolTable;
 import compiler.Lexer.TokenType;
 
 public class ArrayEntry extends SymbolTableEntry {
-    private String name;
     private int address;
     private TokenType type;
     private int upBound;
@@ -14,11 +13,14 @@ public class ArrayEntry extends SymbolTableEntry {
         return true;
     }
 
-    public ArrayEntry(String name, int address, TokenType type, int upBound, int lowBound) {
+    public ArrayEntry(String name, TokenType type, int upBound, int lowBound) {
         this.name = name;
-        this.address = address;
         this.type = type;
         this.upBound = upBound;
         this.lowBound = lowBound;
+    }
+
+    public void setAddress(int address){
+        this.address = address;
     }
 }

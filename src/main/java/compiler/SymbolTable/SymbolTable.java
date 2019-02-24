@@ -13,7 +13,15 @@ public class SymbolTable {
         table.put(key, value);
     }
 
-    public void search(String key, SymbolTableEntry value) {
-        table.putIfAbsent(key, value);
+    public SymbolTableEntry search(SymbolTableEntry key) {
+        return table.getOrDefault(key, null);
+    }
+
+    public void insert(SymbolTableEntry value){
+        table.putIfAbsent(value.name, value);
+    }
+
+    public void dumpTable(){
+        System.out.println(table);
     }
 }

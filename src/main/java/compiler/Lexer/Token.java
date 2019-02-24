@@ -40,6 +40,10 @@ public class Token<T> {
         return type;
     }
 
+    public T getValue(){
+        return value;
+    }
+
 
     public String toString() {
         // Make sure we print in same format as testfiles for easy testing
