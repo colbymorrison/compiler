@@ -9,7 +9,7 @@ import java.util.*;
 public class SemanticAction {
     private SymbolTable globalTable = new SymbolTable(20);
     private SymbolTable constantTable = new SymbolTable(20);
-    private SymbolTable localTable;
+    private SymbolTable localTable = new SymbolTable(20);
     private Stack<Token> stack = new Stack<>();
     private boolean insert = true;
     private boolean global = true;
@@ -63,7 +63,7 @@ public class SemanticAction {
             int lowerBound = Integer.parseInt(stack.pop().getValue().toString());
             int memorySize = (upperBound - lowerBound) + 1;
 
-            while (stack.peek().getType() == TokenType.IDENTIFIER) {
+            while (!stack.isEmpty() && stack.peek().getType() == TokenType.IDENTIFIER) {
                 ArrayEntry entry = new ArrayEntry(stack.pop().getValue().toString(), type, upperBound, lowerBound);
                 if (global) {
                     entry.setAddress(globalMemory);
@@ -75,8 +75,8 @@ public class SemanticAction {
                     localMemory += memorySize;
                 }
             }
-        } else { // simple variable
-            while (stack.peek().getType() == TokenType.IDENTIFIER) {
+        } else { // Simple variable
+            while (!stack.isEmpty() && stack.peek().getType() == TokenType.IDENTIFIER) {
                 VariableEntry entry = new VariableEntry(stack.pop().getValue().toString(), type);
                 if (global) {
                     entry.setAddress(globalMemory);
@@ -88,8 +88,8 @@ public class SemanticAction {
                     localMemory++;
                 }
             }
-            array = false;
         }
+        array = false;
     }
 
 
@@ -100,6 +100,20 @@ public class SemanticAction {
 
         globalTable.insert(new ProcedureEntry(id3.toString(), 0, new ArrayList<>()));
         insert = false;
+    }
+
+
+    // Getters
+    public SymbolTable getGlobalTable() {
+        return globalTable;
+    }
+
+    public SymbolTable getConstantTable() {
+        return constantTable;
+    }
+
+    public SymbolTable getLocalTable() {
+        return localTable;
     }
 
 

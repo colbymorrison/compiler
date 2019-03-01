@@ -11,6 +11,6 @@ public class IODeviceEntry extends SymbolTableEntry{
     }
 
     public String toString(){
-        return "IODevice: " + name;
+        return "IODevice";
     }
 }

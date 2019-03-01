@@ -191,6 +191,9 @@ public class Parser {
         else
             out += "Pushing " + push + " \n";
         out += "Stack: " + stack + "\n";
-        System.out.println(out);
+        System.out.print(out);
+        System.out.println("Global Table: " + action.getGlobalTable());
+        System.out.println("Local Table: " + action.getLocalTable());
+        System.out.println("Constant Table: " + action.getConstantTable() + "\n");
     }
 }

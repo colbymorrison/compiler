@@ -19,4 +19,8 @@ public class FunctionEntry extends SymbolTableEntry {
     public boolean isFunction() {
         return true;
     }
+
+    public String toString() {
+        return "Function";
+    }
 }

@@ -21,7 +21,11 @@ public class SymbolTable {
         table.putIfAbsent(value.name, value);
     }
 
-    public void dumpTable(){
-        System.out.println(table);
+    public int size() {
+        return table.size();
+    }
+
+    public String toString() {
+        return table.toString();
     }
 }

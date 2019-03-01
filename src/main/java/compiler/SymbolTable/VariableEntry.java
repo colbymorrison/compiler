@@ -19,4 +19,8 @@ public class VariableEntry extends SymbolTableEntry {
     public void setAddress(int address){
         this.address = address;
     }
+
+    public String toString() {
+        return type + " variable";
+    }
 }

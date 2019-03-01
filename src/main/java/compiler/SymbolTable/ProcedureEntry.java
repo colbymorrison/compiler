@@ -18,7 +18,7 @@ public class ProcedureEntry extends SymbolTableEntry {
     }
 
     public String toString(){
-        return "Procedure Entry: " + name;
+        return "Procedure";
     }
 
 }
