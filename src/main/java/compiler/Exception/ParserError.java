@@ -1,19 +1,16 @@
 package compiler.Exception;
 
-import compiler.Lexer.Token;
-
 import java.util.List;
 
 public class ParserError extends CompilerError {
-    public ParserError(List<Token> tokens) {
-        super(getMessage(tokens));
+    public ParserError(List<String> errors) {
+        super(getMessage(errors));
     }
 
-    private static String getMessage(List<Token> tokens) {
+    // Adds errors to string
+    private static String getMessage(List<String> errors) {
         StringBuilder builder = new StringBuilder("Compiler Error: \n");
-        for (Token token : tokens) {
-            builder.append("At line ").append(token.getRow()).append(", character ").append(token.getCol()).append("\n");
-        }
+        errors.forEach(builder::append);
         return builder.toString();
     }
 }

@@ -1,5 +1,6 @@
 package compiler.SemanticAction;
 
+import compiler.Exception.SymbolTableError;
 import compiler.Lexer.Token;
 import compiler.Lexer.TokenType;
 import compiler.SymbolTable.*;
@@ -17,14 +18,29 @@ public class SemanticAction {
     private int globalMemory = 0;
     private int localMemory = 0;
 
+    /**
+     * Constructor, insert default entries into global table
+     */
     public SemanticAction() {
-        globalTable.insert(new ProcedureEntry("READ", 0, new ArrayList<>()));
-        globalTable.insert(new ProcedureEntry("WRITE", 0, new ArrayList<>()));
-        globalTable.insert(new IODeviceEntry("INPUT"));
-        globalTable.insert(new IODeviceEntry("WRITE"));
+        try {
+            globalTable.insert(new ProcedureEntry("READ", 0, new ArrayList<>()));
+            globalTable.insert(new ProcedureEntry("WRITE", 0, new ArrayList<>()));
+            globalTable.insert(new IODeviceEntry("INPUT"));
+            globalTable.insert(new IODeviceEntry("OUTPUT"));
+        } catch (SymbolTableError e) {
+            e.printStackTrace();
+        }
     }
 
-    public void execute(int num, Token token, Token prevToken) {
+    /**
+     * Called by parser, executes a semantic action
+     *
+     * @param num       the number semantic action to execute
+     * @param token     token at which semantic action was invoked
+     * @param prevToken previous token
+     * @throws SymbolTableError if an id is added to the local or global symbol table that already exists
+     */
+    public void execute(int num, Token token, Token prevToken) throws SymbolTableError {
         switch (num) {
             case 1:
                 insert = true;
@@ -56,13 +72,20 @@ public class SemanticAction {
     }
 
 
-    private void three() {
+    /**
+     * Semantic action 3, handles declarations of arrays and variables
+     *
+     * @throws SymbolTableError if an id is added to the local or global symbol table that already exists
+     */
+    private void three() throws SymbolTableError {
         TokenType type = stack.pop().getType();
         if (array) {
+            // Get bounds
             int upperBound = Integer.parseInt(stack.pop().getValue().toString());
             int lowerBound = Integer.parseInt(stack.pop().getValue().toString());
             int memorySize = (upperBound - lowerBound) + 1;
 
+            // Add entries to array
             while (!stack.isEmpty() && stack.peek().getType() == TokenType.IDENTIFIER) {
                 ArrayEntry entry = new ArrayEntry(stack.pop().getValue().toString(), type, upperBound, lowerBound);
                 if (global) {
@@ -93,7 +116,7 @@ public class SemanticAction {
     }
 
 
-    private void nine() {
+    private void nine() throws SymbolTableError{
         stack.pop();
         stack.pop();
         Token id3 = stack.pop();

@@ -1,6 +1,8 @@
 package compiler.Parser;
 
+import compiler.Exception.CompilerError;
 import compiler.Exception.ParserError;
+import compiler.Exception.SymbolTableError;
 import compiler.Lexer.Lexer;
 import compiler.Lexer.Token;
 import compiler.Lexer.TokenType;
@@ -17,7 +19,7 @@ import java.util.stream.Stream;
 
 public class Parser {
     private final String EPSILON = "*E*";
-    private final List<Token> errors = new ArrayList<>(); // List of tokens that caused error states to be invoked
+    private final List<String> errors = new ArrayList<>(); // List of tokens that caused error states to be invoked
     private final List<String> productions = new ArrayList<>();
     private final HashMap<List<String>, Integer> parseTbl = new HashMap<>();
     private final Stack<String> stack = new Stack<>();
@@ -67,8 +69,8 @@ public class Parser {
                     dumpStack(top, input, "");
                 prevToken = input;
                 input = lexer.getNextToken();
-            // Top of the stack is a non-terminal
-            } else if (top.charAt(0) == '<'){
+                // Top of the stack is a non-terminal
+            } else if (top.charAt(0) == '<') {
                 List<String> pair = Arrays.asList(top, inType);
                 // Is the <top of stack, input token> pair in the parse table?
                 if (parseTbl.containsKey(pair)) {
@@ -92,9 +94,15 @@ public class Parser {
                 }
             }
             // Otherwise its a semantic action
-            else{
-                action.execute(Integer.parseInt(top.substring(1)), input, prevToken);
-                dumpStack(top, input, "");
+            else {
+                try {
+                    action.execute(Integer.parseInt(top.substring(1)), input, prevToken);
+                    dumpStack(top, input, "");
+                } catch (SymbolTableError e) {
+                    // SymbolTableError indicates an id was defined more than once in its scope
+//                    errors.add("Identifier " + e.getName() + "already declared in scope" +
+//                            CompilerError.lineMsg(prevToken.getRow(), prevToken.getCol()));
+                }
             }
         }
         // If there were errors during parsing, throw them
@@ -109,8 +117,8 @@ public class Parser {
      * @throws ParserError if the end of file is reached
      */
     private void panicMode() throws ParserError {
-        // Add the previous token to the list of error tokens
-        errors.add(prevToken);
+        // Add the row and col of previous token to the list of error tokens
+        errors.add(CompilerError.lineMsg(prevToken.getRow(), prevToken.getCol()));
 
         Token token;
         // Get tokens until a semicolon or the end of the file is reached

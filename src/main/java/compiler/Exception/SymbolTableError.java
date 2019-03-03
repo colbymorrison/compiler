@@ -1,7 +1,16 @@
 package compiler.Exception;
 
 public class SymbolTableError extends CompilerError {
-    public SymbolTableError(String message) {
-        super(message);
+
+    private String name; // Name of identifier that caused error
+
+    public SymbolTableError(String name) {
+        super(name);
+        this.name = name;
     }
+
+    public String getName() {
+        return name;
+    }
+
 }

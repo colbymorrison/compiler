@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.Stack;
 
 import compiler.Exception.LexerError;
+import compiler.SymbolTable.SymbolTable;
 
 /**
  * This class implements a Lexer for the Vascal language
