@@ -100,7 +100,8 @@ public class Parser {
             else {
                 try {
                     action.execute(Integer.parseInt(top.substring(1)), input, prevToken);
-                    dumpStack(top, input, "");
+                    if (debug)
+                        dumpStack(top, input, "");
                 } catch (SymbolTableError e) {
                     // SymbolTableError indicates an id was defined more than once in its scope
                     System.out.println(e.getMessage() + CompilerError.lineMsg(prevToken.getRow(), prevToken.getCol()));

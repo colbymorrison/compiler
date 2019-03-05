@@ -18,7 +18,7 @@ class ParserTest {
     void testFiles() throws ParserError {
         String resPath = "src/test/resources/";
         testParser(new File(resPath + "Parser"));
-        testParser(new File(resPath + "Code"));
+//        testParser(new File(resPath + "Code"));
 //        testParser(new File(resPath + "Now"));
     }
 

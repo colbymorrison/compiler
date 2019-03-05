@@ -5,8 +5,11 @@ This project implements a compiler for the Vascal language.
 Written in Java 8 with Gradle 5 as a build manager.
 
 ## How to Run
-The `Main` class has a driver function to parse a file given as a command line argument. 
-Compiling and running using gradle is very easy. From the `compiler_project` directory simply run `./gradlew run --args PATH` where `PATH` is the path to the file to compile.
+The `Main` class has a driver function to parse a file.
+The first command line argument should be the path of the file to parse. Setting the second command line argument to `--debug` or `-d` enables debug mode, which prints information about the parse.
+
+ 
+Compiling and running using gradle is very easy. From the `compiler_project` directory simply run `./gradlew run --args 'ARGS'` where `ARGS` are the command line args seperated by spaces.
 This runs the `gradlew` script, which looks in the `build.gradle` file where I defined `compiler.Main` to be the main class.
 
 ## Submission 1 (Lexer) Notes
@@ -36,7 +39,12 @@ Test files are in the `src/test/resources` directory. They include the lexer and
 Though I included the code that tests if the `global` variable is set, none of the actions yet actually set this variable.
 So, declarations that should be local are added to the global tale. This causes some erronous error messages to get printed.
 
+### Changes to Main Class
+Now debug information about the parse is not enaled by default. You have to pass `--debug` or `-d` as the second command line argument to enable the print statements.
+
 ### Changes to Parser Package
-Added Semantic Action to the `Parser` class. This involved reading the augmented grammar file, tracking the previous token found, and adding a new case to the `parse()` function to call the appropriate semantic action. I also updated the `dumpStack()` method to print out debug info that includes semantic action info. The parser also now matches the `ENDOFFILE` token and exits when the stack is empty instead of leaving `ENDOFFILE` on the stack. 
+Added Semantic Actions to the `Parser` class. This involved reading the augmented grammar file, tracking the previous token found, and adding a new case to the `parse()` function to call the appropriate semantic action. I also updated the `dumpStack()` method to print out debug info that includes semantic action info. The parser also now matches the `ENDOFFILE` token and exits when the stack is empty instead of leaving `ENDOFFILE` on the stack. 
+
+
 
  
