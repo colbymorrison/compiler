@@ -21,6 +21,6 @@ public class FunctionEntry extends SymbolTableEntry {
     }
 
     public String toString() {
-        return "Function";
+        return "Function[# params: " + params + ", paramInfo: " + paramInfo + "result: " + result + "]";
     }
 }

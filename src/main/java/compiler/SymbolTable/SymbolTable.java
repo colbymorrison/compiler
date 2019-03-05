@@ -5,7 +5,7 @@ import compiler.Exception.SymbolTableError;
 import java.util.Hashtable;
 
 public class SymbolTable {
-    private Hashtable<String, SymbolTableEntry> table;
+    private final Hashtable<String, SymbolTableEntry> table;
 
     /**
      * Constructor

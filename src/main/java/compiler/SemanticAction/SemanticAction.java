@@ -8,12 +8,12 @@ import compiler.SymbolTable.*;
 import java.util.*;
 
 public class SemanticAction {
-    private SymbolTable globalTable = new SymbolTable(20);
-    private SymbolTable constantTable = new SymbolTable(20);
-    private SymbolTable localTable = new SymbolTable(20);
-    private Stack<Token> stack = new Stack<>();
+    private final SymbolTable globalTable = new SymbolTable(20);
+    private final SymbolTable constantTable = new SymbolTable(20);
+    private final SymbolTable localTable = new SymbolTable(20);
+    private final Stack<Token> stack = new Stack<>();
     private boolean insert = true;
-    private boolean global = true;
+    private final boolean global = true;
     private boolean array = false;
     private int globalMemory = 0;
     private int localMemory = 0;
@@ -23,10 +23,21 @@ public class SemanticAction {
      */
     public SemanticAction() {
         try {
-            globalTable.insert(new ProcedureEntry("READ", 0, new ArrayList<>()));
-            globalTable.insert(new ProcedureEntry("WRITE", 0, new ArrayList<>()));
-            globalTable.insert(new IODeviceEntry("INPUT"));
-            globalTable.insert(new IODeviceEntry("OUTPUT"));
+            SymbolTableEntry entry = new ProcedureEntry("READ", 0, new ArrayList<>());
+            entry.setReserved(true);
+            globalTable.insert(entry);
+
+            entry = new ProcedureEntry("WRITE", 0, new ArrayList<>());
+            entry.setReserved(true);
+            globalTable.insert(entry);
+
+            entry = new IODeviceEntry("INPUT");
+            entry.setReserved(true);
+            globalTable.insert(entry);
+
+            entry = new IODeviceEntry("OUTPUT");
+            entry.setReserved(true);
+            globalTable.insert(entry);
         } catch (SymbolTableError e) {
             e.printStackTrace();
         }
@@ -116,12 +127,19 @@ public class SemanticAction {
     }
 
 
+    /**
+     * Semantic action 9, adds the name of the program to the global table
+     *
+     * @throws SymbolTableError
+     */
     private void nine() throws SymbolTableError{
         stack.pop();
         stack.pop();
         Token id3 = stack.pop();
 
-        globalTable.insert(new ProcedureEntry(id3.toString(), 0, new ArrayList<>()));
+        SymbolTableEntry entry = new ProcedureEntry(id3.toString(), 0, new ArrayList<>());
+        entry.setReserved(true);
+        globalTable.insert(entry);
         insert = false;
     }
 

@@ -5,11 +5,6 @@ public class IODeviceEntry extends SymbolTableEntry{
         this.name = name;
     }
 
-    @Override
-    public boolean isReserved() {
-        return true;
-    }
-
     public String toString(){
         return "IODevice";
     }

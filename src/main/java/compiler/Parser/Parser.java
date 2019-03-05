@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 public class Parser {
     private final String EPSILON = "*E*";
-    private final List<String> errors = new ArrayList<>(); // List of tokens that caused error states to be invoked
+    private final List<Token> errors = new ArrayList<>(); // List of error messages found during parsing
     private final List<String> productions = new ArrayList<>();
     private final HashMap<List<String>, Integer> parseTbl = new HashMap<>();
     private final Stack<String> stack = new Stack<>();
@@ -56,7 +56,7 @@ public class Parser {
     public void parse() throws ParserError {
         Token input = lexer.getNextToken();
         // If the next token is EOF, stop
-        while (input.getType() != TokenType.ENDOFFILE) {
+        while (!stack.isEmpty()) {
             // Get the token's type as a string as the stack is of Strings
             String inType = input.getType().name();
             String top = stack.pop();
@@ -67,6 +67,9 @@ public class Parser {
                     panicMode();
                 else if (debug)
                     dumpStack(top, input, "");
+                // If the stack is empty after matching, we're done
+                if (stack.isEmpty())
+                    break;
                 prevToken = input;
                 input = lexer.getNextToken();
                 // Top of the stack is a non-terminal
@@ -100,8 +103,7 @@ public class Parser {
                     dumpStack(top, input, "");
                 } catch (SymbolTableError e) {
                     // SymbolTableError indicates an id was defined more than once in its scope
-//                    errors.add("Identifier " + e.getName() + "already declared in scope" +
-//                            CompilerError.lineMsg(prevToken.getRow(), prevToken.getCol()));
+                    System.out.println(e.getMessage() + CompilerError.lineMsg(prevToken.getRow(), prevToken.getCol()));
                 }
             }
         }
@@ -118,7 +120,7 @@ public class Parser {
      */
     private void panicMode() throws ParserError {
         // Add the row and col of previous token to the list of error tokens
-        errors.add(CompilerError.lineMsg(prevToken.getRow(), prevToken.getCol()));
+        errors.add(prevToken);
 
         Token token;
         // Get tokens until a semicolon or the end of the file is reached

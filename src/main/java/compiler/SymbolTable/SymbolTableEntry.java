@@ -1,7 +1,11 @@
 package compiler.SymbolTable;
 
+/**
+ * Abstract symbol table entry
+ */
 public abstract class SymbolTableEntry {
     String name;
+    private boolean reserved;
 
     public boolean isVariable() {
         return false;
@@ -28,6 +32,10 @@ public abstract class SymbolTableEntry {
     }
 
     public boolean isReserved() {
-        return false;
+        return reserved;
+    }
+
+    public void setReserved(boolean res) {
+        this.reserved = res;
     }
 }

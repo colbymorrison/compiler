@@ -6,11 +6,6 @@ public class ProcedureEntry extends SymbolTableEntry {
     private int params;
     private List<String> paramInfo;
 
-    @Override
-    public boolean isReserved() {
-        return true;
-    }
-
     public ProcedureEntry(String name, int params, List<String> paramInfo) {
         this.name = name;
         this.params = params;
@@ -18,7 +13,7 @@ public class ProcedureEntry extends SymbolTableEntry {
     }
 
     public String toString(){
-        return "Procedure";
+        return "Procedure[# params: " + params + ", paramInfo: " + paramInfo + "]";
     }
 
 }

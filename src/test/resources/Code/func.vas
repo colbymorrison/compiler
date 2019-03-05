@@ -1,5 +1,5 @@
 
-program funcTest(input, output);        
+program funcTest(input, output);
 var
         i, j, k:integer;
 

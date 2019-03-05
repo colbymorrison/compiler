@@ -16,7 +16,7 @@ class Main {
         try {
             parser.parse();
         } catch (ParserError e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 }

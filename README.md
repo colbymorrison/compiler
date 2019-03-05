@@ -28,4 +28,15 @@ I also added a few lines to better track what row and column of the input file e
 In the `Scan` class I added a `setMinCol()` method to allow `Lexer` objects to decrement the column in the input file as they push items to the stack. 
 
 
+## Submission 3 (Symbol Table & Semantic Action 1) Notes
+### General Notes
+Test files are in the `src/test/resources` directory. They include the lexer and parser-specific test files along with more general programs to test.
+
+### Semantic Action 1 Notes
+Though I included the code that tests if the `global` variable is set, none of the actions yet actually set this variable.
+So, declarations that should be local are added to the global tale. This causes some erronous error messages to get printed.
+
+### Changes to Parser Package
+Added Semantic Action to the `Parser` class. This involved reading the augmented grammar file, tracking the previous token found, and adding a new case to the `parse()` function to call the appropriate semantic action. I also updated the `dumpStack()` method to print out debug info that includes semantic action info. The parser also now matches the `ENDOFFILE` token and exits when the stack is empty instead of leaving `ENDOFFILE` on the stack. 
+
  

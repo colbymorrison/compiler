@@ -25,7 +25,7 @@ class ParserTest {
 
     private void testParser(File dir) throws ParserError {
         for (File f : dir.listFiles()) {
-//            if(f.getName().equals("array.vas")) {
+//            if(f.getName().equals("func.vas")) {
             System.out.println(f.getAbsolutePath());
             Lexer lexer = new Lexer(f.getAbsolutePath());
             Parser parser = new Parser(lexer, true);
