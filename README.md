@@ -10,7 +10,7 @@ The first command line argument should be the path of the file to parse. Setting
 
  
 Compiling and running using gradle is very easy. From the `compiler_project` directory simply run `./gradlew run --args 'ARGS'` where `ARGS` are the command line args seperated by spaces.
-This runs the `gradlew` script, which looks in the `build.gradle` file where I defined `compiler.Main` to be the main class.
+This runs the `gradlew` script, which looks in the `build.gradle` file where I defined `compiler.Compiler` to be the main class.
 
 ## Submission 1 (Lexer) Notes
 The table mapping keywords to TokenTypes is in the Lexer class currently. It should be in the symbol table

@@ -25,14 +25,9 @@ public class Lexer {
      * @param pathName The pathname of the file to read
      */
     public Lexer(String pathName) {
-        try {
-            // Create a new scan object from the pathname
-            scan = new Scan(pathName);
-            initTable();
-        } catch (LexerError e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
+        // Create a new scan object from the pathname
+        scan = new Scan(pathName);
+        initTable();
     }
 
     /**
@@ -43,51 +38,46 @@ public class Lexer {
      *
      * @return The parsed token
      */
-    public Token getNextToken() {
-        Token token = null;
-        int row = 0;
-        int col = 0;
-        try {
-            char c = getNextChar();
+    public Token getNextToken() throws LexerError {
+        Token token;
+        int row;
+        int col;
+        char c = getNextChar();
 
-            if (!VALID_CHARS.contains(Character.toString(c)))
-                throw LexerError.invalidCharacter(c, scan.getRow(), scan.getCol());
+        if (!VALID_CHARS.contains(Character.toString(c)))
+            throw LexerError.invalidCharacter(c, scan.getRow(), scan.getCol());
 
-            // Skip whitespace
-            while (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '{') {
-                if (c == '{')
-                    // c will be set to next char after comment
-                    c = readComment();
-                else
-                    c = getNextChar();
-            }
-
-            row = scan.getRow();
-            col = scan.getCol();
-            // Check for eof
-            if (c == '$')
-                token = new Token<>(TokenType.ENDOFFILE);
-                // Otherwise, call correct method
-            else if (Character.isLetter(c))
-                token = readIdentifier(c);
-            else if (Character.isDigit(c))
-                token = readDigit(c);
-            else if (c == '<')
-                token = readLeftAngle();
-            else if (c == '>')
-                token = readRightAngle();
-            else if (c == '+' || c == '-')
-                token = readPlusMinus(c);
-            else if (c == '.')
-                token = readDot();
-            else if (c == ':')
-                token = readColon();
+        // Skip whitespace
+        while (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '{') {
+            if (c == '{')
+                // c will be set to next char after comment
+                c = readComment();
             else
-                token = readSymbol(c);
-        } catch (LexerError lexerError) {
-            lexerError.printStackTrace();
-            System.exit(0);
+                c = getNextChar();
         }
+
+        row = scan.getRow();
+        col = scan.getCol();
+        // Check for eof
+        if (c == '$')
+            token = new Token<>(TokenType.ENDOFFILE);
+            // Otherwise, call correct method
+        else if (Character.isLetter(c))
+            token = readIdentifier(c);
+        else if (Character.isDigit(c))
+            token = readDigit(c);
+        else if (c == '<')
+            token = readLeftAngle();
+        else if (c == '>')
+            token = readRightAngle();
+        else if (c == '+' || c == '-')
+            token = readPlusMinus(c);
+        else if (c == '.')
+            token = readDot();
+        else if (c == ':')
+            token = readColon();
+        else
+            token = readSymbol(c);
         token.setCol(col);
         token.setRow(row);
         prevToken = token;

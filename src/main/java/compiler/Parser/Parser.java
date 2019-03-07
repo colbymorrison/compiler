@@ -1,6 +1,7 @@
 package compiler.Parser;
 
 import compiler.Exception.CompilerError;
+import compiler.Exception.LexerError;
 import compiler.Exception.ParserError;
 import compiler.Exception.SymbolTableError;
 import compiler.Lexer.Lexer;
@@ -53,8 +54,9 @@ public class Parser {
      *
      * @throws ParserError when we've reached the end of the file and if any errors occured.
      */
-    public void parse() throws ParserError {
+    public void parse() throws LexerError, ParserError {
         Token input = lexer.getNextToken();
+
         // If the next token is EOF, stop
         while (!stack.isEmpty()) {
             // Get the token's type as a string as the stack is of Strings
@@ -119,7 +121,7 @@ public class Parser {
      *
      * @throws ParserError if the end of file is reached
      */
-    private void panicMode() throws ParserError {
+    private void panicMode() throws LexerError, ParserError {
         // Add the row and col of previous token to the list of error tokens
         errors.add(prevToken);
 

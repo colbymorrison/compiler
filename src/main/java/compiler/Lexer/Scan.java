@@ -18,13 +18,14 @@ class Scan {
      * Constructor
      *
      * @param fileName of file to parse
-     * @throws LexerError if one occurred
      */
-    Scan(String fileName) throws LexerError {
+    Scan(String fileName) {
         try {
             reader = new BufferedReader(new FileReader(fileName));
-        } catch (FileNotFoundException e) {
-            throw LexerError.ioError(e.getMessage());
+        } // If the file doesn't exist, there's not much we can do
+        catch (FileNotFoundException e) {
+            System.out.println("The file " + fileName + "does not exist. Try again.");
+            System.exit(1);
         }
     }
 
@@ -54,7 +55,6 @@ class Scan {
      * Reads next character from input and ensures it is valid and not part of a comment
      *
      * @return the next non-comment character from the file
-     * @throws LexerError
      * @throws IOException
      */
     char getNextChar() throws IOException {
@@ -66,7 +66,6 @@ class Scan {
             // We're using $ as eof character
             ch = '$';
             reader.close();
-            // Ensure character is valid
         }
 
         // Check for newline
