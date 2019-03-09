@@ -8,8 +8,8 @@ public class FunctionEntry extends SymbolTableEntry {
     private List<String> paramInfo;
     private VariableEntry result;
 
-    public FunctionEntry(String name, int params, List<String> paramInfo, VariableEntry result) {
-        this.name = name;
+    public FunctionEntry(String name, int params, List<String> paramInfo, VariableEntry result, boolean isGlobal) {
+        super(name, isGlobal);
         this.params = params;
         this.paramInfo = paramInfo;
         this.result = result;

@@ -6,6 +6,15 @@ package compiler.SymbolTable;
 public abstract class SymbolTableEntry {
     String name;
     private boolean reserved;
+    private boolean isGlobal;
+
+    SymbolTableEntry() {
+    }
+
+    SymbolTableEntry(String name, boolean isGlobal) {
+        this.name = name;
+        this.isGlobal = isGlobal;
+    }
 
     public boolean isVariable() {
         return false;
@@ -35,7 +44,22 @@ public abstract class SymbolTableEntry {
         return reserved;
     }
 
+    public boolean isConstant() {
+        return false;
+    }
     public void setReserved(boolean res) {
         this.reserved = res;
+    }
+
+    public boolean isGlobal() {
+        return isGlobal;
+    }
+
+    public void setGlobal(boolean global) {
+        isGlobal = global;
+    }
+
+    public String getName() {
+        return name;
     }
 }
