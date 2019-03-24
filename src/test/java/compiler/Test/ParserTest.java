@@ -15,11 +15,13 @@ class ParserTest {
     @Test
     void testFiles() throws CompilerError {
         String resPath = "src/test/resources/";
-        testParser(new File(resPath + "Parser"));
-        testParser(new File(resPath + "Code"));
+        //testParser(new File(resPath + "Parser"));
+        //testParser(new File(resPath + "Code"));
     }
 
 
+    private void testCodes(File dir) throws CompilerError {
+    }
     private void testParser(File dir) throws CompilerError {
         for (File f : dir.listFiles()) {
 //            if(f.getName().equals("func.vas")) {

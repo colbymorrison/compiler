@@ -1,9 +1,13 @@
 package compiler.SemanticAction;
 
+import compiler.Exception.CompilerError;
+import compiler.Exception.SemanticError;
 import compiler.Exception.SymbolTableError;
 import compiler.Lexer.Token;
 import compiler.Lexer.TokenType;
 import compiler.SymbolTable.*;
+import sun.awt.Symbol;
+import sun.jvm.hotspot.debugger.cdbg.Sym;
 
 import java.util.*;
 
@@ -11,7 +15,8 @@ public class SemanticAction {
     private final SymbolTable globalTable = new SymbolTable(20);
     private final SymbolTable constantTable = new SymbolTable(20);
     private final SymbolTable localTable = new SymbolTable(20);
-    private final Stack<Token> stack = new Stack<>();
+    private final Stack<Token> tokenStack = new Stack<>();
+    private final Stack<SymbolTableEntry> steStack = new Stack<>();
     private final Quadruples quads = new Quadruples();
     private boolean insert = true;
     private final boolean global = true;
@@ -58,7 +63,7 @@ public class SemanticAction {
      * @param prevToken previous token
      * @throws SymbolTableError if an id is added to the local or global symbol table that already exists
      */
-    public void execute(int num, Token token, Token prevToken) throws SymbolTableError {
+    public void execute(int num, Token token, Token prevToken) throws SemanticError, SymbolTableError {
         switch (num) {
             case 1:
                 insert = true;
@@ -70,62 +75,98 @@ public class SemanticAction {
                 three();
                 break;
             case 4:
-                stack.push(prevToken);
+                tokenStack.push(prevToken);
                 break;
             case 6:
                 array = true;
                 break;
             case 7:
-                stack.push(prevToken);
+                tokenStack.push(prevToken);
                 break;
             case 9:
                 nine();
                 break;
             case 13:
-                stack.push(prevToken);
+                tokenStack.push(prevToken);
                 break;
-            default:
+            case 30:
+                thirty(prevToken);
+                break;
+            case 31:
+                thirtyOne(token);
+                break;
+            case 40:
+                tokenStack.push(prevToken);
+                break;
+            case 41:
+                fourtyOne();
+                break;
+            case 42:
+                tokenStack.push(prevToken);
+                break;
+            case 43:
+                fourtyThree();
+                break;
+            case 44:
+                tokenStack.push(prevToken);
+                break;
+            case 45:
+                fourtyFive();
+                break;
+            case 46:
+                fourtySix(prevToken); // WHICH TOKEN whos to say?
+                break;
+            case 48:
+                fourtyEight();
+                break;
+            case 55:
+                fiftyFive();
+                break;
+            case 56:
+                fiftySix();
                 break;
         }
     }
 
     // Semantic Actions
+
     /**
      * Semantic action 3, handles declarations of arrays and variables
      *
      * @throws SymbolTableError if an id is added to the local or global symbol table that already exists
      */
     private void three() throws SymbolTableError {
-        TokenType type = stack.pop().getType();
+        TokenType type = tokenStack.pop().getType();
+        ArrVarEntry entry;
+        int memorySize = 1;
+        int upperBound = 0;
+        int lowerBound = 0;
         // If we have an array figure out memory based on bounds
         // Otherwise its a variable so memory is 1
         if (array) {
-            int upperBound = Integer.parseInt(stack.pop().getValue().toString());
-            int lowerBound = Integer.parseInt(stack.pop().getValue().toString());
-            int memorySize = (upperBound - lowerBound) + 1;
+            upperBound = Integer.parseInt(tokenStack.pop().getValue().toString());
+            lowerBound = Integer.parseInt(tokenStack.pop().getValue().toString());
+            memorySize = (upperBound - lowerBound) + 1;
+        }
 
-            while (!stack.isEmpty() && stack.peek().getType() == TokenType.IDENTIFIER) {
-                String name = stack.pop().getValue().toString();
-                // Create array or variable entry
-                ArrayEntry entry = new ArrayEntry(name, type, upperBound, lowerBound);
+        while (!tokenStack.isEmpty() && tokenStack.peek().getType() == TokenType.IDENTIFIER) {
+            String name = tokenStack.pop().getValue().toString();
+            // Create array or variable entry
+            entry = array
+                    ? new ArrayEntry(name, type, upperBound, lowerBound)
+                    : new VariableEntry(name, type);
 
-                // Add to local or global symbol table
-                if (global) {
-                    entry.setGlobal(true);
-                    entry.setAddress(globalMemory);
-                    globalTable.insert(entry);
-                    globalMemory += memorySize;
-                } else {
-                    entry.setGlobal(false);
-                    entry.setAddress(localMemory);
-                    localTable.insert(entry);
-                    localMemory += memorySize;
-                }
-            }
-        } else {
-            while (!stack.isEmpty() && stack.peek().getType() == TokenType.IDENTIFIER) {
-                String name = stack.pop().getValue().toString();
-                create(name, type);
+            // Add to local or global symbol table
+            if (global) {
+                entry.setGlobal(true);
+                entry.setAddress(globalMemory);
+                globalTable.insert(entry);
+                globalMemory += memorySize;
+            } else {
+                entry.setGlobal(false);
+                entry.setAddress(localMemory);
+                localTable.insert(entry);
+                localMemory += memorySize;
             }
         }
         array = false;
@@ -138,9 +179,9 @@ public class SemanticAction {
      * @throws SymbolTableError
      */
     private void nine() throws SymbolTableError {
-        stack.pop();
-        stack.pop();
-        Token id3 = stack.pop();
+        tokenStack.pop();
+        tokenStack.pop();
+        Token id3 = tokenStack.pop();
 
         SymbolTableEntry entry = new ProcedureEntry(id3.toString(), 0, new ArrayList<>(), true);
         entry.setReserved(true);
@@ -150,6 +191,204 @@ public class SemanticAction {
         generate("call", "main", "0");
         generate("exit");
     }
+
+    private void thirty(Token token) throws SemanticError {
+        SymbolTableEntry id = lookupId(token);
+        if (id == null) {
+            throw SemanticError.undeclaredVariable(token);
+        }
+        tokenStack.push(token);
+    }
+
+    /**
+     * Variable assignment
+     *
+     * @param token to get row and column if an error occurs
+     * @throws SymbolTableError
+     * @throws SemanticError    if there is a type mismatch
+     */
+    private void thirtyOne(Token token) throws SymbolTableError, SemanticError {
+        SymbolTableEntry id2 = steStack.pop();
+        // offset will be implemented in later actions
+        SymbolTableEntry offset = null;
+        SymbolTableEntry id1 = steStack.pop();
+
+        if (typeCheck(id1, id2) == 3) {
+            throw SemanticError.typeMismatch("Integer", "Real", token.getRow(), token.getCol());
+        }
+        if (typeCheck(id1, id2) == 2) {
+            VariableEntry temp = createTemp(TokenType.REAL);
+            generate("ltof", id2, temp);
+            if (offset == null) {
+                generate("move", temp, id1);
+            } else {
+                generate("stor", temp, offset, id1);
+            }
+        } else {
+            if (offset == null) {
+                generate("move", id2, id1);
+            } else {
+                generate("stor", id2, offset, id1);
+            }
+        }
+    }
+
+    /**
+     * Handles unary minus and plus
+     *
+     * @throws SymbolTableError
+     */
+    private void fourtyOne() throws SymbolTableError {
+        ArrVarEntry id = (ArrVarEntry) steStack.pop();
+        Token sign = tokenStack.pop();
+        if (sign.getType() == TokenType.UNARYMINUS) {
+            VariableEntry temp = createTemp(id.getType());
+            if (id.getType() == TokenType.INTEGER) {
+                generate("uminus", id, temp);
+            } else {
+                generate("fuminus", id, temp);
+            }
+            steStack.push(temp);
+        } else
+            steStack.push(id);
+    }
+
+    /**
+     * Handles arithmetic and comparison operations
+     */
+    private void fourtyThree() throws SymbolTableError {
+        SymbolTableEntry id2 = steStack.pop();
+        // this is one place where the operator from action 42 is popped
+        Token operator = tokenStack.pop();
+        // get the TVI opcode associated with the operator token
+        // ex. for a token representing addition, opcode would be "add"
+        String opcode = getOpCode(operator);
+        SymbolTableEntry id1 = steStack.pop();
+
+        if (typeCheck(id1, id2) == 0) {
+            VariableEntry temp = createTemp(TokenType.INTEGER);
+            generate(opcode, id1, id2, temp);
+            steStack.push(temp);
+        } else if (typeCheck(id1, id2) == 1) {
+            VariableEntry temp = createTemp(TokenType.REAL);
+            generate("f" + opcode, id1, id2, temp);
+            steStack.push(temp);
+        } else { // IS THIS RIGHT?
+            VariableEntry temp1 = createTemp(TokenType.REAL);
+            VariableEntry temp2 = createTemp(TokenType.REAL);
+            generate("ltof", id1, temp1);
+            generate("f" + opcode, temp1, id2, temp2);
+            steStack.push(temp2);
+        }
+    }
+
+    /**
+     * Mod, division, multiplication
+     *
+     * @throws SymbolTableError
+     * @throws SemanticError
+     */
+    private void fourtyFive() throws SymbolTableError, SemanticError {
+        SymbolTableEntry id2 = steStack.pop();
+        Token operator = tokenStack.pop();
+        String opcode = getOpCode(operator);
+        SymbolTableEntry id1 = steStack.pop();
+
+        if (typeCheck(id1, id2) != 0 && (opcode.equals("DIV") || opcode.equals("MOD"))) {
+            // MOD and DIV require integer operands
+            throw SemanticError.badParameter(operator);
+        }
+
+        if (typeCheck(id1, id2) == 0) {
+            if (opcode.equals("MOD")) {
+                VariableEntry temp1 = createTemp(TokenType.INTEGER);
+                VariableEntry temp2 = createTemp(TokenType.INTEGER);
+                VariableEntry temp3 = createTemp(TokenType.INTEGER);
+                generate("div", id1, id2, temp1);
+                generate("mul", id2, temp1, temp2);
+                generate("sub", id1, temp2, temp3);
+                steStack.push(temp3);
+            } else if (opcode.equals("div")) { // div or DIV??
+                VariableEntry temp1 = createTemp(TokenType.REAL);
+                VariableEntry temp2 = createTemp(TokenType.REAL);
+                VariableEntry temp3 = createTemp(TokenType.REAL);
+                generate("ltof", id1, temp1);
+                generate("ltof", id2, temp2);
+                generate("fdiv", temp1, temp2, temp3);
+                steStack.push(temp3);
+            } else {
+                VariableEntry temp = createTemp(TokenType.INTEGER);
+                generate(opcode, id1, id2, temp);
+                steStack.push(temp);
+            }
+        } else if (typeCheck(id1, id2) == 1) {
+            VariableEntry temp = createTemp(TokenType.REAL);
+            generate("f" + opcode, id1, id2, temp);
+            steStack.push(temp);
+        } else { // AGAIN IS THIS RIGHT?
+            VariableEntry temp1 = createTemp(TokenType.REAL);
+            VariableEntry temp2 = createTemp(TokenType.REAL);
+            generate("ltof", id2, temp1);
+            generate("f" + opcode, id1, temp1, temp2);
+            steStack.push(temp2);
+        }
+    }
+
+
+    /**
+     * Identifiers & constants
+     *
+     * @param token
+     * @throws SemanticError
+     * @throws SymbolTableError
+     */
+    private void fourtySix(Token token) throws SemanticError, SymbolTableError {
+        if (token.getType() == TokenType.IDENTIFIER) {
+            // look for the token in the global or local symbol table
+            SymbolTableEntry id = lookupId(token);
+            // if token is not found
+            if (id == null)
+                throw SemanticError.undeclaredVariable(token);
+
+            steStack.push(id);
+        } else if (token.getType() == TokenType.INTCONSTANT || token.getType() == TokenType.REALCONSTANT) {
+            // look for the token in the constant symbol table
+            SymbolTableEntry id = constantTable.search(token.getValue().toString());
+            // if token is not found
+            if (id == null) {
+                id = new ConstantEntry(token.getValue().toString(), token.getType(), global);
+                constantTable.insert(id);
+            }
+            steStack.push(id);
+        }
+
+    }
+
+    private void fourtyEight() throws SymbolTableError {
+        // offset will be implemented in later actions
+        SymbolTableEntry offset = null;
+        if (offset != null) {
+            ArrVarEntry id = (ArrVarEntry) steStack.pop(); // IS THIS RIGHT??? I think 48 only gets called when top stack is type id
+            VariableEntry temp = createTemp(id.getType());
+            generate("load", id, offset, temp);
+            steStack.push(temp);
+        }
+    }
+
+    private void fiftyFive() {
+        backpatch(globalStore, globalMemory);
+        generate("free", "&" + globalMemory);
+        generate("procend");
+    }
+
+    private void fiftySix() {
+        generate("procbegin", "main");
+        globalStore = quads.getNextQuad();
+        // the underscore as the second arguement in generate
+        // is a placeholder that will be filled in later by backpatch
+        generate("alloc", "_");
+    }
+
 
 
     /**
@@ -169,7 +408,7 @@ public class SemanticAction {
             // constants do not have an address, and a
             // temporary variable must be created to store it
             ConstantEntry entry = (ConstantEntry) ste;
-            VariableEntry temp = create("temp", entry.getType());
+            VariableEntry temp = createTemp(entry.getType());
             // move the constant into the temporary variable
             generate("move", ste.getName(), temp);
             // return the address of the temporary variable
@@ -189,6 +428,7 @@ public class SemanticAction {
 
 
     // Generate Methods
+
     private void generate(String tviCode, SymbolTableEntry[] operands) throws SymbolTableError {
         String[] quadEntry = new String[operands.length + 1];
         quadEntry[0] = tviCode;
@@ -198,7 +438,6 @@ public class SemanticAction {
             quadEntry[i] = getSTEPrefix(operand) + getSTEAddress(operand);
         }
         quads.addQuad(quadEntry);
-//        quads.incrementNextQuad();
     }
 
     private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2, SymbolTableEntry operand3) throws SymbolTableError {
@@ -209,18 +448,16 @@ public class SemanticAction {
         generate(tviCode, new SymbolTableEntry[]{operand1, operand2});
     }
 
-    private void generate(String tviCode, SymbolTableEntry operand1) throws SymbolTableError {
-        generate(tviCode, new SymbolTableEntry[]{operand1});
+    private void generate(String tviCode, String operand1) {
+        quads.addQuad(new String[]{tviCode, operand1});
     }
 
-    private void generate(String tviCode, String operand1, String operand2) throws SymbolTableError {
+    private void generate(String tviCode, String operand1, String operand2) {
         quads.addQuad(new String[]{tviCode, operand1, operand2});
-//        quads.incrementNextQuad();
     }
 
     private void generate(String tviCode) {
         quads.addQuad(new String[]{tviCode});
-//        quads.incrementNextQuad();
     }
 
     private void generate(String tviCode, String operand1, SymbolTableEntry operand2) throws SymbolTableError {
@@ -228,18 +465,24 @@ public class SemanticAction {
         quadEntry[0] = tviCode;
         quadEntry[1] = operand1;
         quadEntry[2] = getSTEPrefix(operand2) + getSTEAddress(operand2);
+        quads.addQuad(quadEntry);
     }
 
+    // Helper methods
 
-    private VariableEntry create(String name, TokenType type) throws SymbolTableError {
-        if (name.equals("temp")) {
-            name = "temp" + tempCt;
-            tempCt++;
-        }
-        VariableEntry ve = new VariableEntry(name, type);
-        // store the address as negative to distinguish between
-        // temporary variables
+    /**
+     * Creates a new variable entry and inserts it into the proper symbol table.
+     *
+     * @param type type of variable
+     * @return the vriable entry
+     * @throws SymbolTableError if a variable with this name is already in the symbol table
+     */
+    private VariableEntry createTemp(TokenType type) throws SymbolTableError {
+        tempCt++;
+
+        VariableEntry ve = new VariableEntry("$$temp" + tempCt, type);
         ve.setGlobal(global);
+        // Global or local?
         if (global) {
             ve.setAddress(globalMemory);
             globalMemory++;
@@ -250,6 +493,109 @@ public class SemanticAction {
             localTable.insert(ve);
         }
         return ve;
+    }
+
+    /**
+     * Checks type of 2 integers/reals
+     *
+     * @param id1 integer or real
+     * @param id2 integer or real
+     * @return 0-3 based on relationship
+     */
+    private int typeCheck(SymbolTableEntry id1, SymbolTableEntry id2) {
+        ArrVarEntry id1T = (ArrVarEntry) id1;
+        ArrVarEntry id2T = (ArrVarEntry) id2;
+
+        boolean int1 = id1T.getType() == TokenType.INTEGER;
+        boolean int2 = id2T.getType() == TokenType.INTEGER;
+
+        if (int1 && int2)
+            return 0;
+        else if (!int1 && !int2)
+            return 1;
+        else if (int2)
+            return 2;
+        else
+            return 3;
+    }
+
+    /**
+     * Looks up an id in the symbol table
+     *
+     * @param token with type Identifier ??
+     * @return the symbol table entry if it exists or null otherwise
+     */
+    private SymbolTableEntry lookupId(Token token) {
+        String id = token.getValue().toString();
+        // first look in the local table
+        SymbolTableEntry ste = localTable.search(id);
+        // if id is not in the local table
+        if (ste == null)
+            // then look in the global table
+            ste = globalTable.search(id);
+
+        return ste;
+    }
+
+    /**
+     * Replaces second index of quadruple with a new address.
+     *
+     * @param i index of quadruple to replace.
+     * @param x address to insert.
+     */
+    private void backpatch(int i, int x) {
+        String field = quads.getField(i, 1);
+        // Find where the address starts, prefixes are of variable length
+        int j;
+        for (j = 0; j < field.length(); j++) {
+            if (Character.isDigit(field.charAt(i)))
+                break;
+        }
+        field = field.replace(field.substring(j), Integer.toString(x));
+        quads.setField(i, 1, field);
+    }
+
+    /**
+     * Get the opcode for a token
+     *
+     * @param opToken an ADDOP, MULOP, or UNARYMINUS token
+     * @return opcode ("add", "mul", ...)
+     */
+    private String getOpCode(Token opToken) {
+        String opcode = "";
+
+        switch (opToken.getType()) {
+            case ADDOP:
+                // TODO look over possible values for ADDOP & MULOP
+                int value = (int) opToken.getValue();
+                if (value == 1)
+                    opcode = "add";
+                else if (value == 2)
+                    opcode = "sub";
+                break;
+            case MULOP:
+                switch ((int) opToken.getValue()) {
+                    case 1:
+                        opcode = "mul";
+                        break;
+                    // division operator (/)
+                    case 2:
+                        opcode = "div";
+                        break;
+                    // DIV keyword
+                    case 3:
+                        opcode = "DIV";
+                        break;
+                    case 4:
+                        opcode = "MOD";
+                        break;
+                }
+                break;
+            case UNARYMINUS:
+                opcode = "uminus";
+        }
+
+        return opcode;
     }
 
     // Getters
@@ -266,7 +612,11 @@ public class SemanticAction {
     }
 
 
-    public Stack<Token> getStack() {
-        return stack;
+    public Stack<Token> getTokenStack() {
+        return tokenStack;
+    }
+
+    public Quadruples getQuads() {
+        return quads;
     }
 }

@@ -1,9 +1,6 @@
 package compiler.Parser;
 
-import compiler.Exception.CompilerError;
-import compiler.Exception.LexerError;
-import compiler.Exception.ParserError;
-import compiler.Exception.SymbolTableError;
+import compiler.Exception.*;
 import compiler.Lexer.Lexer;
 import compiler.Lexer.Token;
 import compiler.Lexer.TokenType;
@@ -54,7 +51,7 @@ public class Parser {
      *
      * @throws ParserError when we've reached the end of the file and if any errors occured.
      */
-    public void parse() throws LexerError, ParserError {
+    public void parse() throws LexerError, ParserError, SemanticError {
         Token input = lexer.getNextToken();
 
         // If the next token is EOF, stop
@@ -113,6 +110,8 @@ public class Parser {
         // If there were errors during parsing, throw them
         if (!errors.isEmpty())
             throw new ParserError(errors);
+        // Otherwise get the generated intermediate code
+        action.getQuads().print();
     }
 
     /**
@@ -198,7 +197,7 @@ public class Parser {
         if (push.isEmpty())
             if (top.charAt(0) == '#')
                 out += "Semantic Action " + top.substring(1) + "\n" +
-                       "Semantic Stack " + action.getStack() + "\n";
+                        "Semantic Stack " + action.getTokenStack() + "\n";
             else
                 out += "Match! \n";
         else

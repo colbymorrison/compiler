@@ -21,7 +21,7 @@ public class SymbolTable {
      * @param key the key to search for
      * @return the value associated with that key or null if no such value exists
      */
-    public SymbolTableEntry search(SymbolTableEntry key) {
+    public SymbolTableEntry search(String key) {
         return table.getOrDefault(key, null);
     }
 
@@ -32,10 +32,10 @@ public class SymbolTable {
      * @throws SymbolTableError if an entry with that name already exists
      */
     public void insert(SymbolTableEntry value) throws SymbolTableError {
-        // The name field of the entry is the id
         if (table.containsKey(value.name))
             throw new SymbolTableError(value.name);
         else
+            // The name field of the entry is the id
             table.put(value.name, value);
     }
 

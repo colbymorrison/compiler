@@ -23,4 +23,8 @@ public abstract class ArrVarEntry extends SymbolTableEntry {
     public int getAddress() {
         return address;
     }
+
+    public TokenType getType() {
+        return type;
+    }
 }
