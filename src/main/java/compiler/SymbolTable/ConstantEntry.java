@@ -11,6 +11,7 @@ public class ConstantEntry extends SymbolTableEntry {
         this.type = type;
     }
 
+    @Override
     public TokenType getType() {
         return type;
     }
@@ -22,6 +23,4 @@ public class ConstantEntry extends SymbolTableEntry {
     public String toString() {
         return type + " constant";
     }
-
-
 }

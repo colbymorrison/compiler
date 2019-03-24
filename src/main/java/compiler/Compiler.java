@@ -25,7 +25,7 @@ class Compiler {
      */
     private void compile() {
         try {
-            parser.parse();
+            System.out.println(parser.parse());
         } catch (CompilerError e) {
             System.out.println(e.getMessage());
         }

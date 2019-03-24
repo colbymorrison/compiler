@@ -1,5 +1,7 @@
 package compiler.SymbolTable;
 
+import compiler.Lexer.TokenType;
+
 /**
  * Abstract symbol table entry
  */
@@ -62,4 +64,16 @@ public abstract class SymbolTableEntry {
     public String getName() {
         return name;
     }
+
+    public TokenType getType(){
+        return null;
+    }
+
+    public int getAddress(){
+        return 0;
+    }
+
+    public void setAddress(int address){
+    }
+
 }

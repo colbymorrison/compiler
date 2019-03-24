@@ -41,31 +41,33 @@ public class Quadruples {
         nextQuad++;
     }
 
-    public void print() {
+    public String getInterCode() {
         int quadLabel = 1;
         String separator;
+        StringBuilder builder = new StringBuilder("CODE");
 
-        System.out.println("CODE");
 
         Enumeration<String[]> e = this.Quadruple.elements();
         e.nextElement();
 
         while (e.hasMoreElements()) {
             String[] quad = e.nextElement();
-            System.out.print(quadLabel + ":  " + quad[0]);
+            builder.append(quadLabel).append(":  ").append(quad[0]).append("\n");
 
             if (quad[1] != null)
-                System.out.print(" " + quad[1]);
+                builder.append(" ").append(quad[1]).append("\n");
 
             if (quad[2] != null)
-                System.out.print(", " + quad[2]);
+                builder.append(", ").append(quad[2]).append("\n");
 
             if (quad[3] != null)
-                System.out.print(", " + quad[3]);
+                builder.append(", ").append(quad[3]).append("\n");
 
-            System.out.println();
+            builder.append("\n");
             quadLabel++;
         }
+
+        return builder.toString();
     }
 }
 

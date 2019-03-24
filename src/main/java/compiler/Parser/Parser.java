@@ -51,7 +51,7 @@ public class Parser {
      *
      * @throws ParserError when we've reached the end of the file and if any errors occured.
      */
-    public void parse() throws LexerError, ParserError, SemanticError {
+    public String parse() throws LexerError, ParserError, SemanticError {
         Token input = lexer.getNextToken();
 
         // If the next token is EOF, stop
@@ -111,7 +111,7 @@ public class Parser {
         if (!errors.isEmpty())
             throw new ParserError(errors);
         // Otherwise get the generated intermediate code
-        action.getQuads().print();
+        return action.getQuads().getInterCode();
     }
 
     /**

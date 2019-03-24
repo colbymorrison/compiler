@@ -1,13 +1,10 @@
 package compiler.SemanticAction;
 
-import compiler.Exception.CompilerError;
 import compiler.Exception.SemanticError;
 import compiler.Exception.SymbolTableError;
 import compiler.Lexer.Token;
 import compiler.Lexer.TokenType;
 import compiler.SymbolTable.*;
-import sun.awt.Symbol;
-import sun.jvm.hotspot.debugger.cdbg.Sym;
 
 import java.util.*;
 
@@ -137,7 +134,7 @@ public class SemanticAction {
      */
     private void three() throws SymbolTableError {
         TokenType type = tokenStack.pop().getType();
-        ArrVarEntry entry;
+        SymbolTableEntry entry;
         int memorySize = 1;
         int upperBound = 0;
         int lowerBound = 0;
@@ -153,8 +150,8 @@ public class SemanticAction {
             String name = tokenStack.pop().getValue().toString();
             // Create array or variable entry
             entry = array
-                    ? new ArrayEntry(name, type, upperBound, lowerBound)
-                    : new VariableEntry(name, type);
+                    ? new ArrayEntry(name, type, upperBound, lowerBound, global)
+                    : new VariableEntry(name, type, global);
 
             // Add to local or global symbol table
             if (global) {
@@ -239,7 +236,7 @@ public class SemanticAction {
      * @throws SymbolTableError
      */
     private void fourtyOne() throws SymbolTableError {
-        ArrVarEntry id = (ArrVarEntry) steStack.pop();
+        SymbolTableEntry id = steStack.pop();
         Token sign = tokenStack.pop();
         if (sign.getType() == TokenType.UNARYMINUS) {
             VariableEntry temp = createTemp(id.getType());
@@ -368,7 +365,7 @@ public class SemanticAction {
         // offset will be implemented in later actions
         SymbolTableEntry offset = null;
         if (offset != null) {
-            ArrVarEntry id = (ArrVarEntry) steStack.pop(); // IS THIS RIGHT??? I think 48 only gets called when top stack is type id
+            SymbolTableEntry id = steStack.pop(); // IS THIS RIGHT??? I think 48 only gets called when top stack is type id
             VariableEntry temp = createTemp(id.getType());
             generate("load", id, offset, temp);
             steStack.push(temp);
@@ -402,8 +399,7 @@ public class SemanticAction {
         if (ste.isArray() || ste.isVariable()) {
             // array entries and variable entries are
             // assigned address when they are initialized
-            ArrVarEntry entry = (ArrVarEntry) ste;
-            address = entry.getAddress();
+            address = ste.getAddress();
         } else if (ste.isConstant()) {
             // constants do not have an address, and a
             // temporary variable must be created to store it
@@ -480,7 +476,7 @@ public class SemanticAction {
     private VariableEntry createTemp(TokenType type) throws SymbolTableError {
         tempCt++;
 
-        VariableEntry ve = new VariableEntry("$$temp" + tempCt, type);
+        VariableEntry ve = new VariableEntry("$$temp" + tempCt, type, global);
         ve.setGlobal(global);
         // Global or local?
         if (global) {
@@ -503,11 +499,8 @@ public class SemanticAction {
      * @return 0-3 based on relationship
      */
     private int typeCheck(SymbolTableEntry id1, SymbolTableEntry id2) {
-        ArrVarEntry id1T = (ArrVarEntry) id1;
-        ArrVarEntry id2T = (ArrVarEntry) id2;
-
-        boolean int1 = id1T.getType() == TokenType.INTEGER;
-        boolean int2 = id2T.getType() == TokenType.INTEGER;
+        boolean int1 = id1.getType() == TokenType.INTEGER;
+        boolean int2 = id2.getType() == TokenType.INTEGER;
 
         if (int1 && int2)
             return 0;
