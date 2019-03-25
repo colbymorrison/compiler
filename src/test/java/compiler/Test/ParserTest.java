@@ -33,8 +33,8 @@ class ParserTest {
 
                 // Read test file to get codes to check against
                 String fileName = f.getName().split(".vas")[0];
-                Path testPath = Paths.get(basePath, "out", fileName, ".tvi");
-                String[] testCodes = (String[]) Files.lines(testPath).toArray();
+                Path testPath = Paths.get(basePath, "out", fileName+".tvi");
+                String[] testCodes = Files.lines(testPath).toArray(String[]::new);
 
                 assertArrayEquals(generatedCodes, testCodes);
             }
@@ -44,7 +44,7 @@ class ParserTest {
     // Runs parser and returns generated intermediate code
     private String[] getCodes(File f) throws CompilerError, IOException {
         Lexer lexer = new Lexer(f.getAbsolutePath());
-        Parser parser = new Parser(lexer, true);
+        Parser parser = new Parser(lexer, false);
         String intCode = parser.parse();
         System.out.println(intCode);
 

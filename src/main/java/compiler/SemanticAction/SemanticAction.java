@@ -194,7 +194,7 @@ public class SemanticAction {
         if (id == null) {
             throw SemanticError.undeclaredVariable(token);
         }
-        tokenStack.push(token);
+        steStack.push(id);
     }
 
     /**
@@ -210,23 +210,21 @@ public class SemanticAction {
         SymbolTableEntry offset = null;
         SymbolTableEntry id1 = steStack.pop();
 
-        if (typeCheck(id1, id2) == 3) {
+        if (typeCheck(id1, id2) == 3)
             throw SemanticError.typeMismatch("Integer", "Real", token.getRow(), token.getCol());
-        }
+
         if (typeCheck(id1, id2) == 2) {
             VariableEntry temp = createTemp(TokenType.REAL);
             generate("ltof", id2, temp);
-            if (offset == null) {
+            if (offset == null)
                 generate("move", temp, id1);
-            } else {
+            else
                 generate("stor", temp, offset, id1);
-            }
         } else {
-            if (offset == null) {
+            if (offset == null)
                 generate("move", id2, id1);
-            } else {
+            else
                 generate("stor", id2, offset, id1);
-            }
         }
     }
 
@@ -280,14 +278,17 @@ public class SemanticAction {
     }
 
     /**
-     * Mod, division, multiplication
+     * Evaluate expression
      *
      * @throws SymbolTableError
      * @throws SemanticError
      */
     private void fourtyFive() throws SymbolTableError, SemanticError {
+        // Pushed in #46
         SymbolTableEntry id2 = steStack.pop();
+        // Pushed in #44
         Token operator = tokenStack.pop();
+        // Pushed in #46
         String opcode = getOpCode(operator);
         SymbolTableEntry id1 = steStack.pop();
 
@@ -322,7 +323,7 @@ public class SemanticAction {
             VariableEntry temp = createTemp(TokenType.REAL);
             generate("f" + opcode, id1, id2, temp);
             steStack.push(temp);
-        } else { // AGAIN IS THIS RIGHT?
+        } else {
             VariableEntry temp1 = createTemp(TokenType.REAL);
             VariableEntry temp2 = createTemp(TokenType.REAL);
             generate("ltof", id2, temp1);
@@ -333,7 +334,7 @@ public class SemanticAction {
 
 
     /**
-     * Identifiers & constants
+     * Push identifiers & constants onto the stack for evaluation in an expression
      *
      * @param token
      * @throws SemanticError
@@ -379,7 +380,7 @@ public class SemanticAction {
     }
 
     private void fiftySix() {
-        generate("procbegin", "main");
+        generate("PROCBEGIN", "main");
         globalStore = quads.getNextQuad();
         // the underscore as the second arguement in generate
         // is a placeholder that will be filled in later by backpatch
@@ -429,7 +430,7 @@ public class SemanticAction {
         String[] quadEntry = new String[operands.length + 1];
         quadEntry[0] = tviCode;
 
-        for (int i = 0; i < operands.length; i++) {
+        for (int i = 1; i < operands.length; i++) {
             SymbolTableEntry operand = operands[i];
             quadEntry[i] = getSTEPrefix(operand) + getSTEAddress(operand);
         }
@@ -499,8 +500,10 @@ public class SemanticAction {
      * @return 0-3 based on relationship
      */
     private int typeCheck(SymbolTableEntry id1, SymbolTableEntry id2) {
-        boolean int1 = id1.getType() == TokenType.INTEGER;
-        boolean int2 = id2.getType() == TokenType.INTEGER;
+        TokenType type1 = id1.getType();
+        TokenType type2 = id2.getType();
+        boolean int1 = type1 == TokenType.INTEGER || type1 == TokenType.INTCONSTANT;
+        boolean int2 = type2 == TokenType.INTEGER || type2 == TokenType.INTCONSTANT;
 
         if (int1 && int2)
             return 0;
@@ -539,12 +542,12 @@ public class SemanticAction {
     private void backpatch(int i, int x) {
         String field = quads.getField(i, 1);
         // Find where the address starts, prefixes are of variable length
-        int j;
-        for (j = 0; j < field.length(); j++) {
-            if (Character.isDigit(field.charAt(i)))
-                break;
-        }
-        field = field.replace(field.substring(j), Integer.toString(x));
+//        int j;
+//        for (j = 0; j < field.length(); j++) {
+//            if (Character.isDigit(field.charAt(j)))
+//                break;
+//        }
+        field += Integer.toString(i);
         quads.setField(i, 1, field);
     }
 
@@ -607,6 +610,10 @@ public class SemanticAction {
 
     public Stack<Token> getTokenStack() {
         return tokenStack;
+    }
+
+    public Stack<SymbolTableEntry> getSteStack(){
+        return steStack;
     }
 
     public Quadruples getQuads() {

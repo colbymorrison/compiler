@@ -43,8 +43,7 @@ public class Quadruples {
 
     public String getInterCode() {
         int quadLabel = 1;
-        String separator;
-        StringBuilder builder = new StringBuilder("CODE");
+        StringBuilder builder = new StringBuilder("CODE\n");
 
 
         Enumeration<String[]> e = this.Quadruple.elements();
@@ -52,16 +51,13 @@ public class Quadruples {
 
         while (e.hasMoreElements()) {
             String[] quad = e.nextElement();
-            builder.append(quadLabel).append(":  ").append(quad[0]).append("\n");
+            builder.append(quadLabel).append(":  ").append(quad[0]);
 
-            if (quad[1] != null)
-                builder.append(" ").append(quad[1]).append("\n");
+            if (quad.length > 1)
+                builder.append(" ").append(quad[1]);
 
-            if (quad[2] != null)
-                builder.append(", ").append(quad[2]).append("\n");
-
-            if (quad[3] != null)
-                builder.append(", ").append(quad[3]).append("\n");
+            for(int i = 2; i < quad.length; i++)
+                builder.append(", ").append(quad[2]);
 
             builder.append("\n");
             quadLabel++;
