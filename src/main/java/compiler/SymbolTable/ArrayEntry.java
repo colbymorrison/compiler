@@ -13,8 +13,9 @@ public class ArrayEntry extends SymbolTableEntry {
         return true;
     }
 
-    public ArrayEntry(String name, TokenType type, int upBound, int lowBound, boolean isGlobal) {
-        super(name, isGlobal);
+    public ArrayEntry(String name, TokenType type, int upBound, int lowBound) {
+        super(name);
+        this.type = type;
         this.upBound = upBound;
         this.lowBound = lowBound;
     }

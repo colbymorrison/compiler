@@ -1,6 +1,7 @@
 package compiler.Test;
 
 import compiler.Exception.CompilerError;
+import compiler.Exception.SemanticError;
 import compiler.Lexer.Lexer;
 import compiler.Parser.Parser;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ParserTest {
 
@@ -25,7 +27,9 @@ class ParserTest {
 
         String basePath = resPath + "SemAct2";
         for (File f : Objects.requireNonNull(new File(basePath + "/in").listFiles())) {
-            if(f.getName().equals("phase2-1_ns.vas" )) {
+            String name = f.getName();
+            // 1 & 6 should work
+            if(name.equals("phase2-6_ns.vas" ) || name.equals("phase2-1_ns.vas")) {
                 System.out.println("---------------------------");
                 System.out.println(f.getName());
 
@@ -38,13 +42,23 @@ class ParserTest {
 
                 assertArrayEquals(generatedCodes, testCodes);
             }
+            // Others throw an error
+            else{
+                try {
+                    getCodes(f);
+                }
+                catch(SemanticError e){
+                    System.out.println(e.getMessage());
+                }
+                assertThrows(SemanticError.class, () -> getCodes(f));
+            }
         }
     }
 
     // Runs parser and returns generated intermediate code
-    private String[] getCodes(File f) throws CompilerError, IOException {
+    private String[] getCodes(File f) throws CompilerError {
         Lexer lexer = new Lexer(f.getAbsolutePath());
-        Parser parser = new Parser(lexer, true);
+        Parser parser = new Parser(lexer, false);
         String intCode = parser.parse();
         System.out.println(intCode);
 

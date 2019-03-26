@@ -31,23 +31,23 @@ public class SemanticAction {
         // Add dummy quad
         quads.add(new String[]{null, null, null, null});
         try {
-            SymbolTableEntry entry = new ProcedureEntry("READ", 0, new ArrayList<>(), true);
+            SymbolTableEntry entry = new ProcedureEntry("READ", 0, new ArrayList<>());
             entry.setReserved(true);
             globalTable.insert(entry);
 
-            entry = new ProcedureEntry("WRITE", 0, new ArrayList<>(), true);
+            entry = new ProcedureEntry("WRITE", 0, new ArrayList<>());
             entry.setReserved(true);
             globalTable.insert(entry);
 
-            entry = new ProcedureEntry("MAIN", 0, new ArrayList<>(), true);
+            entry = new ProcedureEntry("MAIN", 0, new ArrayList<>());
             entry.setReserved(true);
             globalTable.insert(entry);
 
-            entry = new IODeviceEntry("INPUT", true);
+            entry = new IODeviceEntry("INPUT");
             entry.setReserved(true);
             globalTable.insert(entry);
 
-            entry = new IODeviceEntry("OUTPUT", true);
+            entry = new IODeviceEntry("OUTPUT");
             entry.setReserved(true);
             globalTable.insert(entry);
         } catch (SymbolTableError e) {
@@ -153,13 +153,13 @@ public class SemanticAction {
             String name = tokenStack.pop().getValue().toString();
             // Create array or variable entry
             entry = array
-                    ? new ArrayEntry(name, type, upperBound, lowerBound, global)
-                    : new VariableEntry(name, type, global);
+                    ? new ArrayEntry(name, type, upperBound, lowerBound)
+                    : new VariableEntry(name, type);
 
             // Add to local or global symbol table
             if (global) {
-             //   entry.setGlobal(true);
-                entry.setAddress(globalMemory);
+                //   entry.setGlobal(true);
+                entry.setAddress(-1 * globalMemory);
                 globalTable.insert(entry);
                 globalMemory += memorySize;
             } else {
@@ -183,7 +183,7 @@ public class SemanticAction {
         tokenStack.pop();
         Token id3 = tokenStack.pop();
 
-        SymbolTableEntry entry = new ProcedureEntry(id3.toString(), 0, new ArrayList<>(), true);
+        SymbolTableEntry entry = new ProcedureEntry(id3.toString(), 0, new ArrayList<>());
         entry.setReserved(true);
         globalTable.insert(entry);
         insert = false;
@@ -297,7 +297,8 @@ public class SemanticAction {
 
         if (typeCheck(id1, id2) != 0 && (opcode.equals("DIV") || opcode.equals("MOD"))) {
             // MOD and DIV require integer operands
-            throw SemanticError.badParameter(operator);
+            throw SemanticError.badParameter("Operands of the " + opcode.toLowerCase() +
+                    " operator must both be integers", operator);
         }
 
         if (typeCheck(id1, id2) == 0) {
@@ -357,7 +358,7 @@ public class SemanticAction {
             SymbolTableEntry id = constantTable.search(token.getValue().toString());
             // if token is not found
             if (id == null) {
-                id = new ConstantEntry(token.getValue().toString(), token.getType(), global);
+                id = new ConstantEntry(token.getValue().toString(), token.getType());
                 constantTable.insert(id);
             }
             steStack.push(id);
@@ -378,8 +379,8 @@ public class SemanticAction {
 
     private void fiftyFive() {
         backpatch(globalStore, globalMemory);
-        generate("free", "&" + globalMemory);
-        generate("procend");
+        generate("free", Integer.toString(globalMemory));
+        generate("PROCEND");
     }
 
     private void fiftySix() {
@@ -389,7 +390,6 @@ public class SemanticAction {
         // is a placeholder that will be filled in later by backpatch
         generate("alloc", "_");
     }
-
 
 
     /**
@@ -403,7 +403,7 @@ public class SemanticAction {
         if (ste.isArray() || ste.isVariable()) {
             // array entries and variable entries are
             // assigned address when they are initialized
-            address = ste.getAddress();
+            address = Math.abs(ste.getAddress());
         } else if (ste.isConstant()) {
             // constants do not have an address, and a
             // temporary variable must be created to store it
@@ -412,18 +412,21 @@ public class SemanticAction {
             // move the constant into the temporary variable
             generate("move", ste.getName(), temp);
             // return the address of the temporary variable
-            address = temp.getAddress();
+            address = Math.abs(temp.getAddress());
         }
         return address;
     }
 
     private String getSTEPrefix(SymbolTableEntry ste) {
-        if (ste.isParameter())
-            return "^%";
-        else if (ste.isGlobal())
+        if (global) {
             return "_";
-        else
-            return "%";
+        } else { // local
+            SymbolTableEntry entry = localTable.search(ste.getName());
+            if (entry == null)  // entry is a global variable
+                return "_";
+            else
+                return "%";
+        }
     }
 
 
@@ -480,11 +483,10 @@ public class SemanticAction {
     private VariableEntry createTemp(TokenType type) throws SymbolTableError {
         tempCt++;
 
-        VariableEntry ve = new VariableEntry("$$temp" + tempCt, type, global);
-//        ve.setGlobal(global);
+        VariableEntry ve = new VariableEntry("$$temp" + tempCt, type);
         // Global or local?
         if (global) {
-            ve.setAddress(globalMemory);
+            ve.setAddress(-1 * globalMemory);
             globalMemory++;
             globalTable.insert(ve);
         } else {
@@ -543,15 +545,7 @@ public class SemanticAction {
      * @param x address to insert.
      */
     private void backpatch(int i, int x) {
-        String field = quads.get(i)[1];
-        // Find where the address starts, prefixes are of variable length
-//        int j;
-//        for (j = 0; j < field.length(); j++) {
-//            if (Character.isDigit(field.charAt(j)))
-//                break;
-//        }
-        field += Integer.toString(i);
-        quads.get(i)[1] = field;
+        quads.get(i)[1] = Integer.toString(x);
     }
 
     /**
@@ -565,7 +559,6 @@ public class SemanticAction {
 
         switch (opToken.getType()) {
             case ADDOP:
-                // TODO look over possible values for ADDOP & MULOP
                 int value = (int) opToken.getValue();
                 if (value == 1)
                     opcode = "add";
@@ -599,20 +592,21 @@ public class SemanticAction {
 
     /**
      * Gets the intermediate code from quads in a pretty format
+     *
      * @return String representation of generated intermediate code
      */
     public String getInterCode() {
         StringBuilder out = new StringBuilder("CODE\n");
 
-        for(int i = 1; i < quads.size(); i++) {
+        for (int i = 1; i < quads.size(); i++) {
             String[] quad = quads.get(i);
             out.append(i).append(":  ").append(quad[0]);
 
             if (quad.length > 1)
                 out.append(" ").append(quad[1]);
 
-            for(int j = 2; j < quad.length; j++)
-                out.append(", ").append(quad[2]);
+            for (int j = 2; j < quad.length; j++)
+                out.append(", ").append(quad[j]);
 
             out.append("\n");
         }
@@ -637,7 +631,7 @@ public class SemanticAction {
         return tokenStack;
     }
 
-    public Stack<SymbolTableEntry> getSteStack(){
+    public Stack<SymbolTableEntry> getSteStack() {
         return steStack;
     }
 

@@ -42,4 +42,7 @@ gradle-app.setting
 # gradle/wrapper/gradle-wrapper.properties
 # Created by .ignore support plugin (hsz.mobi)
 
+# Intellij files
 compiler.iml
+.attach*
+

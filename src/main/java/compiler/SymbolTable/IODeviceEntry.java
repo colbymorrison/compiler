@@ -1,8 +1,8 @@
 package compiler.SymbolTable;
 
 public class IODeviceEntry extends SymbolTableEntry{
-    public IODeviceEntry(String name, boolean isGlobal) {
-        super(name, isGlobal);
+    public IODeviceEntry(String name) {
+        super(name);
     }
 
     public String toString(){

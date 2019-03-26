@@ -7,8 +7,8 @@ public class VariableEntry extends SymbolTableEntry{
     private TokenType type;
 
 
-    public VariableEntry(String name, TokenType type, boolean isGlobal) {
-        super(name, isGlobal);
+    public VariableEntry(String name, TokenType type) {
+        super(name);
         this.type = type;
     }
 
