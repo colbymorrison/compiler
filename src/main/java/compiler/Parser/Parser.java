@@ -111,7 +111,7 @@ public class Parser {
         if (!errors.isEmpty())
             throw new ParserError(errors);
         // Otherwise get the generated intermediate code
-        return action.getQuads().getInterCode();
+        return action.getInterCode();
     }
 
     /**

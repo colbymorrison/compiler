@@ -14,7 +14,8 @@ public class SemanticAction {
     private final SymbolTable localTable = new SymbolTable(20);
     private final Stack<Token> tokenStack = new Stack<>();
     private final Stack<SymbolTableEntry> steStack = new Stack<>();
-    private final Quadruples quads = new Quadruples();
+   // private final Quadruples quads = new Quadruples();
+    private ArrayList<String[]> quads = new ArrayList<>();
     private boolean insert = true;
     private final boolean global = true;
     private boolean array = false;
@@ -27,6 +28,8 @@ public class SemanticAction {
      * Constructor, insert default entries into global table
      */
     public SemanticAction() {
+        // Add dummy quad
+        quads.add(new String[]{null, null, null, null});
         try {
             SymbolTableEntry entry = new ProcedureEntry("READ", 0, new ArrayList<>(), true);
             entry.setReserved(true);
@@ -381,7 +384,7 @@ public class SemanticAction {
 
     private void fiftySix() {
         generate("PROCBEGIN", "main");
-        globalStore = quads.getNextQuad();
+        globalStore = quads.size();
         // the underscore as the second arguement in generate
         // is a placeholder that will be filled in later by backpatch
         generate("alloc", "_");
@@ -434,7 +437,7 @@ public class SemanticAction {
             SymbolTableEntry operand = operands[i];
             quadEntry[i] = getSTEPrefix(operand) + getSTEAddress(operand);
         }
-        quads.addQuad(quadEntry);
+        quads.add(quadEntry);
     }
 
     private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2, SymbolTableEntry operand3) throws SymbolTableError {
@@ -446,15 +449,15 @@ public class SemanticAction {
     }
 
     private void generate(String tviCode, String operand1) {
-        quads.addQuad(new String[]{tviCode, operand1});
+        quads.add(new String[]{tviCode, operand1});
     }
 
     private void generate(String tviCode, String operand1, String operand2) {
-        quads.addQuad(new String[]{tviCode, operand1, operand2});
+        quads.add(new String[]{tviCode, operand1, operand2});
     }
 
     private void generate(String tviCode) {
-        quads.addQuad(new String[]{tviCode});
+        quads.add(new String[]{tviCode});
     }
 
     private void generate(String tviCode, String operand1, SymbolTableEntry operand2) throws SymbolTableError {
@@ -462,7 +465,7 @@ public class SemanticAction {
         quadEntry[0] = tviCode;
         quadEntry[1] = operand1;
         quadEntry[2] = getSTEPrefix(operand2) + getSTEAddress(operand2);
-        quads.addQuad(quadEntry);
+        quads.add(quadEntry);
     }
 
     // Helper methods
@@ -540,7 +543,7 @@ public class SemanticAction {
      * @param x address to insert.
      */
     private void backpatch(int i, int x) {
-        String field = quads.getField(i, 1);
+        String field = quads.get(i)[1];
         // Find where the address starts, prefixes are of variable length
 //        int j;
 //        for (j = 0; j < field.length(); j++) {
@@ -548,7 +551,7 @@ public class SemanticAction {
 //                break;
 //        }
         field += Integer.toString(i);
-        quads.setField(i, 1, field);
+        quads.get(i)[1] = field;
     }
 
     /**
@@ -594,6 +597,28 @@ public class SemanticAction {
         return opcode;
     }
 
+    /**
+     * Gets the intermediate code from quads in a pretty format
+     * @return String representation of generated intermediate code
+     */
+    public String getInterCode() {
+        StringBuilder out = new StringBuilder("CODE\n");
+
+        for(int i = 1; i < quads.size(); i++) {
+            String[] quad = quads.get(i);
+            out.append(i).append(":  ").append(quad[0]);
+
+            if (quad.length > 1)
+                out.append(" ").append(quad[1]);
+
+            for(int j = 2; j < quad.length; j++)
+                out.append(", ").append(quad[2]);
+
+            out.append("\n");
+        }
+        return out.toString();
+    }
+
     // Getters
     public SymbolTable getGlobalTable() {
         return globalTable;
@@ -616,7 +641,4 @@ public class SemanticAction {
         return steStack;
     }
 
-    public Quadruples getQuads() {
-        return quads;
-    }
 }
