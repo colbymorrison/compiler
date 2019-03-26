@@ -44,7 +44,7 @@ class ParserTest {
     // Runs parser and returns generated intermediate code
     private String[] getCodes(File f) throws CompilerError, IOException {
         Lexer lexer = new Lexer(f.getAbsolutePath());
-        Parser parser = new Parser(lexer, false);
+        Parser parser = new Parser(lexer, true);
         String intCode = parser.parse();
         System.out.println(intCode);
 

@@ -1,5 +1,6 @@
 package compiler.SemanticAction;
 
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -37,6 +38,7 @@ public class Quadruples {
     }
 
     public void addQuad(String[] quad) {
+        System.out.println("Adding quad " + Arrays.toString(quad));
         Quadruple.add(nextQuad, quad);
         nextQuad++;
     }

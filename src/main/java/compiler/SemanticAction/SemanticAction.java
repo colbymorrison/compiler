@@ -430,9 +430,9 @@ public class SemanticAction {
         String[] quadEntry = new String[operands.length + 1];
         quadEntry[0] = tviCode;
 
-        for (int i = 1; i < operands.length; i++) {
+        for (int i = 0; i < operands.length; i++) {
             SymbolTableEntry operand = operands[i];
-            quadEntry[i] = getSTEPrefix(operand) + getSTEAddress(operand);
+            quadEntry[i + 1] = getSTEPrefix(operand) + getSTEAddress(operand);
         }
         quads.addQuad(quadEntry);
     }
