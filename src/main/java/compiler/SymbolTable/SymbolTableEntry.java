@@ -8,14 +8,12 @@ import compiler.Lexer.TokenType;
 public abstract class SymbolTableEntry {
     String name;
     private boolean reserved;
-    private boolean isGlobal;
 
     SymbolTableEntry() {
     }
 
-    SymbolTableEntry(String name, boolean isGlobal) {
+    SymbolTableEntry(String name) {
         this.name = name;
-        this.isGlobal = isGlobal;
     }
 
     public boolean isVariable() {
@@ -53,14 +51,6 @@ public abstract class SymbolTableEntry {
         this.reserved = res;
     }
 
-    public boolean isGlobal() {
-        return isGlobal;
-    }
-
-    public void setGlobal(boolean global) {
-        isGlobal = global;
-    }
-
     public String getName() {
         return name;
     }
@@ -69,6 +59,7 @@ public abstract class SymbolTableEntry {
         return null;
     }
 
+    // Will be overridden by STEs that have addresses
     public int getAddress(){
         return 0;
     }

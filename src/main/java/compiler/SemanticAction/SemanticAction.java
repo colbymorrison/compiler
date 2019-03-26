@@ -14,7 +14,7 @@ public class SemanticAction {
     private final SymbolTable localTable = new SymbolTable(20);
     private final Stack<Token> tokenStack = new Stack<>();
     private final Stack<SymbolTableEntry> steStack = new Stack<>();
-   // private final Quadruples quads = new Quadruples();
+    // List of quadruples, which we represent as string arrays
     private ArrayList<String[]> quads = new ArrayList<>();
     private boolean insert = true;
     private final boolean global = true;
@@ -158,12 +158,12 @@ public class SemanticAction {
 
             // Add to local or global symbol table
             if (global) {
-                entry.setGlobal(true);
+             //   entry.setGlobal(true);
                 entry.setAddress(globalMemory);
                 globalTable.insert(entry);
                 globalMemory += memorySize;
             } else {
-                entry.setGlobal(false);
+//                entry.setGlobal(false);
                 entry.setAddress(localMemory);
                 localTable.insert(entry);
                 localMemory += memorySize;
@@ -481,7 +481,7 @@ public class SemanticAction {
         tempCt++;
 
         VariableEntry ve = new VariableEntry("$$temp" + tempCt, type, global);
-        ve.setGlobal(global);
+//        ve.setGlobal(global);
         // Global or local?
         if (global) {
             ve.setAddress(globalMemory);
