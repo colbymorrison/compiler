@@ -246,6 +246,7 @@ public class SemanticAction {
         Token sign = tokenStack.pop();
         if (sign.getType() == TokenType.UNARYMINUS) {
             VariableEntry temp = createTemp(id.getType());
+            // Integer or float?
             if (id.getType() == TokenType.INTEGER) {
                 generate("uminus", id, temp);
             } else {
@@ -278,7 +279,7 @@ public class SemanticAction {
     }
 
     /**
-     * Evaluate simple expressions
+     * Evaluate arithmetic expressions
      *
      * @throws SymbolTableError
      * @throws SemanticError
@@ -300,6 +301,7 @@ public class SemanticAction {
 
         // Are id1 and id2 both integers?
         if (typeCheck(id1, id2) == 0) {
+            // Handle MOD and DIV keywords
             if (opcode.equals("MOD")) {
                 VariableEntry temp1 = createTemp(TokenType.INTEGER);
                 VariableEntry temp2 = createTemp(TokenType.INTEGER);
@@ -317,6 +319,7 @@ public class SemanticAction {
                 generate("fdiv", temp1, temp2, temp3);
                 steStack.push(temp3);
             } else {
+                // Generate for 2 integers
                 VariableEntry temp = createTemp(TokenType.INTEGER);
                 generate(opcode, id1, id2, temp);
                 steStack.push(temp);
@@ -328,15 +331,16 @@ public class SemanticAction {
 
     /**
      * Helper function for actions 45 and 46, their final else case is the same code.
-     * Performs an operation when either id1 or id2 are not integers.
+     * Performs an operation when either id1 or id2 is not an integer.
      * @throws SymbolTableError
      */
     private void checkAdd(SymbolTableEntry id1, SymbolTableEntry id2, String opcode) throws SymbolTableError{
+        // id1 and id2 are both reals
         if (typeCheck(id1, id2) == 1) {
             VariableEntry temp = createTemp(TokenType.REAL);
             generate("f" + opcode, id1, id2, temp);
             steStack.push(temp);
-        } else {
+        } else { // id1 and id2 are different types of numbers
             VariableEntry temp1 = createTemp(TokenType.REAL);
             VariableEntry temp2 = createTemp(TokenType.REAL);
             generate("ltof", id2, temp1);
@@ -375,11 +379,14 @@ public class SemanticAction {
 
     }
 
+    /**
+     * Semantic action 48
+     */
     private void fourtyEight() throws SymbolTableError {
         // offset will be implemented in later actions
         SymbolTableEntry offset = null;
         if (offset != null) {
-            SymbolTableEntry id = steStack.pop(); // IS THIS RIGHT??? I think 48 only gets called when top stack is type id
+            SymbolTableEntry id = steStack.pop();
             VariableEntry temp = createTemp(id.getType());
             generate("load", id, offset, temp);
             steStack.push(temp);
@@ -407,6 +414,7 @@ public class SemanticAction {
         generate("alloc", "_");
     }
 
+    // Helper Methods
 
     /**
      * Gets the address of a symbol table entry
@@ -454,46 +462,49 @@ public class SemanticAction {
     // Generate Methods, each of these generate a new quadruple (string array)
     // Many overloaded methods for the various parameters that generate could be called on
 
-    private void generate(String tviCode, SymbolTableEntry[] operands) throws SymbolTableError {
+    /**
+     * Universal generate method. Called by other generate methods.
+     */
+    private void generate(String tviCode, String[] operands) {
         String[] quadEntry = new String[operands.length + 1];
         quadEntry[0] = tviCode;
 
-        for (int i = 0; i < operands.length; i++) {
-            SymbolTableEntry operand = operands[i];
-            quadEntry[i + 1] = getSTEPrefix(operand) + getSTEAddress(operand);
-        }
+        System.arraycopy(operands, 0, quadEntry, 1, operands.length);
+
         quads.add(quadEntry);
     }
 
     private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2, SymbolTableEntry operand3) throws SymbolTableError {
-        generate(tviCode, new SymbolTableEntry[]{operand1, operand2, operand3});
+        generate(tviCode, new String[]{steToString(operand1), steToString(operand2), steToString(operand3)});
     }
 
     private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2) throws SymbolTableError {
-        generate(tviCode, new SymbolTableEntry[]{operand1, operand2});
+        generate(tviCode, new String[]{steToString(operand1), steToString(operand2)});
     }
 
     private void generate(String tviCode, String operand1) {
-        quads.add(new String[]{tviCode, operand1});
+        generate(tviCode, new String[]{operand1});
     }
 
     private void generate(String tviCode, String operand1, String operand2) {
-        quads.add(new String[]{tviCode, operand1, operand2});
+        generate(tviCode, new String[]{operand1, operand2});
     }
 
     private void generate(String tviCode) {
-        quads.add(new String[]{tviCode});
+        generate(tviCode, new String[]{});
     }
 
     private void generate(String tviCode, String operand1, SymbolTableEntry operand2) throws SymbolTableError {
-        String[] quadEntry = new String[3];
-        quadEntry[0] = tviCode;
-        quadEntry[1] = operand1;
-        quadEntry[2] = getSTEPrefix(operand2) + getSTEAddress(operand2);
-        quads.add(quadEntry);
+        generate(tviCode, new String[]{operand1, steToString(operand2)});
     }
 
-    // Helper methods
+    /**
+     * For a symbol table entry, returns a string for the local or global address
+     * of that entry. Used by generate methods.
+     */
+    private String steToString(SymbolTableEntry ste) throws SymbolTableError {
+        return getSTEPrefix(ste) + getSTEAddress(ste);
+    }
 
     /**
      * Creates a new variable entry and inserts it into the proper symbol table.
@@ -532,10 +543,13 @@ public class SemanticAction {
         boolean int1 = type1 == TokenType.INTEGER || type1 == TokenType.INTCONSTANT;
         boolean int2 = type2 == TokenType.INTEGER || type2 == TokenType.INTCONSTANT;
 
+        // Both integers
         if (int1 && int2)
             return 0;
+            // Both reals
         else if (!int1 && !int2)
             return 1;
+            // Different types
         else if (int2)
             return 2;
         else
@@ -562,6 +576,8 @@ public class SemanticAction {
 
     /**
      * Replaces second index of quadruple with a new address.
+     * Used for when we don't know the address when the quad is
+     * generated.
      *
      * @param i index of quadruple to replace.
      * @param x address to insert.
@@ -647,7 +663,6 @@ public class SemanticAction {
     public SymbolTable getLocalTable() {
         return localTable;
     }
-
 
     public Stack<Token> getTokenStack() {
         return tokenStack;
