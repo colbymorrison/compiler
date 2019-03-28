@@ -1,7 +1,6 @@
 package compiler.Exception;
 
 import compiler.Lexer.Token;
-import compiler.Lexer.TokenType;
 
 public class SemanticError extends CompilerError {
     public SemanticError(String message) {

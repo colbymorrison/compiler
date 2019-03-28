@@ -192,6 +192,11 @@ public class SemanticAction {
         generate("exit");
     }
 
+    /**
+     * Accesses a variable in a symbol table and adds it to the stack
+     * @param token the token to look up
+     * @throws SemanticError if the token was not found in a symbol table
+     */
     private void thirty(Token token) throws SemanticError {
         SymbolTableEntry id = lookupId(token);
         if (id == null) {
@@ -267,21 +272,13 @@ public class SemanticAction {
             VariableEntry temp = createTemp(TokenType.INTEGER);
             generate(opcode, id1, id2, temp);
             steStack.push(temp);
-        } else if (typeCheck(id1, id2) == 1) {
-            VariableEntry temp = createTemp(TokenType.REAL);
-            generate("f" + opcode, id1, id2, temp);
-            steStack.push(temp);
-        } else { // IS THIS RIGHT?
-            VariableEntry temp1 = createTemp(TokenType.REAL);
-            VariableEntry temp2 = createTemp(TokenType.REAL);
-            generate("ltof", id1, temp1);
-            generate("f" + opcode, temp1, id2, temp2);
-            steStack.push(temp2);
-        }
+        } else
+           checkAdd(id1, id2, opcode);
+
     }
 
     /**
-     * Evaluate expression
+     * Evaluate simple expressions
      *
      * @throws SymbolTableError
      * @throws SemanticError
@@ -301,6 +298,7 @@ public class SemanticAction {
                     " operator must both be integers", operator);
         }
 
+        // Are id1 and id2 both integers?
         if (typeCheck(id1, id2) == 0) {
             if (opcode.equals("MOD")) {
                 VariableEntry temp1 = createTemp(TokenType.INTEGER);
@@ -323,7 +321,18 @@ public class SemanticAction {
                 generate(opcode, id1, id2, temp);
                 steStack.push(temp);
             }
-        } else if (typeCheck(id1, id2) == 1) {
+        } else
+            checkAdd(id1, id2, opcode);
+    }
+
+
+    /**
+     * Helper function for actions 45 and 46, their final else case is the same code.
+     * Performs an operation when either id1 or id2 are not integers.
+     * @throws SymbolTableError
+     */
+    private void checkAdd(SymbolTableEntry id1, SymbolTableEntry id2, String opcode) throws SymbolTableError{
+        if (typeCheck(id1, id2) == 1) {
             VariableEntry temp = createTemp(TokenType.REAL);
             generate("f" + opcode, id1, id2, temp);
             steStack.push(temp);
@@ -377,12 +386,19 @@ public class SemanticAction {
         }
     }
 
+    /**
+     * Backpatches global memory to ensure the correct amount is allocated at the start.
+     * Frees that much global memory at the end.
+     */
     private void fiftyFive() {
         backpatch(globalStore, globalMemory);
         generate("free", Integer.toString(globalMemory));
         generate("PROCEND");
     }
 
+    /**
+     * Adds the first couple instructions
+     */
     private void fiftySix() {
         generate("PROCBEGIN", "main");
         globalStore = quads.size();
@@ -393,7 +409,7 @@ public class SemanticAction {
 
 
     /**
-     * Gets the address of symbol table entry
+     * Gets the address of a symbol table entry
      *
      * @param ste array, variable, or constant entry
      * @return address of entry
@@ -417,6 +433,11 @@ public class SemanticAction {
         return address;
     }
 
+    /**
+     * Gets the prefix of a symbol table entry
+     * @param ste entry to get prefix for
+     * @return '_' for global '%' for local
+     */
     private String getSTEPrefix(SymbolTableEntry ste) {
         if (global) {
             return "_";
@@ -430,7 +451,8 @@ public class SemanticAction {
     }
 
 
-    // Generate Methods
+    // Generate Methods, each of these generate a new quadruple (string array)
+    // Many overloaded methods for the various parameters that generate could be called on
 
     private void generate(String tviCode, SymbolTableEntry[] operands) throws SymbolTableError {
         String[] quadEntry = new String[operands.length + 1];
@@ -477,7 +499,7 @@ public class SemanticAction {
      * Creates a new variable entry and inserts it into the proper symbol table.
      *
      * @param type type of variable
-     * @return the vriable entry
+     * @return the variable entry
      * @throws SymbolTableError if a variable with this name is already in the symbol table
      */
     private VariableEntry createTemp(TokenType type) throws SymbolTableError {
