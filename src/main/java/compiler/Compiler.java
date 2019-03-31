@@ -27,7 +27,7 @@ public class Compiler {
         try {
             System.out.println(parser.parse());
         } catch (CompilerError e) {
-            System.out.println(e.getMessage());
+            System.out.println("ERROR: " + e.getMessage());
         }
     }
 

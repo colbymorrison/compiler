@@ -46,5 +46,24 @@ Now debug information about the parse is not enaled by default. You have to pass
 Added Semantic Actions to the `Parser` class. This involved reading the augmented grammar file, tracking the previous token found, and adding a new case to the `parse()` function to call the appropriate semantic action. I also updated the `dumpStack()` method to print out debug info that includes semantic action info. The parser also now matches the `ENDOFFILE` token and exits when the stack is empty instead of leaving `ENDOFFILE` on the stack. 
 
 
+## Submission 4 (Semantic Action 2) Notes
+### General Notes
+Test files are in the `src/test/resources` directory. They include the lexer, parser, and semantic action-specific test files along with more general programs to test.
+
+### Semantic Action 2 Notes
+Everything seems to be working well. I chose to use 2 semantic stacks, one that holds Symbol Table Entries and another that holds Tokens to avoid a mess
+of casting every time something has to be popped. I also added some helper methods to avoid duplicate code in the semantic actions. I also ditched the
+`Quadruples` class, opting instead to use a ArrayList of String arrays held in the Semantic Actions class. The Quadruples class had only loose wrappers
+around ArrayList functions so I chose to just call them directly and moved the `print()` method into the Semantic Action class.
+
+### Changes to SymbolTableEntry
+Added a `type` field that is used by subclasses associated with a type.  
+
+### Changes to main package
+Added a `Compiler` class to drive the whole program. As of now it prints the generated intermediate code (or error message) to the screen.
+In the future I assume we'll want to write the intermediate code to a file. 
+
+
+
 
  
