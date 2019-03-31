@@ -58,7 +58,6 @@ public class Token<T> {
         return "['" + type + "', " + val + "]";
     }
 
-//TODO add this functionality
     public int getCol() {
         return col;
     }
