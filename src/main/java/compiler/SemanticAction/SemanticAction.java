@@ -30,6 +30,7 @@ public class SemanticAction {
     public SemanticAction() {
         // Add dummy quad
         quads.add(new String[]{null, null, null, null});
+        // Insert reserved words into the global table
         try {
             SymbolTableEntry entry = new ProcedureEntry("READ", 0, new ArrayList<>());
             entry.setReserved(true);
@@ -114,7 +115,7 @@ public class SemanticAction {
                 fourtyFive();
                 break;
             case 46:
-                fourtySix(prevToken); // WHICH TOKEN whos to say?
+                fourtySix(prevToken);
                 break;
             case 48:
                 fourtyEight();
@@ -158,12 +159,10 @@ public class SemanticAction {
 
             // Add to local or global symbol table
             if (global) {
-                //   entry.setGlobal(true);
                 entry.setAddress(-1 * globalMemory);
                 globalTable.insert(entry);
                 globalMemory += memorySize;
             } else {
-//                entry.setGlobal(false);
                 entry.setAddress(localMemory);
                 localTable.insert(entry);
                 localMemory += memorySize;
@@ -192,6 +191,11 @@ public class SemanticAction {
         generate("exit");
     }
 
+    /**
+     * Check to see if a variable has been declared
+     * @param token identifier variable
+     * @throws SemanticError if the variable has not been declared
+     */
     private void thirty(Token token) throws SemanticError {
         SymbolTableEntry id = lookupId(token);
         if (id == null) {
