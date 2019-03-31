@@ -158,12 +158,10 @@ public class SemanticAction {
 
             // Add to local or global symbol table
             if (global) {
-                //   entry.setGlobal(true);
                 entry.setAddress(-1 * globalMemory);
                 globalTable.insert(entry);
                 globalMemory += memorySize;
             } else {
-//                entry.setGlobal(false);
                 entry.setAddress(localMemory);
                 localTable.insert(entry);
                 localMemory += memorySize;
@@ -467,19 +465,21 @@ public class SemanticAction {
      */
     private void generate(String tviCode, String[] operands) {
         String[] quadEntry = new String[operands.length + 1];
+        // First entry is code
         quadEntry[0] = tviCode;
 
+        // Copy array passed in to rest of quad entries
         System.arraycopy(operands, 0, quadEntry, 1, operands.length);
 
         quads.add(quadEntry);
     }
 
     private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2, SymbolTableEntry operand3) throws SymbolTableError {
-        generate(tviCode, new String[]{steToString(operand1), steToString(operand2), steToString(operand3)});
+        generate(tviCode, new String[]{steAddr(operand1), steAddr(operand2), steAddr(operand3)});
     }
 
     private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2) throws SymbolTableError {
-        generate(tviCode, new String[]{steToString(operand1), steToString(operand2)});
+        generate(tviCode, new String[]{steAddr(operand1), steAddr(operand2)});
     }
 
     private void generate(String tviCode, String operand1) {
@@ -495,14 +495,14 @@ public class SemanticAction {
     }
 
     private void generate(String tviCode, String operand1, SymbolTableEntry operand2) throws SymbolTableError {
-        generate(tviCode, new String[]{operand1, steToString(operand2)});
+        generate(tviCode, new String[]{operand1, steAddr(operand2)});
     }
 
     /**
      * For a symbol table entry, returns a string for the local or global address
      * of that entry. Used by generate methods.
      */
-    private String steToString(SymbolTableEntry ste) throws SymbolTableError {
+    private String steAddr(SymbolTableEntry ste) throws SymbolTableError {
         return getSTEPrefix(ste) + getSTEAddress(ste);
     }
 
@@ -546,10 +546,10 @@ public class SemanticAction {
         // Both integers
         if (int1 && int2)
             return 0;
-            // Both reals
+        // Both reals
         else if (!int1 && !int2)
             return 1;
-            // Different types
+        // Different types
         else if (int2)
             return 2;
         else
