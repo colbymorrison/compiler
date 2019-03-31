@@ -28,11 +28,10 @@ class ParserTest {
         String basePath = resPath + "SemAct2";
         for (File f : Objects.requireNonNull(new File(basePath + "/in").listFiles())) {
             String name = f.getName();
+            System.out.println("---------------------------");
+            System.out.println(f.getName());
             // 1 & 6 should work
             if(name.equals("phase2-6_ns.vas" ) || name.equals("phase2-1_ns.vas")) {
-                System.out.println("---------------------------");
-                System.out.println(f.getName());
-
                 String[] generatedCodes = getCodes(f);
 
                 // Read test file to get codes to check against

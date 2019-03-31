@@ -7,6 +7,7 @@ import compiler.Lexer.TokenType;
  */
 public abstract class SymbolTableEntry {
     String name;
+    TokenType type;
     private boolean reserved;
 
     SymbolTableEntry(String name) {
@@ -53,7 +54,7 @@ public abstract class SymbolTableEntry {
     }
 
     public TokenType getType(){
-        return null;
+        return type;
     }
 
     // Will be overridden by STEs that have addresses

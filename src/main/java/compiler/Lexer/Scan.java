@@ -2,8 +2,6 @@ package compiler.Lexer;
 
 import java.io.*;
 
-import compiler.Exception.LexerError;
-
 /**
  * This class scans input and returns the next non-comment character in the file
  * and keeps track of the current row and column.

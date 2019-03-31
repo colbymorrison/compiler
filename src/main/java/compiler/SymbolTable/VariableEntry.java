@@ -4,8 +4,6 @@ import compiler.Lexer.TokenType;
 
 public class VariableEntry extends SymbolTableEntry{
     private int address;
-    private TokenType type;
-
 
     public VariableEntry(String name, TokenType type) {
         super(name);
@@ -20,11 +18,6 @@ public class VariableEntry extends SymbolTableEntry{
     @Override
     public int getAddress() {
         return address;
-    }
-
-    @Override
-    public TokenType getType(){
-        return type;
     }
 
     @Override

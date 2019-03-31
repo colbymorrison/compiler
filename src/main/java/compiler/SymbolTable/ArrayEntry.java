@@ -6,7 +6,6 @@ public class ArrayEntry extends SymbolTableEntry {
     private int upBound;
     private int lowBound;
     private int address;
-    private TokenType type;
 
     @Override
     public boolean isArray() {
@@ -28,11 +27,6 @@ public class ArrayEntry extends SymbolTableEntry {
     @Override
     public int getAddress() {
         return address;
-    }
-
-    @Override
-    public TokenType getType(){
-        return type;
     }
 
     public String toString() {
