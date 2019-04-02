@@ -108,7 +108,7 @@ public class SemanticAction {
                 fourtyThree();
                 break;
             case 44:
-                stack.push(prevToken);
+                fourtyFour(prevToken);
                 break;
             case 45:
                 fourtyFive();
@@ -117,7 +117,7 @@ public class SemanticAction {
                 fourtySix(prevToken);
                 break;
             case 48:
-                fourtyEight();
+                fourtyEight(prevToken);
                 break;
             case 55:
                 fiftyFive();
@@ -192,6 +192,7 @@ public class SemanticAction {
 
     /**
      * Check to see if a variable has been declared
+     *
      * @param token identifier variable
      * @throws SemanticError if the variable has not been declared
      */
@@ -212,13 +213,7 @@ public class SemanticAction {
      * @throws SemanticError    if there is a type mismatch
      */
     private void thirtyOne(Token token) throws SymbolTableError, SemanticError {
-        EType eType = (EType) stack.pop();
-
-        if(stack.pop() != EType.ARITHMETIC){
-            throw SemanticError.eTypeError(eType);
-        }
-
-        SymbolTableEntry id2 = (SymbolTableEntry) stack.pop();
+        SymbolTableEntry id2 =  checkEType();
         // offset will be implemented in later actions
         SymbolTableEntry offset = (SymbolTableEntry) stack.pop();
         SymbolTableEntry id1 = (SymbolTableEntry) stack.pop();
@@ -248,13 +243,7 @@ public class SemanticAction {
      * @throws SymbolTableError
      */
     private void fourtyOne() throws SymbolTableError, SemanticError {
-        EType eType = (EType) stack.pop();
-
-        if(stack.pop() != EType.ARITHMETIC){
-            throw SemanticError.eTypeError(eType);
-        }
-
-        SymbolTableEntry id = (SymbolTableEntry) stack.pop();
+        SymbolTableEntry id =  checkEType();
         Token sign = (Token) stack.pop();
 
         // If the operator is uminus, create a temp var to store the result
@@ -273,19 +262,32 @@ public class SemanticAction {
         stack.push(EType.ARITHMETIC);
     }
 
-    private void fourtyTwo(Token token)  throws SemanticError{
+    /**
+     * Helper function for actions 31 and 41 to avoid duplicate code
+     * @return Symbol table entry from stack if EType.ARITHMETIC was on stack before
+     * @throws SemanticError if top of stack is not EType.ARITHMETIC
+     */
+    private SymbolTableEntry checkEType() throws SemanticError{
+        EType eType = (EType) stack.pop();
+
+        if (stack.pop() != EType.ARITHMETIC)
+            throw SemanticError.eTypeError(eType);
+
+        return (SymbolTableEntry) stack.pop();
+    }
+
+    private void fourtyTwo(Token token) throws SemanticError {
         EType etype = (EType) stack.pop();
 
-        if (token.getType() == TokenType.ADDOP && (int) token.getValue() == 1 ) { // TODO GUESS DO RIGHT FOR OR
+        if (getOpCode(token).equals("or")) {
             if (etype != EType.RELATIONAL)
-                throw  SemanticError.eTypeError(etype);
+                throw SemanticError.eTypeError(etype);
             // the top of the stack should be a list of integers
             List<Integer> EFalse = (List<Integer>) stack.peek();
             backpatch(EFalse, quads.size()); // TODO write new backpatch
-        }
-        else {
+        } else {
             if (etype != EType.ARITHMETIC)
-                throw  SemanticError.eTypeError(etype);
+                throw SemanticError.eTypeError(etype);
         }
 
         // the token should be an operator
@@ -296,22 +298,51 @@ public class SemanticAction {
      * Evaluate addition, subtraction, and OR
      */
     private void fourtyThree() throws SymbolTableError {
-        SymbolTableEntry id2 = (SymbolTableEntry) stack.pop();
-        // this is one place where the operator from action 42 is popped
-        Token operator = (Token) stack.pop();
-        // get the TVI opcode associated with the operator token
-        // ex. for a token representing addition, opcode would be "add"
-        String opcode = getOpCode(operator);
-        SymbolTableEntry id1 = (SymbolTableEntry) stack.pop();
+        EType etype = (EType) stack.pop();
+        if (etype == EType.RELATIONAL) {
+            eTrueFalse();
+        } else { // if etype == EType.ARITHMETIC
 
-        // Both integers?
-        if (typeCheck(id1, id2) == 0) {
-            VariableEntry temp = createTemp(TokenType.INTEGER);
-            generate(opcode, id1, id2, temp);
-            stack.push(temp);
-        } else
-           checkAdd(id1, id2, opcode);
+            SymbolTableEntry id2 = (SymbolTableEntry) stack.pop();
+            // this is one place where the operator from action 42 is popped
+            Token operator = (Token) stack.pop();
+            // get the TVI opcode associated with the operator token
+            // ex. for a token representing addition, opcode would be "add"
+            String opcode = getOpCode(operator);
+            SymbolTableEntry id1 = (SymbolTableEntry) stack.pop();
 
+            // Both integers?
+            if (typeCheck(id1, id2) == 0) {
+                VariableEntry temp = createTemp(TokenType.INTEGER);
+                generate(opcode, id1, id2, temp);
+                stack.push(temp);
+            } else
+                checkAdd(id1, id2, opcode);
+        }
+        stack.push(EType.ARITHMETIC);
+    }
+
+    private void fourtyFour(Token token) {
+        if (stack.pop() == EType.RELATIONAL)
+           eTrueFalse();
+
+        stack.push(token);
+    }
+
+    /**
+     * Helper method for actions 43 and 44 to avoid duplicate code;
+     */
+    private void eTrueFalse(){
+        List<Integer> E2False = (List<Integer>) stack.pop();
+        List<Integer> E2True = (List<Integer>) stack.pop();
+        stack.pop();
+        stack.pop();
+        List<Integer> E1True = (List<Integer>) stack.pop();
+
+        List<Integer> ETrue = merge(E1True, E2True);
+        stack.push(ETrue);
+        stack.push(E2False);
+        stack.push(EType.RELATIONAL);
     }
 
     /**
@@ -321,56 +352,75 @@ public class SemanticAction {
      * @throws SemanticError
      */
     private void fourtyFive() throws SymbolTableError, SemanticError {
-        // Pushed in #46
-        SymbolTableEntry id2 = (SymbolTableEntry) stack.pop();
-        // Pushed in #44
-        Token operator = (Token) stack.pop();
-        // Pushed in #46
-        String opcode = getOpCode(operator);
-        SymbolTableEntry id1 = (SymbolTableEntry) stack.pop();
+        EType etype = (EType) stack.pop();
+        if (etype == EType.RELATIONAL) {
+            List<Integer> E2False = (List<Integer>) stack.pop();
+            List<Integer> E2True = (List<Integer>) stack.pop();
+            Token operator = (Token) stack.pop();
 
-        if (typeCheck(id1, id2) != 0 && (opcode.equals("DIV") || opcode.equals("MOD"))) {
-            // MOD and DIV require integer operands
-            throw SemanticError.badParameter("Operands of the " + opcode.toLowerCase() +
-                    " operator must both be integers", operator);
-        }
+            if (getOpCode(operator).equals("and")) {
+                List<Integer> E1False = (List<Integer>) stack.pop();
+                stack.pop();
 
-        // Are id1 and id2 both integers?
-        if (typeCheck(id1, id2) == 0) {
-            // Handle MOD and DIV keywords
-            if (opcode.equals("MOD")) {
-                VariableEntry temp1 = createTemp(TokenType.INTEGER);
-                VariableEntry temp2 = createTemp(TokenType.INTEGER);
-                VariableEntry temp3 = createTemp(TokenType.INTEGER);
-                generate("div", id1, id2, temp1);
-                generate("mul", id2, temp1, temp2);
-                generate("sub", id1, temp2, temp3);
-                stack.push(temp3);
-            } else if (opcode.equals("div")) { // div or DIV??
-                VariableEntry temp1 = createTemp(TokenType.REAL);
-                VariableEntry temp2 = createTemp(TokenType.REAL);
-                VariableEntry temp3 = createTemp(TokenType.REAL);
-                generate("ltof", id1, temp1);
-                generate("ltof", id2, temp2);
-                generate("fdiv", temp1, temp2, temp3);
-                stack.push(temp3);
-            } else {
-                // Generate for 2 integers
-                VariableEntry temp = createTemp(TokenType.INTEGER);
-                generate(opcode, id1, id2, temp);
-                stack.push(temp);
+                List<Integer> EFalse = merge(E1False, E2False);
+                stack.push(E2True);
+                stack.push(EFalse);
+                stack.push(EType.RELATIONAL);
             }
-        } else
-            checkAdd(id1, id2, opcode);
+        } else {
+            // Pushed in #46
+            SymbolTableEntry id2 = (SymbolTableEntry) stack.pop();
+            // Pushed in #44
+            Token operator = (Token) stack.pop();
+            // Pushed in #46
+            String opcode = getOpCode(operator);
+            SymbolTableEntry id1 = (SymbolTableEntry) stack.pop();
+
+            if (typeCheck(id1, id2) != 0 && (opcode.equals("DIV") || opcode.equals("MOD"))) {
+                // MOD and DIV require integer operands
+                throw SemanticError.badParameter("Operands of the " + opcode.toLowerCase() +
+                        " operator must both be integers", operator);
+            }
+
+            // Are id1 and id2 both integers?
+            if (typeCheck(id1, id2) == 0) {
+                // Handle MOD and DIV keywords
+                if (opcode.equals("MOD")) {
+                    VariableEntry temp1 = createTemp(TokenType.INTEGER);
+                    VariableEntry temp2 = createTemp(TokenType.INTEGER);
+                    VariableEntry temp3 = createTemp(TokenType.INTEGER);
+                    generate("div", id1, id2, temp1);
+                    generate("mul", id2, temp1, temp2);
+                    generate("sub", id1, temp2, temp3);
+                    stack.push(temp3);
+                } else if (opcode.equals("div")) { // div or DIV??
+                    VariableEntry temp1 = createTemp(TokenType.REAL);
+                    VariableEntry temp2 = createTemp(TokenType.REAL);
+                    VariableEntry temp3 = createTemp(TokenType.REAL);
+                    generate("ltof", id1, temp1);
+                    generate("ltof", id2, temp2);
+                    generate("fdiv", temp1, temp2, temp3);
+                    stack.push(temp3);
+                } else {
+                    // Generate for 2 integers
+                    VariableEntry temp = createTemp(TokenType.INTEGER);
+                    generate(opcode, id1, id2, temp);
+                    stack.push(temp);
+                }
+            } else
+                checkAdd(id1, id2, opcode);
+        }
+        stack.push(EType.ARITHMETIC);
     }
 
 
     /**
      * Helper function for actions 45 and 46, their final else case is the same code.
      * Performs an operation when either id1 or id2 is not an integer.
+     *
      * @throws SymbolTableError
      */
-    private void checkAdd(SymbolTableEntry id1, SymbolTableEntry id2, String opcode) throws SymbolTableError{
+    private void checkAdd(SymbolTableEntry id1, SymbolTableEntry id2, String opcode) throws SymbolTableError {
         // id1 and id2 are both reals
         if (typeCheck(id1, id2) == 1) {
             VariableEntry temp = createTemp(TokenType.REAL);
@@ -412,21 +462,26 @@ public class SemanticAction {
             }
             stack.push(id);
         }
-
+        stack.push(EType.ARITHMETIC);
     }
 
     /**
      * Array lookup
      */
-    private void fourtyEight() throws SymbolTableError {
+    private void fourtyEight(Token token) throws SymbolTableError, SemanticError {
+        SymbolTableEntry offset = (SymbolTableEntry) stack.pop();
         // offset will be implemented in later actions
-        SymbolTableEntry offset = null;
         if (offset != null) {
+            if (offset.isFunction()) { // <- add this if statement
+                // call action 52 with the token from the parser
+                execute(52, null, token);
+            }
             SymbolTableEntry id = (SymbolTableEntry) stack.pop();
             VariableEntry temp = createTemp(id.getType());
             generate("load", id, offset, temp);
             stack.push(temp);
         }
+        stack.push(EType.ARITHMETIC);
     }
 
     /**
@@ -479,6 +534,7 @@ public class SemanticAction {
 
     /**
      * Gets the prefix of a symbol table entry
+     *
      * @param ste entry to get prefix for
      * @return '_' for global '%' for local
      */
@@ -512,11 +568,13 @@ public class SemanticAction {
         quads.add(quadEntry);
     }
 
-    private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2, SymbolTableEntry operand3) throws SymbolTableError {
+    private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2, SymbolTableEntry
+            operand3) throws SymbolTableError {
         generate(tviCode, new String[]{steAddr(operand1), steAddr(operand2), steAddr(operand3)});
     }
 
-    private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2) throws SymbolTableError {
+    private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2) throws
+            SymbolTableError {
         generate(tviCode, new String[]{steAddr(operand1), steAddr(operand2)});
     }
 
@@ -584,10 +642,10 @@ public class SemanticAction {
         // Both integers
         if (int1 && int2)
             return 0;
-        // Both reals
+            // Both reals
         else if (!int1 && !int2)
             return 1;
-        // Different types
+            // Different types
         else if (int2)
             return 2;
         else
@@ -635,11 +693,17 @@ public class SemanticAction {
 
         switch (opToken.getType()) {
             case ADDOP:
-                int value = (int) opToken.getValue();
-                if (value == 1)
-                    opcode = "add";
-                else if (value == 2)
-                    opcode = "sub";
+                switch ((int) opToken.getValue()) {
+                    case 1:
+                        opcode = "add";
+                        break;
+                    case 2:
+                        opcode = "sub";
+                        break;
+                    case 3:
+                        opcode = "or";
+                        break;
+                }
                 break;
             case MULOP:
                 switch ((int) opToken.getValue()) {
