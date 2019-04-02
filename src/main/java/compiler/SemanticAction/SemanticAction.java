@@ -29,6 +29,7 @@ public class SemanticAction {
     public SemanticAction() {
         // Add dummy quad
         quads.add(new String[]{null, null, null, null});
+        // Insert reserved words into the global table
         try {
             SymbolTableEntry entry = new ProcedureEntry("READ", 0, new ArrayList<>());
             entry.setReserved(true);
@@ -113,7 +114,7 @@ public class SemanticAction {
                 fourtyFive();
                 break;
             case 46:
-                fourtySix(prevToken); // WHICH TOKEN whos to say?
+                fourtySix(prevToken);
                 break;
             case 48:
                 fourtyEight();
@@ -190,9 +191,9 @@ public class SemanticAction {
     }
 
     /**
-     * Accesses a variable in a symbol table and adds it to the stack
-     * @param token the token to look up
-     * @throws SemanticError if the token was not found in a symbol table
+     * Check to see if a variable has been declared
+     * @param token identifier variable
+     * @throws SemanticError if the variable has not been declared
      */
     private void thirty(Token token) throws SemanticError {
         SymbolTableEntry id = lookupId(token);
@@ -222,6 +223,7 @@ public class SemanticAction {
         SymbolTableEntry offset = (SymbolTableEntry) stack.pop();
         SymbolTableEntry id1 = (SymbolTableEntry) stack.pop();
 
+        // We'll put the value of id2 in id1
         if (typeCheck(id1, id2) == 3)
             throw SemanticError.typeMismatch("Integer", "Real", token.getRow(), token.getCol());
 
@@ -241,7 +243,7 @@ public class SemanticAction {
     }
 
     /**
-     * Handles unary minus and plus
+     * Evaluate unary operators
      *
      * @throws SymbolTableError
      */
@@ -254,6 +256,8 @@ public class SemanticAction {
 
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
         Token sign = (Token) stack.pop();
+
+        // If the operator is uminus, create a temp var to store the result
         if (sign.getType() == TokenType.UNARYMINUS) {
             VariableEntry temp = createTemp(id.getType());
             // Integer or float?
@@ -283,14 +287,13 @@ public class SemanticAction {
             if (etype != EType.ARITHMETIC)
                 throw  SemanticError.eTypeError(etype);
         }
-        // until here /\ /\ /\
 
         // the token should be an operator
         stack.push(token);
     }
 
     /**
-     * Handles arithmetic and comparison operations
+     * Evaluate addition, subtraction, and OR
      */
     private void fourtyThree() throws SymbolTableError {
         SymbolTableEntry id2 = (SymbolTableEntry) stack.pop();
@@ -301,6 +304,7 @@ public class SemanticAction {
         String opcode = getOpCode(operator);
         SymbolTableEntry id1 = (SymbolTableEntry) stack.pop();
 
+        // Both integers?
         if (typeCheck(id1, id2) == 0) {
             VariableEntry temp = createTemp(TokenType.INTEGER);
             generate(opcode, id1, id2, temp);
@@ -311,7 +315,7 @@ public class SemanticAction {
     }
 
     /**
-     * Evaluate arithmetic expressions
+     * Evaluate multiplication, division, modular arithmetic, and AND
      *
      * @throws SymbolTableError
      * @throws SemanticError
@@ -385,7 +389,7 @@ public class SemanticAction {
     /**
      * Push identifiers & constants onto the stack for evaluation in an expression
      *
-     * @param token
+     * @param token identifier or constant
      * @throws SemanticError
      * @throws SymbolTableError
      */
@@ -401,7 +405,7 @@ public class SemanticAction {
         } else if (token.getType() == TokenType.INTCONSTANT || token.getType() == TokenType.REALCONSTANT) {
             // look for the token in the constant symbol table
             SymbolTableEntry id = constantTable.search(token.getValue().toString());
-            // if token is not found
+            // if not found add it to the constant table
             if (id == null) {
                 id = new ConstantEntry(token.getValue().toString(), token.getType());
                 constantTable.insert(id);
@@ -412,7 +416,7 @@ public class SemanticAction {
     }
 
     /**
-     * Semantic action 48
+     * Array lookup
      */
     private void fourtyEight() throws SymbolTableError {
         // offset will be implemented in later actions

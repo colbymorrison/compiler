@@ -7,7 +7,7 @@ import compiler.Parser.Parser;
 /**
  * Main wrapper class for the whole compiler
  */
-class Compiler {
+public class Compiler {
     private Parser parser;
 
     /**
@@ -16,18 +16,18 @@ class Compiler {
      * @param filePath file path to compile
      * @param debug    should parser/semantic action debug info be printed?
      */
-    private Compiler(String filePath, boolean debug) {
+    public Compiler(String filePath, boolean debug) {
         this.parser = new Parser(new Lexer(filePath), debug);
     }
 
     /**
      * Start the compiler by starting the parser
      */
-    private void compile() {
+    public void compile() {
         try {
             System.out.println(parser.parse());
         } catch (CompilerError e) {
-            System.out.println(e.getMessage());
+            System.out.println("ERROR: " + e.getMessage());
         }
     }
 
