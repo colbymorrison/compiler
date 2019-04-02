@@ -63,6 +63,14 @@ Added a `type` field that is used by subclasses associated with a type.
 Added a `Compiler` class to drive the whole program. As of now it prints the generated intermediate code (or error message) to the screen.
 In the future I assume we'll want to write the intermediate code to a file. 
 
+## Submission 5 (Semantic Acion 3) Notes
+### General Notes
+
+### Semantic Action 3 Notes
+I added a few helper methods to reduce duplicate code within the actions. As more different types can now be added to the stack, it made sense to 
+have only one `Object` stack, and cast as needed when popping. The `merge` and `makelist` functions already exist within the 
+exist in Java (`List.addAll` and `Collections.singletonList`) so I saw no  point in writing them. 
+
 
 
 

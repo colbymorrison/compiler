@@ -29,6 +29,10 @@ public class ArrayEntry extends SymbolTableEntry {
         return address;
     }
 
+    public int getLowBound(){
+        return lowBound;
+    }
+
     public String toString() {
         return type + " array";
     }
