@@ -1,6 +1,7 @@
 package compiler.Exception;
 
 import compiler.Lexer.Token;
+import compiler.SemanticAction.EType;
 
 public class SemanticError extends CompilerError {
     public SemanticError(String message) {
@@ -19,5 +20,9 @@ public class SemanticError extends CompilerError {
 
     public static SemanticError badParameter(String message, Token token) {
         return new SemanticError(message + CompilerError.lineMsg(token.getRow(), token.getCol()));
+    }
+
+    public static SemanticError eTypeError(EType eType){
+        return new SemanticError("Bad eType " + eType);
     }
 }

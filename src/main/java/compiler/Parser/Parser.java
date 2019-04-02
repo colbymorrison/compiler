@@ -197,8 +197,7 @@ public class Parser {
         if (push.isEmpty())
             if (top.charAt(0) == '#')
                 out += "Semantic Action " + top.substring(1) + "\n" +
-                        "Semantic Token Stack " + action.getTokenStack() + "\n" +
-                        "Semantic Entry Stack " + action.getSteStack() + "\n";
+                        "Semantic Stack " + action.getStack() + "\n";
             else
                 out += "Match! \n";
         else
