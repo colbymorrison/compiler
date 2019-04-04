@@ -2,6 +2,7 @@ package compiler.Exception;
 
 import compiler.Lexer.Token;
 import compiler.SemanticAction.EType;
+import compiler.SymbolTable.SymbolTableEntry;
 
 public class SemanticError extends CompilerError {
     public SemanticError(String message) {
@@ -22,7 +23,18 @@ public class SemanticError extends CompilerError {
         return new SemanticError(message + CompilerError.lineMsg(token.getRow(), token.getCol()));
     }
 
-    public static SemanticError eTypeError(EType eType){
-        return new SemanticError("Bad eType " + eType);
+    public static SemanticError eTypeError(EType eType, Token token){
+        String message;
+        if(eType == EType.ARITHMETIC)
+            message = "Invalid use of arithmetic operator";
+        else
+            message = "Inavlide use of relation operator";
+
+        message += CompilerError.lineMsg(token.getRow(), token.getCol());
+        return new SemanticError(message);
+    }
+
+    public static SemanticError illegalProcedure(SymbolTableEntry id){
+        return new SemanticError(id.getName() + " is not a procedure" );
     }
 }
