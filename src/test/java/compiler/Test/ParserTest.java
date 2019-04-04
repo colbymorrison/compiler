@@ -47,8 +47,8 @@ class ParserTest {
             String name = f.getName();
             System.out.println("---------------------------");
             System.out.println(name);
-            if(!name.equals("phase3-7.vas"))
-                continue;
+           // if(!name.equals("phase3-7.vas"))
+//                continue;
             // If the file shouldn't throw an error, check it against correct file
             if (passing.contains(name)) {
                 String[] generatedCodes = getCodes(f);

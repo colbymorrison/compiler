@@ -520,7 +520,7 @@ public class SemanticAction {
         if (stack.pop() == EType.RELATIONAL) {
             List<Integer> EFalse = (List<Integer>) stack.pop();
             List<Integer> ETrue = (List<Integer>) stack.pop();
-            if (getOpCode(token).equals("add")) {
+            if (getOpCode(token).equals("and")) {
                 backpatch(ETrue, quads.size());
             }
             stack.push(ETrue);
