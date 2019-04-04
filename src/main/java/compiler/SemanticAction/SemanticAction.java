@@ -129,7 +129,7 @@ public class SemanticAction {
                 thirtyEight(prevToken);
                 break;
             case 39:
-                thirtyNine(token);
+                thirtyNine(prevToken);
                 break;
             case 40:
                 stack.push(prevToken);
@@ -234,6 +234,9 @@ public class SemanticAction {
         generate("exit");
     }
 
+    /**
+     * Backpatches
+     */
     private void twentyTwo(Token token) throws SemanticError {
         EType etype = (EType) stack.pop();
         if (etype != EType.RELATIONAL) {
@@ -342,6 +345,9 @@ public class SemanticAction {
         }
     }
 
+    /**
+     * Set up array offset
+     */
     private void thirtyThree(Token token) throws SemanticError, SymbolTableError {
         EType etype = (EType) stack.pop();
         if (etype != EType.ARITHMETIC) {
@@ -352,6 +358,7 @@ public class SemanticAction {
             throw SemanticError.typeMismatch("Integer", id.getType().toString(), token.getRow(), token.getCol());
         }
         ArrayEntry array = (ArrayEntry) stack.peek();
+        // temp2 is the offset (I think)
         VariableEntry temp1 = createTemp(TokenType.INTEGER);
         VariableEntry temp2 = createTemp(TokenType.INTEGER);
         generate("move", Integer.toString(array.getLowBound()), temp1);
@@ -377,18 +384,22 @@ public class SemanticAction {
         stack.push(token);
     }
 
+    /**
+     * Handle RelOp expressions
+     */
     private void thirtyNine(Token token) throws SemanticError, SymbolTableError {
         EType etype = (EType) stack.pop();
+        // Ensure it is a relop
         if (etype != EType.ARITHMETIC) {
             throw SemanticError.eTypeError(etype, token);
         }
         SymbolTableEntry id2 = (SymbolTableEntry) stack.pop();
         Token operator = (Token) stack.pop();
         // the operator must be replaced with the proper TVI code which
-        // jump if the condition is me
-        // ex. the token representing "<" should be replaced with "blt"
-        String opcode = getOpCode(operator); // TODO Extend getopcode
+        // jump if the condition is meant
+        String opcode = getOpCode(operator);
         SymbolTableEntry id1 = (SymbolTableEntry) stack.pop();
+        // Generate appropriate code based on types of ids
         if (typeCheck(id1, id2) == 2) {
             VariableEntry temp = createTemp(TokenType.REAL);
             generate("ltof", id2, temp);
@@ -401,6 +412,7 @@ public class SemanticAction {
             generate(opcode, id1, id2, "_");
         }
         generate("goto", "_");
+        // Addresses to backpatch in #22
         List<Integer> ETrue = Collections.singletonList(quads.size() - 2);
         List<Integer> EFalse = Collections.singletonList(quads.size() - 1);
         stack.push(ETrue);
@@ -442,7 +454,7 @@ public class SemanticAction {
     private SymbolTableEntry checkEType(Token token) throws SemanticError {
         EType eType = (EType) stack.pop();
 
-        if (stack.pop() != EType.ARITHMETIC)
+        if (eType != EType.ARITHMETIC)
             throw SemanticError.eTypeError(eType, token);
 
         return (SymbolTableEntry) stack.pop();
@@ -456,7 +468,7 @@ public class SemanticAction {
                 throw SemanticError.eTypeError(etype, token);
             // the top of the stack should be a list of integers
             List<Integer> EFalse = (List<Integer>) stack.peek();
-            backpatch(EFalse, quads.size()); // TODO write new backpatch
+            backpatch(EFalse, quads.size());
         } else {
             if (etype != EType.ARITHMETIC)
                 throw SemanticError.eTypeError(etype, token);
@@ -500,8 +512,8 @@ public class SemanticAction {
                 stack.push(temp);
             } else
                 checkAdd(id1, id2, opcode);
+            stack.push(EType.ARITHMETIC);
         }
-        stack.push(EType.ARITHMETIC);
     }
 
     private void fourtyFour(Token token) {
@@ -583,8 +595,8 @@ public class SemanticAction {
                 }
             } else
                 checkAdd(id1, id2, opcode);
+            stack.push(EType.ARITHMETIC);
         }
-        stack.push(EType.ARITHMETIC);
     }
 
     /**
@@ -901,12 +913,11 @@ public class SemanticAction {
 
     private void backpatch(List<Integer> list, int x) {
         for (Integer i : list) {
-            String[] quad = quads.get(i);
             // Does this work? I don't think it will but you gotta hope
-            if (quad[0].equals("goto"))
-                quad[1] = Integer.toString(x);
+            if (quads.get(i)[0].equals("goto"))
+                quads.get(i)[1] = Integer.toString(x);
             else// quad is a branch statement
-                quad[3] = Integer.toString(x);
+                quads.get(i)[3] = Integer.toString(x);
         }
     }
 
@@ -917,45 +928,53 @@ public class SemanticAction {
      * @return opcode ("add", "mul", ...)
      */
     private String getOpCode(Token opToken) {
-        String opcode = "";
-
         switch (opToken.getType()) {
             case ADDOP:
                 switch ((int) opToken.getValue()) {
                     case 1:
-                        opcode = "add";
-                        break;
+                        return "add";
                     case 2:
-                        opcode = "sub";
-                        break;
+                        return "sub";
                     case 3:
-                        opcode = "or";
-                        break;
+                        return "or";
                 }
                 break;
             case MULOP:
                 switch ((int) opToken.getValue()) {
                     case 1:
-                        opcode = "mul";
-                        break;
+                        return "mul";
                     // division operator (/)
                     case 2:
-                        opcode = "div";
-                        break;
+                        return "div";
                     // DIV keyword
                     case 3:
-                        opcode = "DIV";
-                        break;
+                        return "DIV";
                     case 4:
-                        opcode = "MOD";
-                        break;
+                        return "MOD";
+                    case 5:
+                        return "and";
                 }
                 break;
             case UNARYMINUS:
-                opcode = "uminus";
+                return "uminus";
+            case RELOP:
+                switch ((int) opToken.getValue()) {
+                    case 1:
+                        return "beq";
+                    case 2:
+                        return "bne";
+                    case 3:
+                        return "blt";
+                    case 4:
+                        return "bgt";
+                    case 5:
+                        return "ble";
+                    case 6:
+                        return "bge";
+                }
+                break;
         }
-
-        return opcode;
+        return null;
     }
 
     /**

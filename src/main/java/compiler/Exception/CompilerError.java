@@ -13,7 +13,7 @@ public abstract class CompilerError extends Exception {
     }
 
     public static String lineMsg(int row, int col) {
-        return " at line " + row + ", character " + col + "\n";
+        return " at line " + row + "\n";
     }
 }
 

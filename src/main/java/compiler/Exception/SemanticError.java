@@ -28,7 +28,7 @@ public class SemanticError extends CompilerError {
         if(eType == EType.ARITHMETIC)
             message = "Invalid use of arithmetic operator";
         else
-            message = "Inavlide use of relation operator";
+            message = "Invalid use of relation operator";
 
         message += CompilerError.lineMsg(token.getRow(), token.getCol());
         return new SemanticError(message);
