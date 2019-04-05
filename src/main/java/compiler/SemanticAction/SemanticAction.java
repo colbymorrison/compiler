@@ -5,21 +5,27 @@ import compiler.Exception.SymbolTableError;
 import compiler.Lexer.Token;
 import compiler.Lexer.TokenType;
 import compiler.SymbolTable.*;
+import sun.jvm.hotspot.debugger.SymbolLookup;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class SemanticAction {
-    private final SymbolTable globalTable = new SymbolTable(20);
-    private final SymbolTable constantTable = new SymbolTable(20);
-    private final SymbolTable localTable = new SymbolTable(20);
+    private final SymbolTable globalTable = new SymbolTable();
+    private final SymbolTable constantTable = new SymbolTable();
     private final Stack<Object> stack = new Stack<>();
+    private final Stack<Integer> paramCount = new Stack<>();
+    private final Stack<List<SymbolTableEntry>> paramStack = new Stack<>();
     // List of quadruples, which we represent as string arrays
     private final ArrayList<String[]> quads = new ArrayList<>();
+    private SymbolTable localTable = new SymbolTable();
+    private SymbolTableEntry currentFunction;
+    private boolean global = true;
     private boolean insert = true;
-    private final boolean global = true;
     private boolean array = false;
+    private int nextParam;
+    private int localStore = 0;
     private int globalStore = 0;
     private int globalMemory = 0;
     private int localMemory = 0;
@@ -210,6 +216,14 @@ public class SemanticAction {
         array = false;
     }
 
+    private void five(){
+        insert = false;
+        SymbolTableEntry id = (SymbolTableEntry) stack.pop();
+        generate("PROCBEGIN", id.getName());
+        localStore = quadruples.getNextQuad();
+        generate("alloc", "_");
+    }
+
     /**
      * Semantic action 9, adds the name of the program to the global table
      */
@@ -227,6 +241,40 @@ public class SemanticAction {
         generate("exit");
     }
 
+    private void eleven(){
+        global = true;
+        // delete the local symbol table
+        localTable = new SymbolTable();
+        currentFunction = null;
+        backpatch(localStore, localMemory);
+        generate("free", Integer.toString(localMemory));
+        generate("PROCEND");
+    }
+
+    private void fifteen(Token token) throws SymbolTableError{
+        // create a variable to store the result of the function
+        VariableEntry result = createTemp(token.getValue() + "_RESULT", TokenType.INTEGER);
+        // set the result tag of the variable entry class
+        result.setResult();
+        // create a new function entry with name from the token
+        // from the parser and the result variable just created
+        SymbolTableEntry id = new FunctionEntry(token.getValue(), result);,
+        globalTable.insert(id);
+        global = false;
+        localMemory = 0;
+        currentFunction = id;
+        stack.push(id);
+    }
+
+    // this action sets the type of the function and its result
+    private void sixteen(){
+        Token type = (Token) stack.pop();
+        FunctionEntry id = (FunctionEntry) stack.peek();
+        id.setType(type.getType());
+        // set the type of the result variable of id
+        id.setResultType(type.getType());
+        currentFunction = id;
+    }
     /**
      * Handles control flow
      */
@@ -696,13 +744,12 @@ public class SemanticAction {
         EType etype = (EType) stack.pop();
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
         if (id.isFunction()) {
-           /* // this will be added in the final phase
            if (id != currentFunction) {
                throw illegal procedure error
            }
            stack.push(id.getResult());
            stack.push(EType.ARITHMETIC);
-           */
+
         } else {
             stack.push(id);
             stack.push(etype);
@@ -782,8 +829,12 @@ public class SemanticAction {
             SymbolTableEntry entry = localTable.search(ste.getName());
             if (entry == null)  // entry is a global variable
                 return "_";
-            else
-                return "%";
+            else {
+                if (ste.isParameter())
+                    return "^%";
+                else
+                    return "%";
+            }
         }
     }
 
@@ -993,6 +1044,17 @@ public class SemanticAction {
     private List merge(List l1, List l2){
         // Going to some length to avoid an unchecked type warning, ensuring type safety
         return Stream.of(l1.toArray(), l2.toArray()).flatMap(Stream::of).collect(Collectors.toList());
+    }
+
+    private String getParamPrefix(SymbolTableEntry param) {
+        if (global)
+            return "@_";
+        else { // local
+            if (param.isParameter())
+                return "%";
+            else
+                return "@%";
+        }
     }
 
     /**

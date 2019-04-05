@@ -10,10 +10,9 @@ public class SymbolTable {
     /**
      * Constructor
      *
-     * @param initialCapacity the initial capacity for the SymbolTable
      */
-    public SymbolTable(int initialCapacity) {
-        table = new Hashtable<>(initialCapacity);
+    public SymbolTable() {
+        table = new Hashtable<>();
     }
 
     /**
