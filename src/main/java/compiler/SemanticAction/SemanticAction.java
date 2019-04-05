@@ -34,13 +34,13 @@ public class SemanticAction {
         // Insert reserved words into the global table
         try {
             SymbolTableEntry entry;
-            for(String res : new String[]{"READ", "WRITE", "MAIN"}) {
+            for (String res : new String[]{"READ", "WRITE", "MAIN"}) {
                 entry = new ProcedureEntry(res, 0, new ArrayList<>());
                 entry.setReserved(true);
                 globalTable.insert(entry);
             }
 
-            for(String res : new String[]{"INPUT", "OUTPUT"}) {
+            for (String res : new String[]{"INPUT", "OUTPUT"}) {
                 entry = new IODeviceEntry(res);
                 entry.setReserved(true);
                 globalTable.insert(entry);
@@ -212,7 +212,6 @@ public class SemanticAction {
 
     /**
      * Semantic action 9, adds the name of the program to the global table
-     *
      */
     private void nine() throws SymbolTableError {
         stack.pop();
@@ -233,9 +232,9 @@ public class SemanticAction {
      */
     private void twentyTwo(Token token) throws SemanticError {
         EType etype = (EType) stack.pop();
-        if (etype != EType.RELATIONAL) {
+        if (etype != EType.RELATIONAL)
             throw SemanticError.eTypeError(etype, token);
-        }
+
         // Always casting to generic List instead of List<Integer> to avoid unchecked cast warnings
         List EFalse = (List) stack.pop();
         List ETrue = (List) stack.pop();
@@ -298,9 +297,9 @@ public class SemanticAction {
      */
     private void thirty(Token token) throws SemanticError {
         SymbolTableEntry id = lookupId(token);
-        if (id == null) {
+        if (id == null)
             throw SemanticError.undeclaredVariable(token);
-        }
+
         stack.push(id);
         stack.push(EType.ARITHMETIC);
     }
@@ -309,7 +308,7 @@ public class SemanticAction {
      * Variable assignment
      *
      * @param token to get row and column if an error occurs
-     * @throws SemanticError    if there is a type mismatch
+     * @throws SemanticError if there is a type mismatch
      */
     private void thirtyOne(Token token) throws SymbolTableError, SemanticError {
         SymbolTableEntry id2 = checkEType(token);
@@ -355,13 +354,13 @@ public class SemanticAction {
      */
     private void thirtyThree(Token token) throws SemanticError, SymbolTableError {
         EType etype = (EType) stack.pop();
-        if (etype != EType.ARITHMETIC) {
+        if (etype != EType.ARITHMETIC)
             throw SemanticError.eTypeError(etype, token);
-        }
+
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
-        if (id.getType() != TokenType.INTEGER) {
+        if (id.getType() != TokenType.INTEGER)
             throw SemanticError.typeMismatch("Integer", id.getType().toString(), token.getRow(), token.getCol());
-        }
+
         ArrayEntry array = (ArrayEntry) stack.peek();
         // temp2 is the offset (I think)
         VariableEntry temp1 = createTemp(TokenType.INTEGER);
@@ -401,9 +400,9 @@ public class SemanticAction {
     private void thirtyNine(Token token) throws SemanticError, SymbolTableError {
         EType etype = (EType) stack.pop();
         // Ensure it is a relop
-        if (etype != EType.ARITHMETIC) {
+        if (etype != EType.ARITHMETIC)
             throw SemanticError.eTypeError(etype, token);
-        }
+
         SymbolTableEntry id2 = (SymbolTableEntry) stack.pop();
         Token operator = (Token) stack.pop();
         // the operator must be replaced with the proper TVI code which
@@ -419,9 +418,9 @@ public class SemanticAction {
             VariableEntry temp = createTemp(TokenType.REAL);
             generate("ltof", id1, temp);
             generate(opcode, temp, id2, "_");
-        } else {
+        } else
             generate(opcode, id1, id2, "_");
-        }
+
         generate("goto", "_");
         // Addresses to backpatch in #22
         List ETrue = Collections.singletonList(quads.size() - 2);
@@ -433,7 +432,6 @@ public class SemanticAction {
 
     /**
      * Evaluate unary operators
-     *
      */
     private void fourtyOne(Token token) throws SymbolTableError, SemanticError {
         SymbolTableEntry id = checkEType(token);
@@ -443,11 +441,11 @@ public class SemanticAction {
         if (sign.getType() == TokenType.UNARYMINUS) {
             VariableEntry temp = createTemp(id.getType());
             // Integer or float?
-            if (id.getType() == TokenType.INTEGER) {
+            if (id.getType() == TokenType.INTEGER)
                 generate("uminus", id, temp);
-            } else {
+            else
                 generate("fuminus", id, temp);
-            }
+
             stack.push(temp);
         } else
             stack.push(id);
@@ -500,7 +498,7 @@ public class SemanticAction {
             stack.pop();
             List E1True = (List) stack.pop();
 
-            List ETrue = Stream.of(E1True, E2True).collect(Collectors.toList());
+            List ETrue = merge(E1True, E2True);
             stack.push(ETrue);
             stack.push(E2False);
             stack.push(EType.RELATIONAL);
@@ -529,9 +527,9 @@ public class SemanticAction {
         if (stack.pop() == EType.RELATIONAL) {
             List EFalse = (List) stack.pop();
             List ETrue = (List) stack.pop();
-            if (getOpCode(token).equals("and")) {
+            if (getOpCode(token).equals("and"))
                 backpatch(ETrue, quads.size());
-            }
+
             stack.push(ETrue);
             stack.push(EFalse);
         }
@@ -556,7 +554,7 @@ public class SemanticAction {
                 List E1False = (List) stack.pop();
                 stack.pop();
 
-                List EFalse = Stream.of(E1False, E2False).collect(Collectors.toList());
+                List EFalse = merge(E1False, E2False);
                 stack.push(E2True);
                 stack.push(EFalse);
                 stack.push(EType.RELATIONAL);
@@ -778,9 +776,9 @@ public class SemanticAction {
      * @return '_' for global '%' for local
      */
     private String getSTEPrefix(SymbolTableEntry ste) {
-        if (global) {
+        if (global)
             return "_";
-        } else { // local
+        else { // local
             SymbolTableEntry entry = localTable.search(ste.getName());
             if (entry == null)  // entry is a global variable
                 return "_";
@@ -885,10 +883,10 @@ public class SemanticAction {
         // Both integers
         if (int1 && int2)
             return 0;
-            // Both reals
+        // Both reals
         else if (!int1 && !int2)
             return 1;
-            // Different types
+        // Different types
         else if (int2)
             return 2;
         else
@@ -929,7 +927,6 @@ public class SemanticAction {
         for (Object val : list) {
             // Eliminates "Unchecked type warning"
             Integer i = (Integer) val;
-            // Does this work? I don't think it will but you gotta hope
             if (quads.get(i)[0].equals("goto"))
                 quads.get(i)[1] = Integer.toString(x);
             else// quad is a branch statement
@@ -991,6 +988,11 @@ public class SemanticAction {
                 break;
         }
         return " ";
+    }
+
+    private List merge(List l1, List l2){
+        // Going to some length to avoid an unchecked type warning, ensuring type safety
+        return Stream.of(l1.toArray(), l2.toArray()).flatMap(Stream::of).collect(Collectors.toList());
     }
 
     /**

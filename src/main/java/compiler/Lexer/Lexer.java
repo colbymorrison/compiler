@@ -10,7 +10,7 @@ import compiler.Exception.LexerError;
  * This class implements a Lexer for the Vascal language
  */
 public class Lexer {
-    private Scan scan;
+    private final Scan scan;
     // HashTable mapping keywords to their Types, this should be in the symbol table
     // but we haven't written that yet
     private static final String VALID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +

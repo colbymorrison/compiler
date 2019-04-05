@@ -6,7 +6,7 @@ import compiler.Lexer.TokenType;
  * Abstract symbol table entry
  */
 public abstract class SymbolTableEntry {
-    String name;
+    final String name;
     TokenType type;
     private boolean reserved;
 

@@ -7,8 +7,8 @@ import compiler.Parser.Parser;
 /**
  * Main wrapper class for the whole compiler
  */
-public class Compiler {
-    private Parser parser;
+class Compiler {
+    private final Parser parser;
 
     /**
      * Create a parser with a lexer that uses the file path
@@ -23,7 +23,7 @@ public class Compiler {
     /**
      * Start the compiler by starting the parser
      */
-    public void compile() {
+    private void compile() {
         try {
             System.out.println(parser.parse());
         } catch (CompilerError e) {
