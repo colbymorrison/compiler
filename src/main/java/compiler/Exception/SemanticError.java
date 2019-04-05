@@ -37,4 +37,10 @@ public class SemanticError extends CompilerError {
     public static SemanticError illegalProcedure(SymbolTableEntry id){
         return new SemanticError(id.getName() + " is not a procedure" );
     }
+
+    public static SemanticError idIsNotArray(SymbolTableEntry id, Token token){
+        return new SemanticError(id.getName() + " is not an array"+CompilerError.lineMsg(token.getRow(), token.getCol()));
+    }
+
+
 }

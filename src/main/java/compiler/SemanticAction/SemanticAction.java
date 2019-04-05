@@ -7,6 +7,8 @@ import compiler.Lexer.TokenType;
 import compiler.SymbolTable.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SemanticAction {
     private final SymbolTable globalTable = new SymbolTable(20);
@@ -31,25 +33,18 @@ public class SemanticAction {
         quads.add(new String[]{null, null, null, null});
         // Insert reserved words into the global table
         try {
-            SymbolTableEntry entry = new ProcedureEntry("READ", 0, new ArrayList<>());
-            entry.setReserved(true);
-            globalTable.insert(entry);
+            SymbolTableEntry entry;
+            for(String res : new String[]{"READ", "WRITE", "MAIN"}) {
+                entry = new ProcedureEntry(res, 0, new ArrayList<>());
+                entry.setReserved(true);
+                globalTable.insert(entry);
+            }
 
-            entry = new ProcedureEntry("WRITE", 0, new ArrayList<>());
-            entry.setReserved(true);
-            globalTable.insert(entry);
-
-            entry = new ProcedureEntry("MAIN", 0, new ArrayList<>());
-            entry.setReserved(true);
-            globalTable.insert(entry);
-
-            entry = new IODeviceEntry("INPUT");
-            entry.setReserved(true);
-            globalTable.insert(entry);
-
-            entry = new IODeviceEntry("OUTPUT");
-            entry.setReserved(true);
-            globalTable.insert(entry);
+            for(String res : new String[]{"INPUT", "OUTPUT"}) {
+                entry = new IODeviceEntry(res);
+                entry.setReserved(true);
+                globalTable.insert(entry);
+            }
         } catch (SymbolTableError e) {
             e.printStackTrace();
         }
@@ -218,7 +213,6 @@ public class SemanticAction {
     /**
      * Semantic action 9, adds the name of the program to the global table
      *
-     * @throws SymbolTableError
      */
     private void nine() throws SymbolTableError {
         stack.pop();
@@ -235,16 +229,16 @@ public class SemanticAction {
     }
 
     /**
-     * Backpatches
+     * Handles control flow
      */
     private void twentyTwo(Token token) throws SemanticError {
         EType etype = (EType) stack.pop();
         if (etype != EType.RELATIONAL) {
             throw SemanticError.eTypeError(etype, token);
         }
-        // TODO fix unchecked cast warnings!
-        List<Integer> EFalse = (List<Integer>) stack.pop();
-        List<Integer> ETrue = (List<Integer>) stack.pop();
+        // Always casting to generic List instead of List<Integer> to avoid unchecked cast warnings
+        List EFalse = (List) stack.pop();
+        List ETrue = (List) stack.pop();
         backpatch(ETrue, quads.size());
         stack.push(ETrue);
         stack.push(EFalse);
@@ -255,34 +249,43 @@ public class SemanticAction {
     }
 
     private void twentySix() {
-        List<Integer> EFalse = (List<Integer>) stack.pop();
-        List<Integer> ETrue = (List<Integer>) stack.pop();
+        List EFalse = (List) stack.pop();
+        stack.pop();
         // beginLoop is pushed onto the stack in action 24
         generate("goto", Integer.toString((int) stack.pop()));
         backpatch(EFalse, quads.size());
     }
 
+    /**
+     * Handles control flow
+     */
     private void twentySeven() {
-        List<Integer> skipElse = Collections.singletonList(quads.size());
+        List skipElse = Collections.singletonList(quads.size());
         generate("goto", "_");
-        List<Integer> EFalse = (List<Integer>) stack.pop();
-        List<Integer> ETrue = (List<Integer>) stack.pop();
+        List EFalse = (List) stack.pop();
+        List ETrue = (List) stack.pop();
         backpatch(EFalse, quads.size());
         stack.push(skipElse);
         stack.push(ETrue);
         stack.push(EFalse);
     }
 
+    /**
+     * Handles control flow
+     */
     private void twentyEight() {
         stack.pop();
         stack.pop();
         // skipElse is pushed onto the stack in action 27
-        List<Integer> skipElse = (List<Integer>) stack.pop();
+        List skipElse = (List) stack.pop();
         backpatch(skipElse, quads.size());
     }
 
+    /**
+     * Handles control flow
+     */
     private void twentyNine() {
-        List<Integer> EFalse = (List<Integer>) stack.pop();
+        List EFalse = (List) stack.pop();
         stack.pop();
         backpatch(EFalse, quads.size());
     }
@@ -306,7 +309,6 @@ public class SemanticAction {
      * Variable assignment
      *
      * @param token to get row and column if an error occurs
-     * @throws SymbolTableError
      * @throws SemanticError    if there is a type mismatch
      */
     private void thirtyOne(Token token) throws SymbolTableError, SemanticError {
@@ -334,15 +336,18 @@ public class SemanticAction {
         }
     }
 
+    /**
+     * Handles array variables
+     */
     private void thirtyTwo(Token token) throws SemanticError {
         EType etype = (EType) stack.pop();
         SymbolTableEntry id = (SymbolTableEntry) stack.peek();
-        if (etype != EType.ARITHMETIC) {
+        if (etype != EType.ARITHMETIC)
             throw SemanticError.eTypeError(etype, token);
-        }
-        if (!id.isArray()) {
-            // TODO THIS     throw id is not array error
-        }
+
+        if (!id.isArray())
+            throw SemanticError.idIsNotArray(id, token);
+
     }
 
     /**
@@ -366,6 +371,9 @@ public class SemanticAction {
         stack.push(temp2);
     }
 
+    /**
+     * Handles array variables
+     */
     private void thirtyFour(Token token) throws SemanticError, SymbolTableError {
         EType etype = (EType) stack.pop();
         SymbolTableEntry id = (SymbolTableEntry) stack.peek();
@@ -376,6 +384,9 @@ public class SemanticAction {
             stack.push(null);
     }
 
+    /**
+     * Handle RelOp expressions
+     */
     private void thirtyEight(Token token) throws SemanticError {
         EType etype = (EType) stack.pop();
         if (etype != EType.ARITHMETIC)
@@ -413,8 +424,8 @@ public class SemanticAction {
         }
         generate("goto", "_");
         // Addresses to backpatch in #22
-        List<Integer> ETrue = Collections.singletonList(quads.size() - 2);
-        List<Integer> EFalse = Collections.singletonList(quads.size() - 1);
+        List ETrue = Collections.singletonList(quads.size() - 2);
+        List EFalse = Collections.singletonList(quads.size() - 1);
         stack.push(ETrue);
         stack.push(EFalse);
         stack.push(EType.RELATIONAL);
@@ -423,7 +434,6 @@ public class SemanticAction {
     /**
      * Evaluate unary operators
      *
-     * @throws SymbolTableError
      */
     private void fourtyOne(Token token) throws SymbolTableError, SemanticError {
         SymbolTableEntry id = checkEType(token);
@@ -467,7 +477,7 @@ public class SemanticAction {
             if (etype != EType.RELATIONAL)
                 throw SemanticError.eTypeError(etype, token);
             // the top of the stack should be a list of integers
-            List<Integer> EFalse = (List<Integer>) stack.peek();
+            List EFalse = (List) stack.peek();
             backpatch(EFalse, quads.size());
         } else {
             if (etype != EType.ARITHMETIC)
@@ -484,14 +494,13 @@ public class SemanticAction {
     private void fourtyThree() throws SymbolTableError {
         EType etype = (EType) stack.pop();
         if (etype == EType.RELATIONAL) {
-            List<Integer> E2False = (List<Integer>) stack.pop();
-            List<Integer> E2True = (List<Integer>) stack.pop();
+            List E2False = (List) stack.pop();
+            List E2True = (List) stack.pop();
             stack.pop();
             stack.pop();
-            List<Integer> E1True = (List<Integer>) stack.pop();
+            List E1True = (List) stack.pop();
 
-            List<Integer> ETrue = new ArrayList<>(E1True);
-            ETrue.addAll(E2True);
+            List ETrue = Stream.of(E1True, E2True).collect(Collectors.toList());
             stack.push(ETrue);
             stack.push(E2False);
             stack.push(EType.RELATIONAL);
@@ -518,8 +527,8 @@ public class SemanticAction {
 
     private void fourtyFour(Token token) {
         if (stack.pop() == EType.RELATIONAL) {
-            List<Integer> EFalse = (List<Integer>) stack.pop();
-            List<Integer> ETrue = (List<Integer>) stack.pop();
+            List EFalse = (List) stack.pop();
+            List ETrue = (List) stack.pop();
             if (getOpCode(token).equals("and")) {
                 backpatch(ETrue, quads.size());
             }
@@ -539,16 +548,15 @@ public class SemanticAction {
     private void fourtyFive() throws SymbolTableError, SemanticError {
         EType etype = (EType) stack.pop();
         if (etype == EType.RELATIONAL) {
-            List<Integer> E2False = (List<Integer>) stack.pop();
-            List<Integer> E2True = (List<Integer>) stack.pop();
+            List E2False = (List) stack.pop();
+            List E2True = (List) stack.pop();
             Token operator = (Token) stack.pop();
 
             if (getOpCode(operator).equals("and")) {
-                List<Integer> E1False = (List<Integer>) stack.pop();
+                List E1False = (List) stack.pop();
                 stack.pop();
 
-                List<Integer> EFalse = new ArrayList<>(E1False);
-                EFalse.addAll(E2False);
+                List EFalse = Stream.of(E1False, E2False).collect(Collectors.toList());
                 stack.push(E2True);
                 stack.push(EFalse);
                 stack.push(EType.RELATIONAL);
@@ -656,8 +664,8 @@ public class SemanticAction {
             throw SemanticError.eTypeError(etype, token);
 
         // swap ETrue and EFalse on the stack
-        List<Integer> EFalse = (List<Integer>) stack.pop();
-        List<Integer> ETrue = (List<Integer>) stack.pop();
+        List EFalse = (List) stack.pop();
+        List ETrue = (List) stack.pop();
         stack.push(EFalse);
         stack.push(ETrue);
         stack.push(EType.RELATIONAL);
@@ -683,6 +691,9 @@ public class SemanticAction {
         stack.push(EType.ARITHMETIC);
     }
 
+    /**
+     * Handles array variables
+     */
     private void fiftyThree() {
         EType etype = (EType) stack.pop();
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
@@ -700,6 +711,9 @@ public class SemanticAction {
         }
     }
 
+    /**
+     * Handles array variables
+     */
     private void fiftyFour() throws SemanticError {
         EType etype = (EType) stack.pop();
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
@@ -911,8 +925,10 @@ public class SemanticAction {
         quads.get(i)[1] = Integer.toString(x);
     }
 
-    private void backpatch(List<Integer> list, int x) {
-        for (Integer i : list) {
+    private void backpatch(List list, int x) {
+        for (Object val : list) {
+            // Eliminates "Unchecked type warning"
+            Integer i = (Integer) val;
             // Does this work? I don't think it will but you gotta hope
             if (quads.get(i)[0].equals("goto"))
                 quads.get(i)[1] = Integer.toString(x);
@@ -974,7 +990,7 @@ public class SemanticAction {
                 }
                 break;
         }
-        return null;
+        return " ";
     }
 
     /**

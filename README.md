@@ -68,8 +68,8 @@ In the future I assume we'll want to write the intermediate code to a file.
 
 ### Semantic Action 3 Notes
 I added a few helper methods to reduce duplicate code within the actions. As more different types can now be added to the stack, it made sense to 
-have only one `Object` stack, and cast as needed when popping. The `merge` and `makelist` functions already exist within the 
-exist in Java (`List.addAll` and `Collections.singletonList`) so I saw no  point in writing them. 
+have only one `Object` stack, and cast as needed when popping. The `merge` function can be done as a simple one liner using streams and the `makelist` function already exists 
+(`Collections.singletonList`) so I saw no  point in writing those 2 helper methods. 
 
 
 
