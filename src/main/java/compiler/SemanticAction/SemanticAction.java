@@ -358,8 +358,9 @@ public class SemanticAction {
             throw SemanticError.eTypeError(etype, token);
 
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
-        if (id.getType() != TokenType.INTEGER)
-            throw SemanticError.typeMismatch("Integer", id.getType().toString(), token.getRow(), token.getCol());
+        TokenType type = id.getType();
+        if (type != TokenType.INTEGER && type != TokenType.INTCONSTANT)
+            throw SemanticError.typeMismatch("Integer", type.toString(), token.getRow(), token.getCol());
 
         ArrayEntry array = (ArrayEntry) stack.peek();
         // temp2 is the offset (I think)
@@ -439,9 +440,10 @@ public class SemanticAction {
 
         // If the operator is uminus, create a temp var to store the result
         if (sign.getType() == TokenType.UNARYMINUS) {
-            VariableEntry temp = createTemp(id.getType());
+            TokenType type = id.getType();
+            VariableEntry temp = createTemp(type);
             // Integer or float?
-            if (id.getType() == TokenType.INTEGER)
+            if (id.getType() == TokenType.INTEGER || id.getType() == TokenType.INTCONSTANT)
                 generate("uminus", id, temp);
             else
                 generate("fuminus", id, temp);
@@ -794,46 +796,35 @@ public class SemanticAction {
     /**
      * Universal generate method. Called by other generate methods.
      */
-    private void generate(String tviCode, String[] operands) {
-        String[] quadEntry = new String[operands.length + 1];
+    private void generate(String... operands) {
+        String[] quadEntry = new String[operands.length];
         // First entry is code
-        quadEntry[0] = tviCode;
+        quadEntry[0] = operands[0];
 
         // Copy array passed in to rest of quad entries
-        System.arraycopy(operands, 0, quadEntry, 1, operands.length);
+        System.arraycopy(operands, 1, quadEntry, 1, operands.length-1);
 
         quads.add(quadEntry);
     }
 
     private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2, SymbolTableEntry
             operand3) throws SymbolTableError {
-        generate(tviCode, new String[]{steAddr(operand1), steAddr(operand2), steAddr(operand3)});
+        generate(tviCode, steAddr(operand1), steAddr(operand2), steAddr(operand3));
     }
 
     private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2, String operand3) throws SymbolTableError {
-        generate(tviCode, new String[]{steAddr(operand1), steAddr(operand2), operand3});
+        generate(tviCode, steAddr(operand1), steAddr(operand2), operand3);
     }
 
     private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2) throws
             SymbolTableError {
-        generate(tviCode, new String[]{steAddr(operand1), steAddr(operand2)});
-    }
-
-    private void generate(String tviCode, String operand1) {
-        generate(tviCode, new String[]{operand1});
-    }
-
-    private void generate(String tviCode, String operand1, String operand2) {
-        generate(tviCode, new String[]{operand1, operand2});
-    }
-
-    private void generate(String tviCode) {
-        generate(tviCode, new String[]{});
+        generate(tviCode, steAddr(operand1), steAddr(operand2));
     }
 
     private void generate(String tviCode, String operand1, SymbolTableEntry operand2) throws SymbolTableError {
-        generate(tviCode, new String[]{operand1, steAddr(operand2)});
+        generate(tviCode, operand1, steAddr(operand2));
     }
+
 
     /**
      * For a symbol table entry, returns a string for the local or global address
