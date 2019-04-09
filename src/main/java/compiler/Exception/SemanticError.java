@@ -2,8 +2,11 @@ package compiler.Exception;
 
 import compiler.Lexer.Token;
 import compiler.SemanticAction.EType;
+import compiler.SymbolTable.FPEntry;
 import compiler.SymbolTable.SymbolTableEntry;
 
+//TODO make these pretty
+// Better design?
 public class SemanticError extends CompilerError {
     public SemanticError(String message) {
         super(message);
@@ -21,6 +24,16 @@ public class SemanticError extends CompilerError {
 
     public static SemanticError badParameter(String message, Token token) {
         return new SemanticError(message + CompilerError.lineMsg(token.getRow(), token.getCol()));
+    }
+
+    public static SemanticError badParemeterType(FPEntry func, SymbolTableEntry id, SymbolTableEntry t2, Token token){
+        return new SemanticError("Function " + func.getName() + "requires parameter of type " + t2.getType() + ". Identifier " + id.getName() +
+                "has type " + id.getType() + CompilerError.lineMsg(token.getRow(), token.getCol()));
+    }
+
+    public static SemanticError badNumberParams(FPEntry func, int req, Integer prov, Token token){
+        return new SemanticError("Function " + func.getName() + "requires " + req + " parameters. It was provided" +
+                prov + " parameters" + CompilerError.lineMsg(token.getRow(), token.getCol()));
     }
 
     public static SemanticError eTypeError(EType eType, Token token){

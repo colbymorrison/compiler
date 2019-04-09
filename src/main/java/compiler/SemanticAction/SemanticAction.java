@@ -14,7 +14,8 @@ public class SemanticAction {
     private final SymbolTable globalTable = new SymbolTable();
     private final SymbolTable constantTable = new SymbolTable();
     private final Stack<Object> stack = new Stack<>();
-    private final Stack<SymbolTableEntry> paramStack = new Stack<>();
+    // We can push a list of [ SymbolTableEntries OR any of its subtypes ] to this stack
+    private final Stack<List<? extends SymbolTableEntry>> paramStack = new Stack<>();
     // List of quadruples, which we represent as string arrays
     private final ArrayList<String[]> quads = new ArrayList<>();
     private Stack<Integer> paramCount = new Stack<>();
@@ -529,8 +530,8 @@ public class SemanticAction {
         }
 
         SymbolTableEntry id = (SymbolTableEntry) stack.peek();
-        if (id is not a variable, constant, function result or array) {
-            throw bad param type error
+        if (id.isParameter()) {
+            throw SemanticError.badParameter("Bad parameter: "+id.toString(), token);
         }
 
         // increment the top of paramCount
@@ -542,23 +543,25 @@ public class SemanticAction {
             parameters.push(stack.pop());
         }
         // funcId is a procedure or function entry
-        SymbolTableEntry funcId = stack.peek();
+        FPEntry funcId = (FPEntry) stack.peek();
         while (!parameters.empty()) {
             stack.push(parameters.pop());
         }
 
-        if (funcId is not READ or WRITE) {
-            if (paramCount.peek() > funcId.getNumberofParameters()) {
-                throw wrong number of params error
+        String name = funcId.getName();
+        if (!(name.equals("READ") || name.equals("WRITE"))) {
+            if (paramCount.peek() > funcId.getParams()){
+                throw SemanticError.badNumberParams(funcId, funcId.getParams(), paramCount.peek(), token);
             }
             SymbolTableEntry param = paramStack.peek().get(nextParam);
             if (id.getType() != param.getType()) {
-                throw bad param type error
+                throw SemanticError.badParemeterType(funcId, id, param, token);
             }
             if (param.isArray()) {
-                if ((id.getLowerBound() != param.getLowerBound()) ||
-                        (id.getUpperBound() != param.getUpperBound())) {
-                    throw bad param type error
+                ArrayEntry paramArr = (ArrayEntry) param;
+                ArrayEntry idArr = (ArrayEntry) id;
+                if ((idArr.getLowBound() != paramArr.getLowBound()) || (idArr.getUpBound() != paramArr.getUpBound())) {
+                    throw SemanticError.badParemeterType(funcId, id, param, token);
                 }
             }
             nextParam++;

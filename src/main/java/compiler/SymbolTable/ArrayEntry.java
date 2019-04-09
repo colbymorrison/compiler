@@ -29,6 +29,10 @@ public class ArrayEntry extends AVEntry {
         return lowBound;
     }
 
+    public int getUpBound() {
+        return upBound;
+    }
+
     public String toString() {
         return type + " array";
     }
