@@ -251,6 +251,9 @@ public class SemanticAction {
         generate("PROCEND");
     }
 
+    /**
+     * Creates function name
+     */
     private void fifteen(Token token) throws SymbolTableError{
         // create a variable to store the result of the function
         VariableEntry result = createTemp(token.getValue() + "_RESULT", TokenType.INTEGER);
@@ -286,6 +289,7 @@ public class SemanticAction {
         // Always casting to generic List instead of List<Integer> to avoid unchecked cast warnings
         List EFalse = (List) stack.pop();
         List ETrue = (List) stack.pop();
+        // If what we're checking is true, it'll happen in the next address
         backpatch(ETrue, quads.size());
         stack.push(ETrue);
         stack.push(EFalse);
@@ -304,27 +308,31 @@ public class SemanticAction {
     }
 
     /**
-     * Handles control flow
+     * Handles else statement.
      */
     private void twentySeven() {
+        // Where to go after else is the next generated code
         List skipElse = Collections.singletonList(quads.size());
-        generate("goto", "_");
+        generate("goto", "_"); // Here it is!
         List EFalse = (List) stack.pop();
         List ETrue = (List) stack.pop();
+        // Where to go if we're false is the next address
         backpatch(EFalse, quads.size());
         stack.push(skipElse);
+        // Put ETrue and EFalse back on the stack
         stack.push(ETrue);
         stack.push(EFalse);
     }
 
     /**
-     * Handles control flow
+     * Handles else statement.
      */
     private void twentyEight() {
         stack.pop();
         stack.pop();
-        // skipElse is pushed onto the stack in action 27
+        // skipElse is pushed onto the stack in action 27. Skip else is where we go after the else.
         List skipElse = (List) stack.pop();
+        // Address for skip else is the next quad??
         backpatch(skipElse, quads.size());
     }
 
@@ -401,7 +409,7 @@ public class SemanticAction {
      * Set up array offset
      */
     private void thirtyThree(Token token) throws SemanticError, SymbolTableError {
-        EType etype = (EType) stack.pop();
+        EType etype = (EType) stack.pop(); // Should be arith
         if (etype != EType.ARITHMETIC)
             throw SemanticError.eTypeError(etype, token);
 
@@ -447,7 +455,7 @@ public class SemanticAction {
      */
     private void thirtyNine(Token token) throws SemanticError, SymbolTableError {
         EType etype = (EType) stack.pop();
-        // Ensure it is a relop
+        // Ensure it is a arithop
         if (etype != EType.ARITHMETIC)
             throw SemanticError.eTypeError(etype, token);
 
@@ -516,6 +524,9 @@ public class SemanticAction {
         return (SymbolTableEntry) stack.pop();
     }
 
+    /**
+     * Backpatches or blocks
+     */
     private void fourtyTwo(Token token) throws SemanticError {
         EType etype = (EType) stack.pop();
 
@@ -571,10 +582,16 @@ public class SemanticAction {
         }
     }
 
+    /**
+     * Backpatches 'and' blocks
+     */
     private void fourtyFour(Token token) {
         if (stack.pop() == EType.RELATIONAL) {
             List EFalse = (List) stack.pop();
             List ETrue = (List) stack.pop();
+            // and is represented by a series of 'beq_,_,_,  goto' statements, the beq goes to where we want if each
+            // boolean in the 'and' is true, the goto jump somewhere if any boolean in the 'and' is false
+            // Here, we want to backpatch ETrue to 2 addresses forward because we know there'll be a goto directly following
             if (getOpCode(token).equals("and"))
                 backpatch(ETrue, quads.size());
 
@@ -704,6 +721,9 @@ public class SemanticAction {
         stack.push(EType.ARITHMETIC);
     }
 
+    /**
+     * Handles 'not'
+     */
     private void fourtySeven(Token token) throws SemanticError {
         EType etype = (EType) stack.pop();
         if (etype != EType.RELATIONAL)
@@ -725,7 +745,7 @@ public class SemanticAction {
         SymbolTableEntry offset = (SymbolTableEntry) stack.pop();
         // offset will be implemented in later actions
         if (offset != null) {
-            if (offset.isFunction()) { // <- add this if statement
+            if (offset.isFunction()) {
                 // call action 52 with the token from the parser
                 execute(52, null, token);
             }
@@ -740,12 +760,12 @@ public class SemanticAction {
     /**
      * Handles array variables
      */
-    private void fiftyThree() {
+    private void fiftyThree() throws SemanticError {
         EType etype = (EType) stack.pop();
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
         if (id.isFunction()) {
            if (id != currentFunction) {
-               throw illegal procedure error
+               throw SemanticError.illegalProcedure(id);
            }
            stack.push(id.getResult());
            stack.push(EType.ARITHMETIC);
@@ -845,45 +865,37 @@ public class SemanticAction {
     /**
      * Universal generate method. Called by other generate methods.
      */
-    private void generate(String tviCode, String[] operands) {
-        String[] quadEntry = new String[operands.length + 1];
+    private void generate(String... operands) {
+        String[] quadEntry = new String[operands.length];
         // First entry is code
-        quadEntry[0] = tviCode;
+        quadEntry[0] = operands[0];
 
         // Copy array passed in to rest of quad entries
-        System.arraycopy(operands, 0, quadEntry, 1, operands.length);
+        System.arraycopy(operands, 1, quadEntry, 1, operands.length-1);
 
         quads.add(quadEntry);
     }
 
     private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2, SymbolTableEntry
             operand3) throws SymbolTableError {
-        generate(tviCode, new String[]{steAddr(operand1), steAddr(operand2), steAddr(operand3)});
+        generate(tviCode, steAddr(operand1), steAddr(operand2), steAddr(operand3));
     }
 
     private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2, String operand3) throws SymbolTableError {
-        generate(tviCode, new String[]{steAddr(operand1), steAddr(operand2), operand3});
+        generate(tviCode, steAddr(operand1), steAddr(operand2), operand3);
     }
 
     private void generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2) throws
             SymbolTableError {
-        generate(tviCode, new String[]{steAddr(operand1), steAddr(operand2)});
-    }
-
-    private void generate(String tviCode, String operand1) {
-        generate(tviCode, new String[]{operand1});
-    }
-
-    private void generate(String tviCode, String operand1, String operand2) {
-        generate(tviCode, new String[]{operand1, operand2});
+        generate(tviCode, steAddr(operand1), steAddr(operand2));
     }
 
     private void generate(String tviCode) {
-        generate(tviCode, new String[]{});
+        generate(tviCode, "");
     }
 
     private void generate(String tviCode, String operand1, SymbolTableEntry operand2) throws SymbolTableError {
-        generate(tviCode, new String[]{operand1, steAddr(operand2)});
+        generate(tviCode, operand1, steAddr(operand2));
     }
 
     /**
@@ -977,7 +989,7 @@ public class SemanticAction {
     private void backpatch(List list, int x) {
         for (Object val : list) {
             // Eliminates "Unchecked type warning"
-            Integer i = (Integer) val;
+            int i = (int) val;
             if (quads.get(i)[0].equals("goto"))
                 quads.get(i)[1] = Integer.toString(x);
             else// quad is a branch statement
