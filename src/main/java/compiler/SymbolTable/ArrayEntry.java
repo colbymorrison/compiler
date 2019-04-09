@@ -2,10 +2,9 @@ package compiler.SymbolTable;
 
 import compiler.Lexer.TokenType;
 
-public class ArrayEntry extends SymbolTableEntry {
+public class ArrayEntry extends AVEntry {
     private int upBound;
     private int lowBound;
-    private int address;
 
     @Override
     public boolean isArray() {
@@ -19,14 +18,11 @@ public class ArrayEntry extends SymbolTableEntry {
         this.lowBound = lowBound;
     }
 
-    @Override
-    public void setAddress(int address) {
-        this.address = address;
-    }
-
-    @Override
-    public int getAddress() {
-        return address;
+    public ArrayEntry(String name, int address, TokenType type, int upBound, int lowBound){
+        super(name, address);
+        this.type = type;
+        this.upBound = upBound;
+        this.lowBound = lowBound;
     }
 
     public int getLowBound(){

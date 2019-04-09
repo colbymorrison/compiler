@@ -5,7 +5,6 @@ import compiler.Exception.SymbolTableError;
 import compiler.Lexer.Token;
 import compiler.Lexer.TokenType;
 import compiler.SymbolTable.*;
-import sun.jvm.hotspot.debugger.SymbolLookup;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,12 +14,12 @@ public class SemanticAction {
     private final SymbolTable globalTable = new SymbolTable();
     private final SymbolTable constantTable = new SymbolTable();
     private final Stack<Object> stack = new Stack<>();
-    private final Stack<Integer> paramCount = new Stack<>();
-    private final Stack<List<SymbolTableEntry>> paramStack = new Stack<>();
+    private final Stack<SymbolTableEntry> paramStack = new Stack<>();
     // List of quadruples, which we represent as string arrays
     private final ArrayList<String[]> quads = new ArrayList<>();
+    private Stack<Integer> paramCount = new Stack<>();
     private SymbolTable localTable = new SymbolTable();
-    private SymbolTableEntry currentFunction;
+    private FPEntry currentFunction;
     private boolean global = true;
     private boolean insert = true;
     private boolean array = false;
@@ -216,11 +215,11 @@ public class SemanticAction {
         array = false;
     }
 
-    private void five(){
+    private void five() {
         insert = false;
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
         generate("PROCBEGIN", id.getName());
-        localStore = quadruples.getNextQuad();
+        localStore = quads.size();
         generate("alloc", "_");
     }
 
@@ -241,7 +240,7 @@ public class SemanticAction {
         generate("exit");
     }
 
-    private void eleven(){
+    private void eleven() {
         global = true;
         // delete the local symbol table
         localTable = new SymbolTable();
@@ -251,14 +250,14 @@ public class SemanticAction {
         generate("PROCEND");
     }
 
-    private void fifteen(Token token) throws SymbolTableError{
+    private void fifteen(Token token) throws SymbolTableError {
         // create a variable to store the result of the function
-        VariableEntry result = createTemp(token.getValue() + "_RESULT", TokenType.INTEGER);
+        VariableEntry result = create(token.getValue() + "_RESULT", TokenType.INTEGER);
         // set the result tag of the variable entry class
-        result.setResult();
+        result.isResult();
         // create a new function entry with name from the token
         // from the parser and the result variable just created
-        SymbolTableEntry id = new FunctionEntry(token.getValue(), result);,
+        FPEntry id = new FunctionEntry(token.getValue().toString(), result);
         globalTable.insert(id);
         global = false;
         localMemory = 0;
@@ -267,7 +266,7 @@ public class SemanticAction {
     }
 
     // this action sets the type of the function and its result
-    private void sixteen(){
+    private void sixteen() {
         Token type = (Token) stack.pop();
         FunctionEntry id = (FunctionEntry) stack.peek();
         id.setType(type.getType());
@@ -275,6 +274,72 @@ public class SemanticAction {
         id.setResultType(type.getType());
         currentFunction = id;
     }
+
+    private void seventeen(Token token) throws SymbolTableError {
+        // create a new procedure entry with the name of the token
+        // from the parser
+        FPEntry id = new ProcedureEntry(token.getValue().toString());
+        globalTable.insert(id);
+        global = false;
+        localMemory = 0;
+        currentFunction = id;
+        stack.push(id);
+    }
+
+    private void nineteen() {
+        paramCount = new Stack<>();
+        paramCount.push(0);
+    }
+
+    private void twenty() {
+        FPEntry id = (FPEntry) stack.peek();
+        int numParams = paramCount.pop();
+        // id is a function entry or a procedure entry
+        id.setParams(numParams);
+    }
+
+    private void twentyOne() throws SymbolTableError{
+        Token type = (Token) stack.pop();
+
+        // if array, then pop the upper and lower bounds
+        int upperBound = -1;
+        int lowerBound = -1;
+        if (array) {
+            upperBound = (int) ((Token) stack.pop()).getValue();
+            lowerBound = (int) ((Token) stack.pop()).getValue();
+        }
+
+        // the tokens on the stack, which represent parameters,
+        // must be added from the bottom-most id to the top-most
+        Stack<Token> parameters = new Stack<>();
+
+        // as the ids are popped off the stack, push them onto to
+        // the new stack to reverse the order
+        while (((SymbolTableEntry) stack.peek()).getType() == TokenType.IDENTIFIER) {
+            parameters.push((Token) stack.pop());
+        }
+
+        while (!parameters.empty()) {
+            Token param = parameters.pop();
+            AVEntry var;
+            if (array)
+                var = new ArrayEntry(param.getValue().toString(), localMemory,
+                        type.getType(), upperBound, lowerBound);
+            else
+                var = new VariableEntry(param.getValue().toString(), localMemory, type.getType());
+
+            var.setParameter();
+            localTable.insert(var);
+            // current function is either a procedure or function entry
+            currentFunction.addParameter(var);
+            localMemory++;
+            // increment the top of paramCount
+            paramCount.push(paramCount.pop() + 1);
+        }
+        array = false;
+
+    }
+
     /**
      * Handles control flow
      */
@@ -429,6 +494,68 @@ public class SemanticAction {
             execute(52, null, token);
         } else
             stack.push(null);
+    }
+
+    private void thirtyFive(){
+        EType etype = (EType) stack.pop();
+        // id is a procedure entry
+        ProcedureEntry id = (ProcedureEntry) stack.peek();
+        stack.push(etype);
+        paramCount.push(0);
+        paramStack.push(id.getParamInfo());
+    }
+
+    private void thirtySix(){
+        EType etype = (EType) stack.pop();
+        ProcedureEntry id = (ProcedureEntry) stack.pop();
+        if (id.getParams() != 0) {
+//            throw wrong number of parameters error
+        }
+        generate("call", id.getName(), "0");
+    }
+
+    private void thirtySeven(Token token) throws SemanticError{
+        EType etype = (EType) stack.pop();
+        if (etype != EType.ARITHMETIC) {
+            throw SemanticError.eTypeError(etype, token);
+        }
+
+        SymbolTableEntry id = (SymbolTableEntry) stack.peek();
+        if (id is not a variable, constant, function result or array) {
+            throw bad param type error
+        }
+
+        // increment the top of paramCount
+        paramCount.push(paramCount.pop() + 1);
+
+        // find the name of the procedure/function on the bottom of the stack
+        Stack parameters = new Stack();
+        while(!(stack.peek() instanceof AVEntry)) {
+            parameters.push(stack.pop());
+        }
+        // funcId is a procedure or function entry
+        SymbolTableEntry funcId = stack.peek();
+        while (!parameters.empty()) {
+            stack.push(parameters.pop());
+        }
+
+        if (funcId is not READ or WRITE) {
+            if (paramCount.peek() > funcId.getNumberofParameters()) {
+                throw wrong number of params error
+            }
+            SymbolTableEntry param = paramStack.peek().get(nextParam);
+            if (id.getType() != param.getType()) {
+                throw bad param type error
+            }
+            if (param.isArray()) {
+                if ((id.getLowerBound() != param.getLowerBound()) ||
+                        (id.getUpperBound() != param.getUpperBound())) {
+                    throw bad param type error
+                }
+            }
+            nextParam++;
+        }
+
     }
 
     /**
@@ -740,15 +867,16 @@ public class SemanticAction {
     /**
      * Handles array variables
      */
-    private void fiftyThree() {
+    private void fiftyThree() throws SemanticError {
         EType etype = (EType) stack.pop();
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
         if (id.isFunction()) {
-           if (id != currentFunction) {
-               throw illegal procedure error
-           }
-           stack.push(id.getResult());
-           stack.push(EType.ARITHMETIC);
+            FunctionEntry fnId = (FunctionEntry) id;
+            if (fnId != currentFunction)
+                throw SemanticError.illegalProcedure(id);
+
+            stack.push(fnId.getResult());
+            stack.push(EType.ARITHMETIC);
 
         } else {
             stack.push(id);
@@ -894,17 +1022,8 @@ public class SemanticAction {
         return getSTEPrefix(ste) + getSTEAddress(ste);
     }
 
-    /**
-     * Creates a new variable entry and inserts it into the proper symbol table.
-     *
-     * @param type type of variable
-     * @return the variable entry
-     * @throws SymbolTableError if a variable with this name is already in the symbol table
-     */
-    private VariableEntry createTemp(TokenType type) throws SymbolTableError {
-        tempCt++;
-
-        VariableEntry ve = new VariableEntry("$$temp" + tempCt, type);
+    private VariableEntry create(String name, TokenType type) throws SymbolTableError {
+        VariableEntry ve = new VariableEntry(name, type);
         // Global or local?
         if (global) {
             ve.setAddress(-1 * globalMemory);
@@ -916,6 +1035,18 @@ public class SemanticAction {
             localTable.insert(ve);
         }
         return ve;
+    }
+
+    /**
+     * Creates a new variable entry and inserts it into the proper symbol table.
+     *
+     * @param type type of variable
+     * @return the variable entry
+     * @throws SymbolTableError if a variable with this name is already in the symbol table
+     */
+    private VariableEntry createTemp(TokenType type) throws SymbolTableError {
+        tempCt++;
+        return create("$$temp" + tempCt, type);
     }
 
     /**
@@ -934,10 +1065,10 @@ public class SemanticAction {
         // Both integers
         if (int1 && int2)
             return 0;
-        // Both reals
+            // Both reals
         else if (!int1 && !int2)
             return 1;
-        // Different types
+            // Different types
         else if (int2)
             return 2;
         else
@@ -1041,7 +1172,7 @@ public class SemanticAction {
         return " ";
     }
 
-    private List merge(List l1, List l2){
+    private List merge(List l1, List l2) {
         // Going to some length to avoid an unchecked type warning, ensuring type safety
         return Stream.of(l1.toArray(), l2.toArray()).flatMap(Stream::of).collect(Collectors.toList());
     }

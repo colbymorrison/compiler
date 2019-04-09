@@ -6,9 +6,9 @@ import compiler.Lexer.TokenType;
  * Abstract symbol table entry
  */
 public abstract class SymbolTableEntry {
-    final String name;
+    String name;
     TokenType type;
-    private boolean reserved;
+    private boolean reserved = false;
 
     SymbolTableEntry(String name) {
         this.name = name;
@@ -23,10 +23,6 @@ public abstract class SymbolTableEntry {
     }
 
     public boolean isFunction() {
-        return false;
-    }
-
-    public boolean isFunctionResult() {
         return false;
     }
 
@@ -45,12 +41,17 @@ public abstract class SymbolTableEntry {
     public boolean isConstant() {
         return false;
     }
+
     public void setReserved(boolean res) {
         this.reserved = res;
     }
 
     public String getName() {
         return name;
+    }
+
+    public void setType(TokenType type) {
+        this.type = type;
     }
 
     public TokenType getType(){

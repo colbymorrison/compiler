@@ -41,6 +41,4 @@ public class SemanticError extends CompilerError {
     public static SemanticError idIsNotArray(SymbolTableEntry id, Token token){
         return new SemanticError(id.getName() + " is not an array"+CompilerError.lineMsg(token.getRow(), token.getCol()));
     }
-
-
 }
