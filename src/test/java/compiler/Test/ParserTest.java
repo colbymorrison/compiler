@@ -102,8 +102,6 @@ class ParserTest {
             Lexer lexer = new Lexer(f.getAbsolutePath());
             Parser parser = new Parser(lexer, true);
             parser.parse();
-//            }
         }
     }
-
 }
