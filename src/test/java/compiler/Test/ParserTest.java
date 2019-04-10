@@ -36,6 +36,7 @@ class ParserTest {
             passing.add("phase3-" + i + ".vas");
         }
         passing.add("phase3-7.vas");
+        passing.add("phase3-8.vas");
         testParserHard(RESPATH + "SemAct3", passing);
     }
 
@@ -47,7 +48,7 @@ class ParserTest {
             String name = f.getName();
             System.out.println("---------------------------");
             System.out.println(name);
-           // if(!name.equals("phase3-7.vas"))
+//            if(!name.equals("phase3-8.vas"))
 //                continue;
             // If the file shouldn't throw an error, check it against correct file
             if (passing.contains(name)) {
@@ -101,8 +102,6 @@ class ParserTest {
             Lexer lexer = new Lexer(f.getAbsolutePath());
             Parser parser = new Parser(lexer, true);
             parser.parse();
-//            }
         }
     }
-
 }

@@ -94,6 +94,7 @@ public class SemanticAction {
                 twentyTwo(token);
                 break;
             case 24:
+                //Store line number of beginning of loop.
                 stack.push(quads.size());
                 break;
             case 25:
@@ -345,7 +346,7 @@ public class SemanticAction {
     }
 
     /**
-     * Handles control flow
+     * Update branch destination for IF -> #t to next quad.
      */
     private void twentyTwo(Token token) throws SemanticError {
         EType etype = (EType) stack.pop();
@@ -355,21 +356,29 @@ public class SemanticAction {
         // Always casting to generic List instead of List<Integer> to avoid unchecked cast warnings
         List EFalse = (List) stack.pop();
         List ETrue = (List) stack.pop();
-        // If what we're checking is true, it'll happen in the next address
+        // Backpatch destinations in ETRUE using the number of the next quad (where the TRUE case is).
         backpatch(ETrue, quads.size());
         stack.push(ETrue);
         stack.push(EFalse);
     }
 
+    /**
+     * Initialisation for a WHILE loop.
+     * This code is the same as action 22, but it happens in the case of a while loop instead of an if.
+     */
     private void twentyFive(Token token) throws SemanticError {
         twentyTwo(token); // They're exactly the same??
     }
 
+    /**
+     * Write code at end of WHILE loop.
+     */
     private void twentySix() {
         List EFalse = (List) stack.pop();
         stack.pop();
-        // beginLoop is pushed onto the stack in action 24
+        // beginLoop is pushed onto the stack in action 24. It's the start of the loop
         generate("goto", Integer.toString((int) stack.pop()));
+        // Go to the next line when the condition fails
         backpatch(EFalse, quads.size());
     }
 
@@ -378,11 +387,12 @@ public class SemanticAction {
      */
     private void twentySeven() {
         // Where to go after else is the next generated code
+        // skipElse is the first line of the else code
         List skipElse = Collections.singletonList(quads.size());
         generate("goto", "_"); // Here it is!
         List EFalse = (List) stack.pop();
         List ETrue = (List) stack.pop();
-        // Where to go if we're false is the next address
+        // Backpatch EFalse with the line number of skipElse
         backpatch(EFalse, quads.size());
         stack.push(skipElse);
         // Put ETrue and EFalse back on the stack
@@ -391,23 +401,24 @@ public class SemanticAction {
     }
 
     /**
-     * Handles else statement.
+     * End of else statement.
      */
     private void twentyEight() {
         stack.pop();
         stack.pop();
         // skipElse is pushed onto the stack in action 27. Skip else is where we go after the else.
         List skipElse = (List) stack.pop();
-        // Address for skip else is the next quad??
+        // Backpatch where we go after else case
         backpatch(skipElse, quads.size());
     }
 
     /**
-     * Handles control flow
+     * End of if without else.
      */
     private void twentyNine() {
         List EFalse = (List) stack.pop();
         stack.pop();
+        // There is no else case so the false case is just the next line
         backpatch(EFalse, quads.size());
     }
 
@@ -458,7 +469,7 @@ public class SemanticAction {
     }
 
     /**
-     * Handles array variables
+     * Ensures top of stack is an array
      */
     private void thirtyTwo(Token token) throws SemanticError {
         EType etype = (EType) stack.pop();
@@ -480,12 +491,14 @@ public class SemanticAction {
             throw SemanticError.eTypeError(etype, token);
 
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
-        if (id.getType() != TokenType.INTEGER)
-            throw SemanticError.typeMismatch("Integer", id.getType().toString(), token.getRow(), token.getCol());
+        TokenType type = id.getType();
+        if (type != TokenType.INTEGER && type != TokenType.INTCONSTANT)
+            throw SemanticError.typeMismatch("Integer", type.toString(), token.getRow(), token.getCol());
 
         ArrayEntry array = (ArrayEntry) stack.peek();
-        // temp2 is the offset (I think)
+        // Lower bound of the array, lowest index might not be 0
         VariableEntry temp1 = createTemp(TokenType.INTEGER);
+        // Memory offset
         VariableEntry temp2 = createTemp(TokenType.INTEGER);
         generate("move", Integer.toString(array.getLowBound()), temp1);
         generate("sub", id, temp1, temp2);
@@ -493,7 +506,7 @@ public class SemanticAction {
     }
 
     /**
-     * Handles array variables
+     * Function or procedure
      */
     private void thirtyFour(Token token) throws SemanticError, SymbolTableError {
         EType etype = (EType) stack.pop();
@@ -570,7 +583,7 @@ public class SemanticAction {
     }
 
     /**
-     * Handle RelOp expressions
+     * Ensure arithmetic operation
      */
     private void thirtyEight(Token token) throws SemanticError {
         EType etype = (EType) stack.pop();
@@ -625,9 +638,10 @@ public class SemanticAction {
 
         // If the operator is uminus, create a temp var to store the result
         if (sign.getType() == TokenType.UNARYMINUS) {
-            VariableEntry temp = createTemp(id.getType());
+            TokenType type = id.getType();
+            VariableEntry temp = createTemp(type);
             // Integer or float?
-            if (id.getType() == TokenType.INTEGER)
+            if (id.getType() == TokenType.INTEGER || id.getType() == TokenType.INTCONSTANT)
                 generate("uminus", id, temp);
             else
                 generate("fuminus", id, temp);
@@ -735,8 +749,6 @@ public class SemanticAction {
     /**
      * Evaluate multiplication, division, modular arithmetic, and AND
      *
-     * @throws SymbolTableError
-     * @throws SemanticError
      */
     private void fourtyFive() throws SymbolTableError, SemanticError {
         EType etype = (EType) stack.pop();
@@ -804,7 +816,6 @@ public class SemanticAction {
      * Helper function for actions 45 and 46, their final else case is the same code.
      * Performs an operation when either id1 or id2 is not an integer.
      *
-     * @throws SymbolTableError
      */
     private void checkAdd(SymbolTableEntry id1, SymbolTableEntry id2, String opcode) throws SymbolTableError {
         // id1 and id2 are both reals
@@ -826,8 +837,6 @@ public class SemanticAction {
      * Push identifiers & constants onto the stack for evaluation in an expression
      *
      * @param token identifier or constant
-     * @throws SemanticError
-     * @throws SymbolTableError
      */
     private void fourtySix(Token token) throws SemanticError, SymbolTableError {
         if (token.getType() == TokenType.IDENTIFIER) {
@@ -852,7 +861,7 @@ public class SemanticAction {
     }
 
     /**
-     * Handles 'not'
+     * Handles NOT reserved word
      */
     private void fourtySeven(Token token) throws SemanticError {
         EType etype = (EType) stack.pop();
@@ -888,7 +897,7 @@ public class SemanticAction {
     }
 
     /**
-     * Handles array variables
+     * Lookup variable or function result
      */
     private void fiftyThree() throws SemanticError {
         EType etype = (EType) stack.pop();
@@ -908,7 +917,7 @@ public class SemanticAction {
     }
 
     /**
-     * Handles array variables
+     * Confirm statement is a procedure call
      */
     private void fiftyFour() throws SemanticError {
         EType etype = (EType) stack.pop();
@@ -1028,6 +1037,7 @@ public class SemanticAction {
     private void generate(String tviCode, String operand1, SymbolTableEntry operand2) throws SymbolTableError {
         generate(tviCode, operand1, steAddr(operand2));
     }
+
 
     /**
      * For a symbol table entry, returns a string for the local or global address
