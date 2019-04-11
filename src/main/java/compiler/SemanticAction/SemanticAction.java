@@ -507,10 +507,10 @@ public class SemanticAction {
     private void thirtyFive(){
         EType etype = (EType) stack.pop();
         // id is a procedure entry
-        ProcedureEntry id = (ProcedureEntry) stack.peek();
+        FPEntry id = (ProcedureEntry) stack.peek();
         stack.push(etype);
         paramCount.push(0);
-        paramStack.push(id.getParamInfo());
+        id.getParamInfo().forEach(paramStack::push);
     }
 
     private void thirtySix(){
