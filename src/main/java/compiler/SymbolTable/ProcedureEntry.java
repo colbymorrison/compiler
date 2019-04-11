@@ -11,6 +11,10 @@ public class ProcedureEntry extends FPEntry {
         super(name);
     }
 
+    public boolean isProcedure(){
+        return true;
+    }
+
     public String toString(){
         return "Procedure[# params: " + getParams() + ", paramInfo: " + getParamInfo() + "]";
     }

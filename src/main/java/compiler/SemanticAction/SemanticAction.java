@@ -95,6 +95,9 @@ public class SemanticAction {
             case 11:
                 eleven();
                 break;
+            case 13:
+                stack.push(prevToken);
+                break;
             case 15:
                 fifteen(prevToken);
                 break;
@@ -112,9 +115,6 @@ public class SemanticAction {
                 break;
             case 21:
                 twentyOne();
-                break;
-            case 13:
-                stack.push(prevToken);
                 break;
             case 22:
                 twentyTwo(token);
@@ -356,6 +356,9 @@ public class SemanticAction {
         id.setParams(numParams);
     }
 
+    /**
+     * Get number of parameters
+     */
     private void twentyOne() throws SymbolTableError {
         Token type = (Token) stack.pop();
 
@@ -373,8 +376,10 @@ public class SemanticAction {
 
         // as the ids are popped off the stack, push them onto to
         // the new stack to reverse the order
-        while (((SymbolTableEntry) stack.peek()).getType() == TokenType.IDENTIFIER) {
+        Object top = stack.peek();
+        while (top instanceof Token && ((Token) top).getType() == TokenType.IDENTIFIER) {
             parameters.push((Token) stack.pop());
+            top = stack.peek();
         }
 
         while (!parameters.empty()) {
@@ -1481,6 +1486,4 @@ public class SemanticAction {
     public Stack<Object> getStack() {
         return stack;
     }
-
-
 }

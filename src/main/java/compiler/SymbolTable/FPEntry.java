@@ -1,10 +1,11 @@
 package compiler.SymbolTable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FPEntry extends SymbolTableEntry {
     private int params;
-    private List<AVEntry> paramInfo;
+    private List<AVEntry> paramInfo = new ArrayList<>();
 
     FPEntry(String name, int params, List<AVEntry> paramInfo){
         super(name);

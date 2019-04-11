@@ -53,9 +53,9 @@ class ParserTest {
             String name = f.getName();
             System.out.println("---------------------------");
             System.out.println(name);
-//            if(!name.equals("phase3-8.vas"))
-//                continue;
-            // If the file shouldn't throw an error, check it against correct file
+            if(!name.equals("func-manyinputs.pas"))
+                continue;
+             //If the file shouldn't throw an error, check it against correct file
             if (!failing.contains(name)) {
                 String[] generatedCodes = getCodes(f);
 
