@@ -1,0 +1,27 @@
+CODE
+1:  call main, 0
+2:  exit
+3:  PROCBEGIN SUM
+4:  alloc 3
+5:  add ^%0, ^%1, %2
+6:  move %2, _3
+7:  free 3
+8:  PROCEND
+9:  PROCBEGIN main
+10:  alloc 9
+11:  move 10, _4
+12:  move _4, _2
+13:  move 20, _5
+14:  move _5, _1
+15:  param @_2
+16:  param @_1
+17:  call SUM, 2
+18:  move _3, _6
+19:  move 2, _8
+20:  mul _6, _8, _7
+21:  move _7, _0
+22:  print "K = "
+23:  outp _0
+24:  newl
+25:  free 9
+26:  PROCEND

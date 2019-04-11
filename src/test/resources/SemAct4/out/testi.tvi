@@ -1,0 +1,32 @@
+CODE
+1:  call main, 0
+2:  exit
+3:  PROCBEGIN TESTI
+4:  alloc 7
+5:  blt ^%0, ^%1, 7
+6:  goto 9
+7:  move ^%1, _3
+8:  goto 16
+9:  move 1, %3
+10:  add ^%1, %3, %2
+11:  param %0
+12:  param @%2
+13:  call TESTI, 2
+14:  move _3, %6
+15:  move %6, _3
+16:  free 7
+17:  PROCEND
+18:  PROCBEGIN main
+19:  alloc 7
+20:  move 3, _4
+21:  param @_4
+22:  move 1, _5
+23:  param @_5
+24:  call TESTI, 2
+25:  move _3, _6
+26:  move _6, _0
+27:  print "C = "
+28:  outp _0
+29:  newl
+30:  free 7
+31:  PROCEND

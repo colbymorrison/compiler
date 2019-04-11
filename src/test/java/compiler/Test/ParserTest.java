@@ -23,27 +23,32 @@ class ParserTest {
 
     @Test
     void testSemAct2() throws CompilerError, IOException {
-        List<String> passing = new ArrayList<>();
-        passing.add("phase2-6_ns.vas");
-        passing.add("phase2-1_ns.vas");
-        testParserHard(RESPATH + "SemAct2", passing);
+        List<String> failing = new ArrayList<>();
+        for(int i = 2; i <= 5; i++)
+            failing.add("phase2-"+i+"_ns.vas");
+        failing.add("phase2-7_ns.vas");
+        testParserHard(RESPATH + "SemAct2", failing);
     }
 
     @Test
     void testSemAct3() throws CompilerError, IOException {
-        List<String> passing = new ArrayList<>();
-        for (int i = 1; i <= 4; i++) {
-            passing.add("phase3-" + i + ".vas");
-        }
-        passing.add("phase3-7.vas");
-        passing.add("phase3-8.vas");
-        testParserHard(RESPATH + "SemAct3", passing);
+        List<String> failing = new ArrayList<>();
+        failing.add("phase3-5.vas");
+        failing.add("phase3-6.vas");
+        testParserHard(RESPATH + "SemAct3", failing);
+    }
+
+    @Test
+    void testSemAct4() throws CompilerError, IOException{
+        List<String> failing = new ArrayList<>();
+        failing.add("missing-semicolon.pas");
+        testParserHard(RESPATH + "SemAct4", failing);
     }
 
     /**
      * Tests parser for correct opcodes
      */
-    void testParserHard(String path, List<String> passing) throws CompilerError, IOException {
+    void testParserHard(String path, List<String> failing) throws CompilerError, IOException {
         for (File f : Objects.requireNonNull(new File(path + "/in").listFiles())) {
             String name = f.getName();
             System.out.println("---------------------------");
@@ -51,7 +56,7 @@ class ParserTest {
 //            if(!name.equals("phase3-8.vas"))
 //                continue;
             // If the file shouldn't throw an error, check it against correct file
-            if (passing.contains(name)) {
+            if (!failing.contains(name)) {
                 String[] generatedCodes = getCodes(f);
 
                 // Read test file to get codes to check against

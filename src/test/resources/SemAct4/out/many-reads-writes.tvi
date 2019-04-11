@@ -1,0 +1,48 @@
+CODE
+1:  call main, 0
+2:  exit
+3:  PROCBEGIN main
+4:  alloc 9
+5:  inp _4
+6:  inp _3
+7:  inp _1
+8:  inp _0
+9:  finp _8
+10:  finp _7
+11:  finp _6
+12:  finp _5
+13:  print "I = "
+14:  outp _4
+15:  newl
+16:  print "J = "
+17:  outp _3
+18:  newl
+19:  print "L = "
+20:  outp _1
+21:  newl
+22:  print "M = "
+23:  outp _0
+24:  newl
+25:  print "J = "
+26:  outp _3
+27:  newl
+28:  print "L = "
+29:  outp _1
+30:  newl
+31:  print "P = "
+32:  foutp _6
+33:  newl
+34:  print "Q = "
+35:  foutp _5
+36:  newl
+37:  print "M = "
+38:  outp _0
+39:  newl
+40:  print "L = "
+41:  outp _1
+42:  newl
+43:  print "I = "
+44:  outp _4
+45:  newl
+46:  free 9
+47:  PROCEND

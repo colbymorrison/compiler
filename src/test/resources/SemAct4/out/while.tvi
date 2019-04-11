@@ -1,0 +1,460 @@
+CODE
+1:  call main, 0
+2:  exit
+3:  PROCBEGIN TESTI
+4:  alloc 7
+5:  blt ^%0, ^%1, 7
+6:  goto 9
+7:  move ^%1, _25
+8:  goto 16
+9:  move 1, %3
+10:  add ^%1, %3, %2
+11:  param %0
+12:  param @%2
+13:  call TESTI, 2
+14:  move _25, %6
+15:  move %6, _25
+16:  free 7
+17:  PROCEND
+18:  PROCBEGIN SUM
+19:  alloc 3
+20:  fadd ^%0, ^%1, %2
+21:  move %2, _26
+22:  free 3
+23:  PROCEND
+24:  PROCBEGIN EXTERNALSUM
+25:  alloc 1
+26:  add _3, _2, %0
+27:  move %0, _27
+28:  free 1
+29:  PROCEND
+30:  PROCBEGIN TESTC
+31:  alloc 30
+32:  move 1, %2
+33:  move 1, %4
+34:  sub %4, %2, %3
+35:  load ^%0, %3, %5
+36:  move 1, %6
+37:  move 1, %8
+38:  sub %8, %6, %7
+39:  load ^%1, %7, %9
+40:  add %5, %9, %10
+41:  print "$$TEMP13 = "
+42:  outp %10
+43:  newl
+44:  move 1, %11
+45:  move 2, %13
+46:  sub %13, %11, %12
+47:  load ^%0, %12, %14
+48:  move 1, %15
+49:  move 2, %17
+50:  sub %17, %15, %16
+51:  load ^%1, %16, %18
+52:  add %14, %18, %19
+53:  print "$$TEMP22 = "
+54:  outp %19
+55:  newl
+56:  move 1, %20
+57:  move 3, %22
+58:  sub %22, %20, %21
+59:  load ^%0, %21, %23
+60:  move 1, %24
+61:  move 3, %26
+62:  sub %26, %24, %25
+63:  load ^%1, %25, %27
+64:  add %23, %27, %28
+65:  print "$$TEMP31 = "
+66:  outp %28
+67:  newl
+68:  move 500, %29
+69:  move %29, _28
+70:  free 30
+71:  PROCEND
+72:  PROCBEGIN TESTB
+73:  alloc 6
+74:  print "A = "
+75:  outp ^%0
+76:  newl
+77:  print "B = "
+78:  outp ^%1
+79:  newl
+80:  print "C = "
+81:  foutp ^%2
+82:  newl
+83:  print "D = "
+84:  foutp ^%3
+85:  newl
+86:  print "E = "
+87:  foutp ^%4
+88:  newl
+89:  print "F = "
+90:  foutp ^%5
+91:  newl
+92:  free 6
+93:  PROCEND
+94:  PROCBEGIN main
+95:  alloc 177
+96:  move 1, _30
+97:  uminus _30, _29
+98:  move _29, _4
+99:  move 0, _31
+100:  move _31, _3
+101:  move 1, _32
+102:  move _32, _2
+103:  move 2, _33
+104:  move _33, _1
+105:  move 3, _34
+106:  move _34, _0
+107:  print "H = "
+108:  outp _4
+109:  newl
+110:  move 1, _36
+111:  uminus _36, _35
+112:  mul _4, _35, _37
+113:  move 3, _39
+114:  add _37, _39, _38
+115:  move _38, _4
+116:  print "H = "
+117:  outp _4
+118:  newl
+119:  move 1.1, _41
+120:  fuminus _41, _40
+121:  move _40, _24
+122:  move 1.1, _42
+123:  move _42, _23
+124:  move 2.1, _43
+125:  move _43, _22
+126:  move 3.1, _44
+127:  move _44, _21
+128:  move 4.1, _45
+129:  move _45, _20
+130:  move 1, _46
+131:  move 1, _48
+132:  sub _48, _46, _47
+133:  move 1, _49
+134:  stor _49, _47, _5
+135:  move 1, _50
+136:  move 2, _52
+137:  sub _52, _50, _51
+138:  move 2, _53
+139:  stor _53, _51, _5
+140:  move 1, _54
+141:  move 3, _56
+142:  sub _56, _54, _55
+143:  move 3, _57
+144:  stor _57, _55, _5
+145:  move 1, _58
+146:  move 4, _60
+147:  sub _60, _58, _59
+148:  move 4, _61
+149:  stor _61, _59, _5
+150:  move 1, _62
+151:  move 5, _64
+152:  sub _64, _62, _63
+153:  move 5, _65
+154:  stor _65, _63, _5
+155:  move 1, _67
+156:  add _3, _67, _66
+157:  move 1, _68
+158:  sub _66, _68, _69
+159:  stor _4, _69, _10
+160:  move 1, _70
+161:  sub _1, _70, _71
+162:  stor _3, _71, _10
+163:  move 1, _72
+164:  sub _0, _72, _73
+165:  stor _2, _73, _10
+166:  move 1, _74
+167:  sub _4, _74, _75
+168:  stor _1, _75, _10
+169:  add _2, _4, _76
+170:  move 1, _77
+171:  sub _76, _77, _78
+172:  stor _0, _78, _10
+173:  move 0, _79
+174:  sub _4, _79, _80
+175:  stor _24, _80, _15
+176:  move 0, _81
+177:  sub _3, _81, _82
+178:  stor _23, _82, _15
+179:  move 0, _83
+180:  sub _2, _83, _84
+181:  stor _22, _84, _15
+182:  move 0, _85
+183:  sub _1, _85, _86
+184:  stor _21, _86, _15
+185:  move 0, _87
+186:  sub _0, _87, _88
+187:  stor _20, _88, _15
+188:  move 6, _89
+189:  blt _2, _89, 191
+190:  goto 204
+191:  print "J = "
+192:  outp _2
+193:  newl
+194:  move 1, _90
+195:  sub _2, _90, _91
+196:  load _10, _91, _92
+197:  print "$$TEMP96 = "
+198:  outp _92
+199:  newl
+200:  move 1, _94
+201:  add _2, _94, _93
+202:  move _93, _2
+203:  goto 188
+204:  ble _3, _4, 206
+205:  goto 219
+206:  print "I = "
+207:  outp _3
+208:  newl
+209:  move 0, _95
+210:  sub _3, _95, _96
+211:  load _15, _96, _97
+212:  print "$$TEMP101 = "
+213:  foutp _97
+214:  newl
+215:  move 1, _99
+216:  add _3, _99, _98
+217:  move _98, _3
+218:  goto 204
+219:  move 4, _100
+220:  param @_100
+221:  move 1, _101
+222:  param @_101
+223:  call TESTI, 2
+224:  move _25, _102
+225:  print "$$TEMP106 = "
+226:  outp _102
+227:  newl
+228:  move 1, _104
+229:  move 2, _105
+230:  add _104, _105, _103
+231:  ltof _103, _106
+232:  move 3.1, _108
+233:  fadd _106, _108, _107
+234:  move 4.3, _110
+235:  fsub _107, _110, _109
+236:  move 0.2, _112
+237:  fadd _109, _112, _111
+238:  move 5, _115
+239:  ltof _115, _113
+240:  fmul _113, _111, _114
+241:  move 4, _118
+242:  ltof _118, _116
+243:  fdiv _114, _116, _117
+244:  move _117, _20
+245:  move 5, _120
+246:  move 7, _121
+247:  mul _120, _121, _119
+248:  move _119, _0
+249:  ltof _1, _122
+250:  fmul _122, _21, _123
+251:  move _123, _21
+252:  print "X = "
+253:  foutp _20
+254:  newl
+255:  print "L = "
+256:  outp _0
+257:  newl
+258:  print "V = "
+259:  foutp _21
+260:  newl
+261:  move 1, _124
+262:  move 3, _126
+263:  sub _126, _124, _125
+264:  load _10, _125, _127
+265:  move 4, _129
+266:  add _127, _129, _128
+267:  move _128, _3
+268:  print "I = "
+269:  outp _3
+270:  newl
+271:  move 1, _130
+272:  move 1, _132
+273:  sub _132, _130, _131
+274:  move 1, _133
+275:  stor _133, _131, _10
+276:  move 1, _134
+277:  move 2, _136
+278:  sub _136, _134, _135
+279:  move 2, _137
+280:  stor _137, _135, _10
+281:  move 1, _138
+282:  move 3, _140
+283:  sub _140, _138, _139
+284:  move 3, _141
+285:  stor _141, _139, _10
+286:  move 1, _142
+287:  move 4, _144
+288:  sub _144, _142, _143
+289:  move 4, _145
+290:  stor _145, _143, _10
+291:  move 1, _146
+292:  move 5, _148
+293:  sub _148, _146, _147
+294:  move 5, _149
+295:  stor _149, _147, _10
+296:  param @_10
+297:  param @_5
+298:  call TESTC, 2
+299:  move _28, _150
+300:  move _150, _3
+301:  print "I = "
+302:  outp _3
+303:  newl
+304:  move 0, _151
+305:  move _151, _3
+306:  move 0, _152
+307:  move _152, _2
+308:  move 0, _153
+309:  beq _3, _153, 311
+310:  goto 314
+311:  outp 0
+312:  newl
+313:  goto 328
+314:  move 1, _154
+315:  beq _3, _154, 317
+316:  goto 320
+317:  outp 1
+318:  newl
+319:  goto 328
+320:  move 2, _155
+321:  beq _3, _155, 323
+322:  goto 326
+323:  outp 2
+324:  newl
+325:  goto 328
+326:  outp 99
+327:  newl
+328:  move 1, _156
+329:  move _156, _3
+330:  move 0, _157
+331:  beq _3, _157, 333
+332:  goto 336
+333:  outp 0
+334:  newl
+335:  goto 350
+336:  move 1, _158
+337:  beq _3, _158, 339
+338:  goto 342
+339:  outp 1
+340:  newl
+341:  goto 350
+342:  move 2, _159
+343:  beq _3, _159, 345
+344:  goto 348
+345:  outp 2
+346:  newl
+347:  goto 350
+348:  outp 99
+349:  newl
+350:  move 2, _160
+351:  move _160, _3
+352:  move 0, _161
+353:  beq _3, _161, 355
+354:  goto 358
+355:  outp 0
+356:  newl
+357:  goto 372
+358:  move 1, _162
+359:  beq _3, _162, 361
+360:  goto 364
+361:  outp 1
+362:  newl
+363:  goto 372
+364:  move 2, _163
+365:  beq _3, _163, 367
+366:  goto 370
+367:  outp 2
+368:  newl
+369:  goto 372
+370:  outp 99
+371:  newl
+372:  move 3, _164
+373:  move _164, _3
+374:  move 0, _165
+375:  beq _3, _165, 377
+376:  goto 380
+377:  outp 0
+378:  newl
+379:  goto 394
+380:  move 1, _166
+381:  beq _3, _166, 383
+382:  goto 386
+383:  outp 1
+384:  newl
+385:  goto 394
+386:  move 2, _167
+387:  beq _3, _167, 389
+388:  goto 392
+389:  outp 2
+390:  newl
+391:  goto 394
+392:  outp 99
+393:  newl
+394:  move 0, _168
+395:  blt _3, _168, 397
+396:  goto 400
+397:  outp 0
+398:  newl
+399:  goto 402
+400:  outp 1
+401:  newl
+402:  ble _3, _2, 404
+403:  goto 407
+404:  outp 0
+405:  newl
+406:  goto 409
+407:  outp 1
+408:  newl
+409:  bne _3, _2, 411
+410:  goto 414
+411:  outp 0
+412:  newl
+413:  goto 416
+414:  outp 1
+415:  newl
+416:  bge _3, _2, 418
+417:  goto 421
+418:  outp 0
+419:  newl
+420:  goto 423
+421:  outp 1
+422:  newl
+423:  bgt _3, _2, 425
+424:  goto 428
+425:  outp 0
+426:  newl
+427:  goto 430
+428:  outp 1
+429:  newl
+430:  print "I = "
+431:  outp _3
+432:  newl
+433:  print "J = "
+434:  outp _2
+435:  newl
+436:  call EXTERNALSUM, 0
+437:  move _27, _169
+438:  ltof _169, _170
+439:  move 1.1, _172
+440:  fadd _170, _172, _171
+441:  param @_171
+442:  move 3.1, _173
+443:  param @_173
+444:  call SUM, 2
+445:  move _26, _174
+446:  print "$$TEMP178 = "
+447:  foutp _174
+448:  newl
+449:  move 1, _175
+450:  param @_175
+451:  move 2, _176
+452:  param @_176
+453:  param @_20
+454:  param @_20
+455:  param @_20
+456:  param @_20
+457:  call TESTB, 6
+458:  free 177
+459:  PROCEND

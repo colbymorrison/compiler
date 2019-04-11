@@ -1,0 +1,59 @@
+CODE
+1:  call main, 0
+2:  exit
+3:  PROCBEGIN SUM
+4:  alloc 11
+5:  print "A = "
+6:  outp ^%0
+7:  newl
+8:  print "B = "
+9:  outp ^%1
+10:  newl
+11:  print "C = "
+12:  outp ^%2
+13:  newl
+14:  print "D = "
+15:  outp ^%3
+16:  newl
+17:  mul ^%0, ^%1, %8
+18:  add %8, ^%2, %9
+19:  mul %9, ^%3, %10
+20:  move %10, _9
+21:  free 11
+22:  PROCEND
+23:  PROCBEGIN main
+24:  alloc 13
+25:  inp _4
+26:  inp _3
+27:  inp _1
+28:  inp _0
+29:  print "I = "
+30:  outp _4
+31:  newl
+32:  print "J = "
+33:  outp _3
+34:  newl
+35:  print "L = "
+36:  outp _1
+37:  newl
+38:  print "M = "
+39:  outp _0
+40:  newl
+41:  param @_4
+42:  param @_3
+43:  param @_1
+44:  param @_0
+45:  param @_8
+46:  param @_7
+47:  param @_6
+48:  param @_5
+49:  call SUM, 8
+50:  move _9, _10
+51:  move 2, _12
+52:  mul _10, _12, _11
+53:  move _11, _2
+54:  print "K = "
+55:  outp _2
+56:  newl
+57:  free 13
+58:  PROCEND
