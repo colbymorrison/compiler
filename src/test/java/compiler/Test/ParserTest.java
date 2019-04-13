@@ -53,14 +53,12 @@ class ParserTest {
             String name = f.getName();
             System.out.println("---------------------------");
             System.out.println(name);
-//            if(!name.equals("while.pas"))
-//                continue;
              //If the file shouldn't throw an error, check it against correct file
             if (!failing.contains(name)) {
                 String[] generatedCodes = getCodes(f);
 
                 // Read test file to get codes to check against
-                String fileName = f.getName().split(".pas")[0];
+                String fileName = f.getName().split(".vas")[0];
                 Path testPath = Paths.get(path, "out", fileName + ".tvi");
                 String[] testCodes = Files.lines(testPath).toArray(String[]::new);
 
@@ -105,7 +103,7 @@ class ParserTest {
 //            if(f.getName().equals("func.vas")) {
             System.out.println(f.getAbsolutePath());
             Lexer lexer = new Lexer(f.getAbsolutePath());
-            Parser parser = new Parser(lexer, true);
+            Parser parser = new Parser(lexer, false);
             parser.parse();
         }
     }

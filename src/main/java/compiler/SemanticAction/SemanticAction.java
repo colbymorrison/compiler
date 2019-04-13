@@ -1000,16 +1000,7 @@ public class SemanticAction {
     private void fifty(Token token) throws SemanticError, SymbolTableError {
         // the parameters must be generated from the bottom-most to
         // the top-most
-        Stack<SymbolTableEntry> parameters = new Stack<>();
-
-        // for each parameter on the stack
-        SymbolTableEntry top = (SymbolTableEntry) stack.peek();
-        while (top.isArray() || top.isConstant() || top.isVariable()) {
-            parameters.push((SymbolTableEntry) stack.pop());
-            if(!(stack.peek() instanceof SymbolTableEntry))
-                break;
-            top = (SymbolTableEntry) stack.peek();
-        }
+        Stack<SymbolTableEntry> parameters = createParamStack();
 
         // generate code for each of the parameters
         while (!parameters.empty()) {
@@ -1043,16 +1034,7 @@ public class SemanticAction {
      */
     private void fiftyOne(Token token) throws SemanticError, SymbolTableError{
         // get all of the parameters on the stack
-        Stack<SymbolTableEntry> parameters = new Stack<>();
-
-        // for each parameter on the stack
-        SymbolTableEntry top = (SymbolTableEntry) stack.peek();
-        while (top.isArray() || top.isConstant() || top.isVariable()) {
-            parameters.push((SymbolTableEntry) stack.pop());
-            if(!(stack.peek() instanceof SymbolTableEntry))
-                break;
-            top = (SymbolTableEntry) stack.peek();
-        }
+        Stack<SymbolTableEntry> parameters  = createParamStack();
 
         EType etype = (EType) stack.pop();
         ProcedureEntry id = (ProcedureEntry) stack.pop();
@@ -1089,6 +1071,20 @@ public class SemanticAction {
             nextParam = 0;
         }
 
+    }
+
+    private Stack<SymbolTableEntry> createParamStack(){
+        Stack<SymbolTableEntry> parameters = new Stack<>();
+
+        // for each parameter on the stack
+        SymbolTableEntry top = (SymbolTableEntry) stack.peek();
+        while (top.isArray() || top.isConstant() || top.isVariable()) {
+            parameters.push((SymbolTableEntry) stack.pop());
+            if(!(stack.peek() instanceof SymbolTableEntry))
+                break;
+            top = (SymbolTableEntry) stack.peek();
+        }
+        return parameters;
     }
 
     private void fiftyOneR(Token token) throws SymbolTableError {
