@@ -53,14 +53,14 @@ class ParserTest {
             String name = f.getName();
             System.out.println("---------------------------");
             System.out.println(name);
-            if(!name.equals("func-manyinputs.pas"))
-                continue;
+//            if(!name.equals("while.pas"))
+//                continue;
              //If the file shouldn't throw an error, check it against correct file
             if (!failing.contains(name)) {
                 String[] generatedCodes = getCodes(f);
 
                 // Read test file to get codes to check against
-                String fileName = f.getName().split(".vas")[0];
+                String fileName = f.getName().split(".pas")[0];
                 Path testPath = Paths.get(path, "out", fileName + ".tvi");
                 String[] testCodes = Files.lines(testPath).toArray(String[]::new);
 
@@ -70,10 +70,10 @@ class ParserTest {
             else {
                 try {
                     getCodes(f);
-                } catch (SemanticError e) {
+                } catch (CompilerError e) {
                     System.out.println(e.getMessage());
                 }
-                assertThrows(SemanticError.class, () -> getCodes(f));
+                assertThrows(CompilerError.class, () -> getCodes(f));
             }
         }
     }

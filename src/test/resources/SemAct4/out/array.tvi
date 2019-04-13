@@ -32,35 +32,35 @@ CODE
 31:  move 1, _27
 32:  sub _27, _25, _26
 33:  load _0, _26, _28
-34:  print "$$TEMP23 = "
+34:  print "$$temp23 = "
 35:  outp _28
 36:  newl
 37:  move 1, _29
 38:  move 2, _31
 39:  sub _31, _29, _30
 40:  load _0, _30, _32
-41:  print "$$TEMP27 = "
+41:  print "$$temp27 = "
 42:  outp _32
 43:  newl
 44:  move 1, _33
 45:  move 3, _35
 46:  sub _35, _33, _34
 47:  load _0, _34, _36
-48:  print "$$TEMP31 = "
+48:  print "$$temp31 = "
 49:  outp _36
 50:  newl
 51:  move 1, _37
 52:  move 4, _39
 53:  sub _39, _37, _38
 54:  load _0, _38, _40
-55:  print "$$TEMP35 = "
+55:  print "$$temp35 = "
 56:  outp _40
 57:  newl
 58:  move 1, _41
 59:  move 5, _43
 60:  sub _43, _41, _42
 61:  load _0, _42, _44
-62:  print "$$TEMP39 = "
+62:  print "$$temp39 = "
 63:  outp _44
 64:  newl
 65:  free 45

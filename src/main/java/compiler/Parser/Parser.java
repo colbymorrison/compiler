@@ -192,8 +192,13 @@ public class Parser {
      */
     private void dumpStack(String top, Token token, String push) {
         String out = "";
-        out += "Popped " + top + " with token " + token.getType() +
-                " at " + token.getRow() + ":" + token.getCol() + "\n";
+        out += "Popped " + top + " with token ";
+        TokenType type = token.getType();
+        if(type == TokenType.IDENTIFIER)
+            out += type + ", " + token.getValue().toString().toLowerCase();
+        else
+            out += type;
+        out += " at " + token.getRow() + ":" + token.getCol() + "\n";
         if (push.isEmpty())
             if (top.charAt(0) == '#')
                 out += "Semantic Action " + top.substring(1) + "\n" +

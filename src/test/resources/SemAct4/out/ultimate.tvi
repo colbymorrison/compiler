@@ -102,7 +102,7 @@ CODE
 101:  param @_0
 102:  call GCD, 2
 103:  move _11, _27
-104:  print "$$TEMP31 = "
+104:  print "$$temp31 = "
 105:  outp _27
 106:  newl
 107:  goto 115
@@ -110,19 +110,19 @@ CODE
 109:  param @_3
 110:  call GCD, 2
 111:  move _11, _28
-112:  print "$$TEMP32 = "
+112:  print "$$temp32 = "
 113:  outp _28
 114:  newl
 115:  move 1, _29
 116:  sub _1, _29, _30
 117:  move 6758, _31
 118:  stor _31, _30, _5
-119:  move 23e10, _32
+119:  move 23E10, _32
 120:  move _32, _10
 121:  move 1, _33
 122:  sub _1, _33, _34
 123:  load _5, _34, _35
-124:  print "$$TEMP39 = "
+124:  print "$$temp39 = "
 125:  outp _35
 126:  newl
 127:  param @_1
@@ -147,7 +147,7 @@ CODE
 146:  move 1, _42
 147:  sub _2, _42, _43
 148:  load _5, _43, _44
-149:  print "$$TEMP48 = "
+149:  print "$$temp48 = "
 150:  outp _44
 151:  newl
 152:  move 1, _46

@@ -31,7 +31,7 @@ CODE
 30:  move 1, _10
 31:  sub _9, _10, _11
 32:  load _2, _11, _12
-33:  print "$$TEMP9 = "
+33:  print "$$temp9 = "
 34:  foutp _12
 35:  newl
 36:  free 13

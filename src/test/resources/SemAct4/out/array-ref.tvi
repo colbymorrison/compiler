@@ -18,7 +18,7 @@ CODE
 17:  print "B = "
 18:  outp _0
 19:  newl
-20:  print "$$TEMP5 = "
+20:  print "$$temp5 = "
 21:  foutp _12
 22:  newl
 23:  free 13

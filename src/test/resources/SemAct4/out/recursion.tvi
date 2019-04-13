@@ -32,7 +32,7 @@ CODE
 31:  param @_0
 32:  call GCD, 2
 33:  move _2, _3
-34:  print "$$TEMP4 = "
+34:  print "$$temp4 = "
 35:  foutp _3
 36:  newl
 37:  free 4

@@ -39,7 +39,7 @@ CODE
 38:  sub %8, %6, %7
 39:  load ^%1, %7, %9
 40:  add %5, %9, %10
-41:  print "$$TEMP13 = "
+41:  print "$$temp13 = "
 42:  outp %10
 43:  newl
 44:  move 1, %11
@@ -51,7 +51,7 @@ CODE
 50:  sub %17, %15, %16
 51:  load ^%1, %16, %18
 52:  add %14, %18, %19
-53:  print "$$TEMP22 = "
+53:  print "$$temp22 = "
 54:  outp %19
 55:  newl
 56:  move 1, %20
@@ -63,7 +63,7 @@ CODE
 62:  sub %26, %24, %25
 63:  load ^%1, %25, %27
 64:  add %23, %27, %28
-65:  print "$$TEMP31 = "
+65:  print "$$temp31 = "
 66:  outp %28
 67:  newl
 68:  move 500, %29
@@ -195,7 +195,7 @@ CODE
 194:  move 1, _90
 195:  sub _2, _90, _91
 196:  load _10, _91, _92
-197:  print "$$TEMP96 = "
+197:  print "$$temp96 = "
 198:  outp _92
 199:  newl
 200:  move 1, _94
@@ -210,7 +210,7 @@ CODE
 209:  move 0, _95
 210:  sub _3, _95, _96
 211:  load _15, _96, _97
-212:  print "$$TEMP101 = "
+212:  print "$$temp101 = "
 213:  foutp _97
 214:  newl
 215:  move 1, _99
@@ -223,7 +223,7 @@ CODE
 222:  param @_101
 223:  call TESTI, 2
 224:  move _25, _102
-225:  print "$$TEMP106 = "
+225:  print "$$temp106 = "
 226:  outp _102
 227:  newl
 228:  move 1, _104
@@ -444,7 +444,7 @@ CODE
 443:  param @_173
 444:  call SUM, 2
 445:  move _26, _174
-446:  print "$$TEMP178 = "
+446:  print "$$temp178 = "
 447:  foutp _174
 448:  newl
 449:  move 1, _175

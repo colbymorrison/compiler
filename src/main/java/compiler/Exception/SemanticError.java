@@ -27,8 +27,8 @@ public class SemanticError extends CompilerError {
     }
 
     public static SemanticError badParemeterType(FPEntry func, SymbolTableEntry id, SymbolTableEntry t2, Token token){
-        return new SemanticError("Function " + func.getName() + "requires parameter of type " + t2.getType() + ". Identifier " + id.getName() +
-                "has type " + id.getType() + CompilerError.lineMsg(token.getRow(), token.getCol()));
+        return new SemanticError("Function " + func.getName() + " requires parameter of type " + t2.getType() + ". Identifier " + id.getName() +
+                " has type " + id.getType() + CompilerError.lineMsg(token.getRow(), token.getCol()));
     }
 
     public static SemanticError badNumberParams(FPEntry func, int req, Integer prov, Token token){

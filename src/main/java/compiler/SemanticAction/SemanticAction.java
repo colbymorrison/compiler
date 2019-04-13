@@ -5,10 +5,8 @@ import compiler.Exception.SymbolTableError;
 import compiler.Lexer.Token;
 import compiler.Lexer.TokenType;
 import compiler.SymbolTable.*;
-import sun.awt.Symbol;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,7 +29,7 @@ public class SemanticAction {
     private int globalStore = 0;
     private int globalMemory = 0;
     private int localMemory = 0;
-    private int tempCt = 0;
+    private int tempCt = -1; //TODO -1 for testing purposes, change to 0
 
     /**
      * Constructor, insert default entries into global table
@@ -249,7 +247,7 @@ public class SemanticAction {
             memorySize = (upperBound - lowerBound) + 1;
         }
 
-        while (!stack.isEmpty() && ((Token) stack.peek()).getType() == TokenType.IDENTIFIER) {
+        while (!stack.isEmpty() && (stack.peek() instanceof Token && (((Token) stack.peek()).getType() == TokenType.IDENTIFIER))){
             String name = ((Token) stack.pop()).getValue().toString();
             // Create array or variable entry
             entry = array
@@ -366,8 +364,8 @@ public class SemanticAction {
         int upperBound = -1;
         int lowerBound = -1;
         if (array) {
-            upperBound = (int) ((Token) stack.pop()).getValue();
-            lowerBound = (int) ((Token) stack.pop()).getValue();
+            upperBound = Integer.parseInt(((Token) stack.pop()).getValue().toString());
+            lowerBound = Integer.parseInt(((Token) stack.pop()).getValue().toString());
         }
 
         // the tokens on the stack, which represent parameters,
@@ -576,6 +574,9 @@ public class SemanticAction {
             stack.push(null);
     }
 
+    /**
+     * Set up to call a procedure
+     */
     private void thirtyFive() {
         EType etype = (EType) stack.pop();
         // id is a procedure entry
@@ -594,6 +595,9 @@ public class SemanticAction {
         generate("call", id.getName(), "0");
     }
 
+    /**
+     * Consume actual parameters in a list of parameters
+     */
     private void thirtySeven(Token token) throws SemanticError {
         EType etype = (EType) stack.pop();
         if (etype != EType.ARITHMETIC) {
@@ -601,20 +605,31 @@ public class SemanticAction {
         }
 
         SymbolTableEntry id = (SymbolTableEntry) stack.peek();
-        if (id.isParameter()) {
-            throw SemanticError.badParameter("Bad parameter: " + id.toString(), token);
+        if (id.isProcedure() || id.isFunction()) {
+            throw SemanticError.badParameter("Invalid parameter type: " + id.getName(), token); // TODO bad parameter type
         }
 
         // increment the top of paramCount
         paramCount.push(paramCount.pop() + 1);
 
         // find the name of the procedure/function on the bottom of the stack
-        Stack parameters = new Stack();
-        while (!(stack.peek() instanceof AVEntry)) {
+        Stack<Object> parameters = new Stack<>();
+        // Add parameters to temp stack until we hit a function or procedure
+        while (!(stack.peek() instanceof SymbolTableEntry) || !(((SymbolTableEntry) stack.peek()).isFunction() || ((SymbolTableEntry) stack.peek()).isProcedure())) {
             parameters.push(stack.pop());
         }
+
         // funcId is a procedure or function entry
-        FPEntry funcId = (FPEntry) stack.peek();
+        FPEntry funcId;
+        if(stack.peek() instanceof EType) {
+            EType type = (EType) stack.pop();
+            funcId = (FPEntry) stack.peek();
+            stack.push(type);
+        }
+        else
+            funcId = (FPEntry) stack.peek();
+
+        // Add parameters to stack (now in correct order)
         while (!parameters.empty()) {
             stack.push(parameters.pop());
         }
@@ -625,7 +640,8 @@ public class SemanticAction {
                 throw SemanticError.badNumberParams(funcId, funcId.getParams(), paramCount.peek(), token);
             }
             SymbolTableEntry param = paramStack.peek().get(nextParam);
-            if (id.getType() != param.getType()) {
+            TokenType retType = param.getType();
+            if (id.getType() != retType && !((retType == TokenType.INTEGER && id.getType() == TokenType.INTCONSTANT) || (retType == TokenType.REAL && id.getType() == TokenType.REALCONSTANT))) {
                 throw SemanticError.badParemeterType(funcId, id, param, token);
             }
             if (param.isArray()) {
@@ -832,7 +848,7 @@ public class SemanticAction {
             String opcode = getOpCode(operator);
             SymbolTableEntry id1 = (SymbolTableEntry) stack.pop();
 
-            if (typeCheck(id1, id2) != 0 && (opcode.equals("DIV") || opcode.equals("MOD"))) {
+            if (typeCheck(id1, id2) != 0 && (opcode.equals("div") || opcode.equals("MOD"))) {
                 // MOD and DIV require integer operands
                 throw SemanticError.badParameter("Operands of the " + opcode.toLowerCase() +
                         " operator must both be integers", operator);
@@ -849,7 +865,7 @@ public class SemanticAction {
                     generate("mul", id2, temp1, temp2);
                     generate("sub", id1, temp2, temp3);
                     stack.push(temp3);
-                } else if (opcode.equals("div")) { // div or DIV??
+                } else if (opcode.equals("DIV")) {
                     VariableEntry temp1 = createTemp(TokenType.REAL);
                     VariableEntry temp2 = createTemp(TokenType.REAL);
                     VariableEntry temp3 = createTemp(TokenType.REAL);
@@ -875,16 +891,25 @@ public class SemanticAction {
      * Performs an operation when either id1 or id2 is not an integer.
      */
     private void checkAdd(SymbolTableEntry id1, SymbolTableEntry id2, String opcode) throws SymbolTableError {
+        if(opcode.equals("DIV")) opcode="div";
         // id1 and id2 are both reals
-        if (typeCheck(id1, id2) == 1) {
+        int typeCheck = typeCheck(id1, id2);
+        if (typeCheck == 1) {
             VariableEntry temp = createTemp(TokenType.REAL);
             generate("f" + opcode, id1, id2, temp);
             stack.push(temp);
-        } else { // id1 and id2 are different types of numbers
+        }else if (typeCheck == 2){ // id1 and id2 are different types of numbers
             VariableEntry temp1 = createTemp(TokenType.REAL);
             VariableEntry temp2 = createTemp(TokenType.REAL);
             generate("ltof", id2, temp1);
             generate("f" + opcode, id1, temp1, temp2);
+            stack.push(temp2);
+        }
+        else{
+            VariableEntry temp1 = createTemp(TokenType.REAL);
+            VariableEntry temp2 = createTemp(TokenType.REAL);
+            generate("ltof", id1, temp1);
+            generate("f" + opcode, temp1, id2, temp2);
             stack.push(temp2);
         }
     }
@@ -939,7 +964,6 @@ public class SemanticAction {
      */
     private void fourtyEight(Token token) throws SymbolTableError, SemanticError {
         SymbolTableEntry offset = (SymbolTableEntry) stack.pop();
-        // offset will be implemented in later actions
         if (offset != null) {
             if (offset.isFunction()) {
                 // call action 52 with the token from the parser
@@ -982,12 +1006,15 @@ public class SemanticAction {
         SymbolTableEntry top = (SymbolTableEntry) stack.peek();
         while (top.isArray() || top.isConstant() || top.isVariable()) {
             parameters.push((SymbolTableEntry) stack.pop());
+            if(!(stack.peek() instanceof SymbolTableEntry))
+                break;
             top = (SymbolTableEntry) stack.peek();
         }
 
         // generate code for each of the parameters
         while (!parameters.empty()) {
-            generate("param", getParamPrefix(parameters.pop()));
+            SymbolTableEntry param = parameters.pop();
+            generate("param", getParamPrefix(param) + getSTEAddress(param));
             localMemory++;
         }
 
@@ -1011,6 +1038,9 @@ public class SemanticAction {
         stack.push(EType.ARITHMETIC);
     }
 
+    /**
+     * Generate code to assign memory for procedure parameters & call procedure.
+     */
     private void fiftyOne(Token token) throws SemanticError, SymbolTableError{
         // get all of the parameters on the stack
         Stack<SymbolTableEntry> parameters = new Stack<>();
@@ -1019,6 +1049,8 @@ public class SemanticAction {
         SymbolTableEntry top = (SymbolTableEntry) stack.peek();
         while (top.isArray() || top.isConstant() || top.isVariable()) {
             parameters.push((SymbolTableEntry) stack.pop());
+            if(!(stack.peek() instanceof SymbolTableEntry))
+                break;
             top = (SymbolTableEntry) stack.peek();
         }
 
@@ -1047,8 +1079,8 @@ public class SemanticAction {
 
             // Generate code for each parameter
             while (!parameters.empty()) {
-                // this is one place where you will use getParamPrefix()
-                generate("param", getParamPrefix(parameters.pop()));
+                SymbolTableEntry param = parameters.pop();
+                generate("param", getParamPrefix(param) + getSTEAddress(param));
                 localMemory++;
             }
             // Call procedure
@@ -1059,20 +1091,23 @@ public class SemanticAction {
 
     }
 
-    private void fiftyOneR(Token token) {
+    private void fiftyOneR(Token token) throws SymbolTableError {
         // for every parameter on the stack in reverse order
         Stack<SymbolTableEntry> parameters = new Stack<>();
-        while (((SymbolTableEntry) stack.peek()).isVariable()) {
+        SymbolTableEntry top = (SymbolTableEntry) stack.peek();
+        while (top.isVariable()) {
             parameters.push(((SymbolTableEntry) stack.pop()));
-
+            if(!(stack.peek() instanceof SymbolTableEntry))
+                break;
+            top = (SymbolTableEntry) stack.peek();
         }
 
         while (!parameters.empty()) {
             SymbolTableEntry id = parameters.pop();
             if (id.getType() == TokenType.REAL) {
-                generate("finp", id.getName());
+                generate("finp", getSTEPrefix(id)+getSTEAddress(id));
             } else {
-                generate("inp", id.getName());
+                generate("inp", getSTEPrefix(id)+getSTEAddress(id));
             }
         }
         stack.pop(); // EType
@@ -1081,12 +1116,14 @@ public class SemanticAction {
 
     }
 
-    private void fiftyOneW(Token token) {
+    private void fiftyOneW(Token token) throws SymbolTableError {
         // for each parameter on the stack in reverse order
         Stack<SymbolTableEntry> parameters = new Stack<>();
         SymbolTableEntry top = (SymbolTableEntry) stack.peek();
         while (top.isConstant() || top.isVariable()) {
             parameters.push((SymbolTableEntry) stack.pop());
+            if(!(stack.peek() instanceof SymbolTableEntry))
+                break;
             top = (SymbolTableEntry) stack.peek();
         }
 
@@ -1099,11 +1136,13 @@ public class SemanticAction {
                     generate("outp", id.getName());
                 }
             } else { // id is a variable entry
+                if(id.getName().equals("$$temp106"))
+                    System.out.println("hi");
                 generate("print", "\"" + id.getName() + " = \"");
                 if (id.getType() == TokenType.REAL) {
-                    generate("foutp", id.getName());
+                    generate("foutp", getSTEPrefix(id)+getSTEAddress(id));
                 } else { // id.getType() == INTEGER
-                    generate("outp", id.getName());
+                    generate("outp", getSTEPrefix(id)+getSTEAddress(id));
                 }
             }
             generate("newl");
@@ -1159,7 +1198,7 @@ public class SemanticAction {
      */
     private void fiftyFour() throws SemanticError {
         EType etype = (EType) stack.pop();
-        SymbolTableEntry id = (SymbolTableEntry) stack.pop();
+        SymbolTableEntry id = (SymbolTableEntry) stack.peek();
         stack.push(etype);
         if (!id.isProcedure()) {
             throw SemanticError.illegalProcedure(id);
@@ -1201,7 +1240,7 @@ public class SemanticAction {
             // array entries and variable entries are
             // assigned address when they are initialized
             address = Math.abs(ste.getAddress());
-        } else if (ste.isConstant()) {
+        } else if (ste.isConstant()) { // TODO THIS MOVE IS GOING BEFORE LTOF CHECK ORDER OF CALLS TO GET STE FUNCTIONS
             // constants do not have an address, and a
             // temporary variable must be created to store it
             ConstantEntry entry = (ConstantEntry) ste;
@@ -1224,6 +1263,9 @@ public class SemanticAction {
         if (global)
             return "_";
         else { // local
+            // If it's a constant we're about to generate the temp in getSTEAddr
+            if(ste.isConstant())
+                return "%";
             SymbolTableEntry entry = localTable.search(ste.getName());
             if (entry == null)  // entry is a global variable
                 return "_";
@@ -1399,10 +1441,10 @@ public class SemanticAction {
                         return "mul";
                     // division operator (/)
                     case 2:
-                        return "div";
+                        return "DIV";
                     // DIV keyword
                     case 3:
-                        return "DIV";
+                        return "div";
                     case 4:
                         return "MOD";
                     case 5:
