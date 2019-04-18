@@ -16,7 +16,7 @@ class Compiler {
      * @param filePath file path to compile
      * @param debug    should parser/semantic action debug info be printed?
      */
-    public Compiler(String filePath, boolean debug) {
+    private Compiler(String filePath, boolean debug) {
         this.parser = new Parser(new Lexer(filePath), debug);
     }
 

@@ -152,7 +152,7 @@ public class Lexer {
         if (table.containsKey(str)) {
             TokenType type = table.get(str);
             switch (str) {
-                case "OR":// IS THIS RIGHT
+                case "OR": // OR falls through to div
                 case "DIV":
                     return new Token<>(type, 3);
                 case "MOD":

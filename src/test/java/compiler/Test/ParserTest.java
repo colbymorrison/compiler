@@ -1,7 +1,6 @@
 package compiler.Test;
 
 import compiler.Exception.CompilerError;
-import compiler.Exception.SemanticError;
 import compiler.Lexer.Lexer;
 import compiler.Parser.Parser;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ class ParserTest {
         for(int i = 2; i <= 5; i++)
             failing.add("phase2-"+i+"_ns.vas");
         failing.add("phase2-7_ns.vas");
-        testParserHard(RESPATH + "SemAct2", failing);
+        testParserHard(RESPATH + "SemAct2", failing, ".vas");
     }
 
     @Test
@@ -35,20 +34,20 @@ class ParserTest {
         List<String> failing = new ArrayList<>();
         failing.add("phase3-5.vas");
         failing.add("phase3-6.vas");
-        testParserHard(RESPATH + "SemAct3", failing);
+        testParserHard(RESPATH + "SemAct3", failing, ".vas");
     }
 
     @Test
     void testSemAct4() throws CompilerError, IOException{
         List<String> failing = new ArrayList<>();
         failing.add("missing-semicolon.pas");
-        testParserHard(RESPATH + "SemAct4", failing);
+        testParserHard(RESPATH + "SemAct4", failing, ".pas");
     }
 
     /**
      * Tests parser for correct opcodes
      */
-    void testParserHard(String path, List<String> failing) throws CompilerError, IOException {
+    void testParserHard(String path, List<String> failing, String ext) throws CompilerError, IOException {
         for (File f : Objects.requireNonNull(new File(path + "/in").listFiles())) {
             String name = f.getName();
             System.out.println("---------------------------");
@@ -58,7 +57,7 @@ class ParserTest {
                 String[] generatedCodes = getCodes(f);
 
                 // Read test file to get codes to check against
-                String fileName = f.getName().split(".vas")[0];
+                String fileName = f.getName().split(ext)[0];
                 Path testPath = Paths.get(path, "out", fileName + ".tvi");
                 String[] testCodes = Files.lines(testPath).toArray(String[]::new);
 

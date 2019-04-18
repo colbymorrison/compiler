@@ -8,7 +8,7 @@ import compiler.SymbolTable.SymbolTableEntry;
 //TODO make these pretty
 // Better design?
 public class SemanticError extends CompilerError {
-    public SemanticError(String message) {
+    private SemanticError(String message) {
         super(message);
     }
 
