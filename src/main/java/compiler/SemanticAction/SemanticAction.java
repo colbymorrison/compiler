@@ -22,7 +22,7 @@ public class SemanticAction {
     private SymbolTable localTable = new SymbolTable();
     private FPEntry currentFunction;
     private boolean global = true;
-    private boolean insert = true;
+    // --Commented out by Inspection (2019-04-16 11:10):private boolean insert = true;
     private boolean array = false;
     private int nextParam;
     private int localStore = 0;
@@ -66,12 +66,6 @@ public class SemanticAction {
      */
     public void execute(int num, Token token, Token prevToken) throws SemanticError, SymbolTableError {
         switch (num) {
-            case 1:
-                insert = true;
-                break;
-            case 2:
-                insert = false;
-                break;
             case 3:
                 three();
                 break;
@@ -155,7 +149,7 @@ public class SemanticAction {
                 thirtyFive();
                 break;
             case 36:
-                thirtySix();
+                thirtySix(prevToken);
                 break;
             case 37:
                 thirtySeven(prevToken);
@@ -218,10 +212,10 @@ public class SemanticAction {
                 fiftySix();
                 break;
             case 57:
-                fiftyOneR(prevToken);
+                fiftyOneR();
                 break;
             case 58:
-                fiftyOneW(prevToken);
+                fiftyOneW();
                 break;
         }
     }
@@ -269,7 +263,7 @@ public class SemanticAction {
     }
 
     private void five() {
-        insert = false;
+//        insert = false;
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
         generate("PROCBEGIN", id.getName());
         localStore = quads.size();
@@ -287,7 +281,7 @@ public class SemanticAction {
         SymbolTableEntry entry = new ProcedureEntry(id3.toString(), 0, new ArrayList<>());
         entry.setReserved(true);
         globalTable.insert(entry);
-        insert = false;
+//        insert = false;
 
         generate("call", "main", "0");
         generate("exit");
@@ -586,11 +580,14 @@ public class SemanticAction {
         paramStack.push(id.getParamInfo());
     }
 
-    private void thirtySix() {
-        EType etype = (EType) stack.pop();
+    /**
+     * Generate code to call a procedure.
+     */
+    private void thirtySix(Token token) throws SemanticError {
+        stack.pop();
         ProcedureEntry id = (ProcedureEntry) stack.pop();
         if (id.getParams() != 0) {
-//            throw wrong number of parameters error
+            throw SemanticError.badNumberParams(id, 0, id.getParams(), token);
         }
         generate("call", id.getName(), "0");
     }
@@ -1087,7 +1084,7 @@ public class SemanticAction {
         return parameters;
     }
 
-    private void fiftyOneR(Token token) throws SymbolTableError {
+    private void fiftyOneR() throws SymbolTableError {
         // for every parameter on the stack in reverse order
         Stack<SymbolTableEntry> parameters = new Stack<>();
         SymbolTableEntry top = (SymbolTableEntry) stack.peek();
@@ -1112,7 +1109,7 @@ public class SemanticAction {
 
     }
 
-    private void fiftyOneW(Token token) throws SymbolTableError {
+    private void fiftyOneW() throws SymbolTableError {
         // for each parameter on the stack in reverse order
         Stack<SymbolTableEntry> parameters = new Stack<>();
         SymbolTableEntry top = (SymbolTableEntry) stack.peek();
@@ -1152,7 +1149,7 @@ public class SemanticAction {
      * Case for function with no parameters.
      */
     private void fiftyTwo(Token token) throws SemanticError, SymbolTableError{
-        EType etype = (EType) stack.pop();
+        stack.pop();
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
         if (!id.isFunction()) {
             throw SemanticError.illegalProcedure(id);
