@@ -34,10 +34,6 @@ public abstract class SymbolTableEntry {
         return false;
     }
 
-    public boolean isReserved() {
-        return reserved;
-    }
-
     public boolean isConstant() {
         return false;
     }

@@ -2,15 +2,8 @@ package compiler.SymbolTable;
 
 import compiler.Lexer.TokenType;
 
-import java.util.List;
-
 public class FunctionEntry extends FPEntry {
     private VariableEntry result;
-
-    public FunctionEntry(String name, int params, List<AVEntry> paramInfo, VariableEntry result) {
-        super(name, params, paramInfo);
-        this.result = result;
-    }
 
     public FunctionEntry(String name, VariableEntry result){
         super(name);

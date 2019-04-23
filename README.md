@@ -63,13 +63,19 @@ Added a `type` field that is used by subclasses associated with a type.
 Added a `Compiler` class to drive the whole program. As of now it prints the generated intermediate code (or error message) to the screen.
 In the future I assume we'll want to write the intermediate code to a file. 
 
-## Submission 5 (Semantic Acion 3) Notes
-### General Notes
 
-### Semantic Action 3 Notes
+## Submission 5 (Semantic Action 3) Notes
 I added a few helper methods to reduce duplicate code within the actions. As more different types can now be added to the stack, it made sense to 
 have only one `Object` stack, and cast as needed when popping. The `merge` function can be done as a simple one liner using streams and the `makelist` function already exists 
 (`Collections.singletonList`) so I saw no  point in writing those 2 helper methods. 
+
+## Submission 6 (Semantic Action 4) Notes
+I added a few helper methods again where duplicate code showed up. After I finished and began testing, the `insert` boolean variable was not being used at all.
+I got rid of it which means that Actions 1 and 2 are not being used anymore. The same was the case of the `result` variable in the Variable Entry class, it was never used so I removed it.
+I created 2 new abstract classes in the `SymbolTable` package, `AVEntry` and `FPEntry`. `AVEntry` defines features common to Arrays and Variables and 
+`FPEntry` defines features between Functions and Procedures. These pairs of entries share common features and there were many times in the
+ semantic actions where something one one of the two types (i.e. variable or array or function or procedure). This makes it so there is substantially less casting in the actions.
+ I also cleaned up my error messages a little bit.
 
 
 

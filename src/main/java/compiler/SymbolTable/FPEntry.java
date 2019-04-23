@@ -3,7 +3,7 @@ package compiler.SymbolTable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FPEntry extends SymbolTableEntry {
+public abstract class FPEntry extends SymbolTableEntry {
     private int params;
     private List<AVEntry> paramInfo = new ArrayList<>();
 

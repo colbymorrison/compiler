@@ -38,13 +38,6 @@ public class SymbolTable {
             table.put(value.name, value);
     }
 
-    /**
-     * @return size of the table
-     */
-    public int size() {
-        return table.size();
-    }
-
     public String toString() {
         return table.toString();
     }
