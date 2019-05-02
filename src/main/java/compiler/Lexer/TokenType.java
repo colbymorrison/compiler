@@ -3,7 +3,8 @@ package compiler.Lexer;
 /**
  * Enum of possible TokenTypes
  */
-public enum TokenType {
+public enum TokenType
+{
     PROGRAM, RESULT, IF, INTCONSTANT, COMMA, LBRACKET,
     BEGIN, THEN, REALCONSTANT, SEMICOLON, RBRACKET,
     END, REAL, ELSE, RELOP, COLON, UNARYMINUS, INTEGER,

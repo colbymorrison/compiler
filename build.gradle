@@ -31,6 +31,6 @@ test{
 }
 
 application{
-    mainClassName = 'compiler.Compiler'
+    mainClassName = 'compiler.Main'
 }
 

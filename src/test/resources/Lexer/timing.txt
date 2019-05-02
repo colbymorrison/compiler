@@ -34,3 +34,8 @@ Testfile 2: 106748
 Testfile 3: 103602
 Testfile 4: 457799
 Testfile 5: 64848
+Testfile 1: 47840
+Testfile 2: 321111
+Testfile 3: 299170
+Testfile 4: 1537474
+Testfile 5: 117927

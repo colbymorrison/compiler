@@ -4,23 +4,26 @@ import compiler.Exception.SymbolTableError;
 
 import java.util.Hashtable;
 
-public class SymbolTable {
+public class SymbolTable
+{
     private final Hashtable<String, SymbolTableEntry> table;
 
     /**
      * Constructor
-     *
      */
-    public SymbolTable() {
+    public SymbolTable()
+    {
         table = new Hashtable<>();
     }
 
     /**
      * Searches for an entry in the table.
+     *
      * @param key the key to search for
      * @return the value associated with that key or null if no such value exists
      */
-    public SymbolTableEntry search(String key) {
+    public SymbolTableEntry search(String key)
+    {
         return table.getOrDefault(key, null);
     }
 
@@ -30,7 +33,8 @@ public class SymbolTable {
      * @param value the entry to insert
      * @throws SymbolTableError if an entry with that name already exists
      */
-    public void insert(SymbolTableEntry value) throws SymbolTableError {
+    public void insert(SymbolTableEntry value) throws SymbolTableError
+    {
         if (table.containsKey(value.name))
             throw new SymbolTableError(value.name);
         else
@@ -38,7 +42,8 @@ public class SymbolTable {
             table.put(value.name, value);
     }
 
-    public String toString() {
+    public String toString()
+    {
         return table.toString();
     }
 }

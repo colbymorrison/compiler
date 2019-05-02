@@ -5,7 +5,8 @@ package compiler.Lexer;
  *
  * @param <T> type of value, default is null
  */
-public class Token<T> {
+public class Token<T>
+{
     private final TokenType type;
     private T value = null;
     private int row;
@@ -16,7 +17,8 @@ public class Token<T> {
      *
      * @param tokenType type of this token.
      */
-    public Token(TokenType tokenType) {
+    public Token(TokenType tokenType)
+    {
         this.type = tokenType;
     }
 
@@ -26,7 +28,8 @@ public class Token<T> {
      * @param tokenType type of this token
      * @param value     value associated with this token
      */
-    public Token(TokenType tokenType, T value) {
+    public Token(TokenType tokenType, T value)
+    {
         this.type = tokenType;
         this.value = value;
     }
@@ -36,16 +39,19 @@ public class Token<T> {
      *
      * @return type
      */
-    public TokenType getType() {
+    public TokenType getType()
+    {
         return type;
     }
 
-    public T getValue(){
+    public T getValue()
+    {
         return value;
     }
 
 
-    public String toString() {
+    public String toString()
+    {
         // Make sure we print in same format as testfiles for easy testing
         String val;
         if (value == null)
@@ -58,19 +64,23 @@ public class Token<T> {
         return "['" + type + "', " + val + "]";
     }
 
-    public int getCol() {
+    public int getCol()
+    {
         return col;
     }
 
-    public void setCol(int col) {
+    public void setCol(int col)
+    {
         this.col = col;
     }
 
-    public int getRow() {
+    public int getRow()
+    {
         return row;
     }
 
-    public void setRow(int row) {
+    public void setRow(int row)
+    {
         this.row = row;
     }
 }

@@ -4,12 +4,14 @@ import java.io.*;
 
 /**
  * This class scans input and returns the next non-comment character in the file
- * and keeps track of the current row and column.
+ * and keeps track of the current Row and column.
  */
-class Scan {
+class Scan
+{
 
-    private int col = 0;
-    private int row = 1;
+    private int Col = 0;
+    private int Row = 1;
+
     private BufferedReader reader;
 
     /**
@@ -17,27 +19,32 @@ class Scan {
      *
      * @param fileName of file to parse
      */
-    Scan(String fileName) {
-        try {
+    Scan(String fileName)
+    {
+        try
+        {
             reader = new BufferedReader(new FileReader(fileName));
         } // If the file doesn't exist, there's not much we can do
-        catch (FileNotFoundException e) {
+        catch (FileNotFoundException e)
+        {
             System.out.println("The file " + fileName + "does not exist. Try again.");
             System.exit(1);
         }
     }
 
     /**
-     * Getter for current row of file
+     * Getter for current Row of file
      *
-     * @return row
+     * @return Row
      */
-    int getRow() {
-        return row;
+    int GetRow()
+    {
+        return Row;
     }
 
-    void setMinCol(int col) {
-        this.col -= col;
+    void SetMinCol(int col)
+    {
+        this.Col -= col;
     }
 
     /**
@@ -45,31 +52,34 @@ class Scan {
      *
      * @return col
      */
-    int getCol() {
-        return col;
+    int GetCol()
+    {
+        return Col;
     }
 
     /**
      * Reads next character from input and ensures it is valid and not part of a comment
      *
      * @return the next non-comment character from the file
-     * @throws IOException
      */
-    char getNextChar() throws IOException {
+    char GetNextChar() throws IOException
+    {
         int read = reader.read();
         char ch = (char) read;
-        col++;
+        Col++;
         //If -1, we've reached the end of the file
-        if (read == -1) {
+        if (read == -1)
+        {
             // We're using $ as eof character
             ch = '$';
             reader.close();
         }
 
         // Check for newline
-        else if (ch == '\n') {
-            col = 0;
-            row++;
+        else if (ch == '\n')
+        {
+            Col = 0;
+            Row++;
         }
         // Case is not signifigant
         return Character.toUpperCase(ch);

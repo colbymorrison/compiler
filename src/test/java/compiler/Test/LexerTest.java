@@ -62,6 +62,7 @@ class LexerTest {
             try {
                 tok = l.getNextToken();
             } catch (LexerError | NullPointerException e) {
+                System.out.println(e);
                 endTime = System.nanoTime();
                 break;
             }

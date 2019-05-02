@@ -1,5 +1,6 @@
 package compiler.SemanticAction;
 
-public enum EType {
+public enum EType
+{
     ARITHMETIC, RELATIONAL
 }

@@ -1,31 +1,38 @@
 package compiler.SymbolTable;
 
-public abstract class AVEntry extends SymbolTableEntry {
+public abstract class AVEntry extends SymbolTableEntry
+{
     private int address;
     private boolean parameter;
 
-    AVEntry(String name, int address){
+    AVEntry(String name, int address)
+    {
         super(name);
         this.address = address;
     }
 
-    AVEntry(String name){
+    AVEntry(String name)
+    {
         super(name);
     }
 
-    public boolean isParameter(){
+    public boolean isParameter()
+    {
         return parameter;
     }
 
-    public void setParameter(){
+    public void setParameter()
+    {
         this.parameter = true;
     }
 
-    public void setAddress(int address){
+    public void setAddress(int address)
+    {
         this.address = address;
     }
 
-    public int getAddress(){
+    public int getAddress()
+    {
         return address;
     }
 
