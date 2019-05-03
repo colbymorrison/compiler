@@ -3,84 +3,88 @@ package compiler.Lexer;
 /**
  * Class to model tokens
  *
- * @param <T> type of value, default is null
+ * @param <T> Type of value, default is null
  */
 public class Token<T>
 {
-    private final TokenType type;
-    private T value = null;
-    private int row;
-    private int col;
+    private final TokenType Type;
+    private T Value = null;
+    private int Row;
+    private int Col;
 
     /**
-     * Constructor that accepts just a type. Used to create tokens with no value
+     * Constructor that accepts just a Type. Used to create tokens with no value
      *
-     * @param tokenType type of this token.
+     * @param tokenType Type of this token.
      */
     public Token(TokenType tokenType)
     {
-        this.type = tokenType;
+        this.Type = tokenType;
     }
 
     /**
-     * Overloaded constructor that accepts a type and value.
+     * Overloaded constructor that accepts a Type and value.
      *
-     * @param tokenType type of this token
+     * @param tokenType Type of this token
      * @param value     value associated with this token
      */
     public Token(TokenType tokenType, T value)
     {
-        this.type = tokenType;
-        this.value = value;
+        this.Type = tokenType;
+        this.Value = value;
     }
 
-    /**
-     * Getter for type
-     *
-     * @return type
-     */
-    public TokenType getType()
+    // Gets type
+    public TokenType GetType()
     {
-        return type;
+        return Type;
     }
 
-    public T getValue()
+    // Gets value
+    public T GetValue()
     {
-        return value;
+        return Value;
     }
 
+    // Gets column
+    public int GetCol()
+    {
+        return Col;
+    }
 
+    // Sets column
+    public void SetCol(int col)
+    {
+        this.Col = col;
+    }
+
+    // Gets row
+    public int GetRow()
+    {
+        return Row;
+    }
+
+    // Sets row
+    public void SetRow(int row)
+    {
+        this.Row = row;
+    }
+
+    // To String
+    @Override
     public String toString()
     {
         // Make sure we print in same format as testfiles for easy testing
         String val;
-        if (value == null)
+        if (Value == null)
             val = "None";
-        else if (type == TokenType.ADDOP || type == TokenType.ASSIGNOP || type == TokenType.RELOP || type == TokenType.MULOP)
-            val = value.toString();
+        else if (Type == TokenType.ADDOP || Type == TokenType.ASSIGNOP || Type == TokenType.RELOP || Type == TokenType.MULOP)
+            val = Value.toString();
         else
-            val = "'" + value + "'";
+            val = "'" + Value + "'";
 
-        return "['" + type + "', " + val + "]";
+        return "['" + Type + "', " + val + "]";
     }
 
-    public int getCol()
-    {
-        return col;
-    }
 
-    public void setCol(int col)
-    {
-        this.col = col;
-    }
-
-    public int getRow()
-    {
-        return row;
-    }
-
-    public void setRow(int row)
-    {
-        this.row = row;
-    }
 }

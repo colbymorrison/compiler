@@ -60,7 +60,7 @@ class LexerTest {
         do {
             startTime = System.nanoTime();
             try {
-                tok = l.getNextToken();
+                tok = l.GetNextToken();
             } catch (LexerError | NullPointerException e) {
                 System.out.println(e);
                 endTime = System.nanoTime();
@@ -68,7 +68,7 @@ class LexerTest {
             }
             tokens.add(tok.toString());
             endTime = System.nanoTime();
-        } while (tok.getType() != TokenType.ENDOFFILE);
+        } while (tok.GetType() != TokenType.ENDOFFILE);
         timing.add(endTime - startTime);
 
         // Read text file into out list

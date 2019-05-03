@@ -4,15 +4,14 @@ import java.io.*;
 
 /**
  * This class scans input and returns the next non-comment character in the file
- * and keeps track of the current Row and column.
+ * and keeps track of the current Row and Column.
  */
 class Scan
 {
-
     private int Col = 0;
     private int Row = 1;
 
-    private BufferedReader reader;
+    private BufferedReader Reader;
 
     /**
      * Constructor
@@ -23,11 +22,11 @@ class Scan
     {
         try
         {
-            reader = new BufferedReader(new FileReader(fileName));
+            Reader = new BufferedReader(new FileReader(fileName));
         } // If the file doesn't exist, there's not much we can do
         catch (FileNotFoundException e)
         {
-            System.out.println("The file " + fileName + "does not exist. Try again.");
+            System.out.println("The file " + fileName + " does not exist. Try again.");
             System.exit(1);
         }
     }
@@ -64,7 +63,7 @@ class Scan
      */
     char GetNextChar() throws IOException
     {
-        int read = reader.read();
+        int read = Reader.read();
         char ch = (char) read;
         Col++;
         //If -1, we've reached the end of the file
@@ -72,7 +71,7 @@ class Scan
         {
             // We're using $ as eof character
             ch = '$';
-            reader.close();
+            Reader.close();
         }
 
         // Check for newline

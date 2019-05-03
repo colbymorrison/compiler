@@ -12,14 +12,14 @@ import compiler.Exception.LexerError;
  */
 public class Lexer
 {
-    private final Scan scan;
+    private final Scan Scan;
     // HashTable mapping keywords to their Types, this should be in the symbol table
     // but we haven't written that yet
     private static final String VALID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +
             ".,;:<>/*[]+-=()}{$\t\r\n ";
-    private final Hashtable<String, TokenType> table = new Hashtable<>();
-    private final Stack<Character> pushBack = new Stack<>();
-    private Token prevToken;
+    private final Hashtable<String, TokenType> Table = new Hashtable<>();
+    private final Stack<Character> PushBack = new Stack<>();
+    private Token PrevToken;
     private GenLexErr LexErr = new GenLexErr();
 
     /**
@@ -30,8 +30,8 @@ public class Lexer
     public Lexer(String pathName)
     {
         // Create a new scan object from the pathname
-        scan = new Scan(pathName);
-        initTable();
+        Scan = new Scan(pathName);
+        InitTable();
     }
 
     /**
@@ -42,69 +42,69 @@ public class Lexer
      *
      * @return The parsed token
      */
-    public Token getNextToken() throws LexerError
+    public Token GetNextToken() throws LexerError
     {
         Token token;
         int row;
         int col;
-        char c = getNextChar();
+        char c = GetNextChar();
 
         if (!VALID_CHARS.contains(Character.toString(c)))
-            throw LexErr.invalidCharacter(c, scan.GetRow(), scan.GetCol());
+            throw LexErr.InvalidCharacter(c, Scan.GetRow(), Scan.GetCol());
 
         // Skip whitespace
         while (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '{')
         {
             if (c == '{')
                 // c will be set to next char after comment
-                c = readComment();
+                c = ReadComment();
             else
-                c = getNextChar();
+                c = GetNextChar();
         }
 
-        row = scan.GetRow();
-        col = scan.GetCol();
+        row = Scan.GetRow();
+        col = Scan.GetCol();
         // Check for eof
         if (c == '$')
             token = new Token<>(TokenType.ENDOFFILE);
             // Otherwise, call correct method
         else if (Character.isLetter(c))
-            token = readIdentifier(c);
+            token = ReadIdentifier(c);
         else if (Character.isDigit(c))
-            token = readDigit(c);
+            token = ReadDigit(c);
         else if (c == '<')
-            token = readLeftAngle();
+            token = ReadLeftAngle();
         else if (c == '>')
-            token = readRightAngle();
+            token = ReadRightAngle();
         else if (c == '+' || c == '-')
-            token = readPlusMinus(c);
+            token = ReadPlusMinus(c);
         else if (c == '.')
-            token = readDot();
+            token = ReadDot();
         else if (c == ':')
-            token = readColon();
+            token = ReadColon();
         else
             token = readSymbol(c);
-        token.setCol(col);
-        token.setRow(row);
-        prevToken = token;
+        token.SetCol(col);
+        token.SetRow(row);
+        PrevToken = token;
         return token;
     }
 
     /**
      * Reads through a comment and ensures it is valid.
      */
-    private char readComment() throws LexerError
+    private char ReadComment() throws LexerError
     {
         char ch;
         do
         {
-            ch = getNextChar();
+            ch = GetNextChar();
             if (ch == '}')
             {
                 // Lookahead one character because we can't have }} in a comment
-                ch = getNextChar();
+                ch = GetNextChar();
                 if (ch == '}')
-                    throw LexErr.invalidComment(scan.GetRow(), scan.GetCol());
+                    throw LexErr.InvalidComment(Scan.GetRow(), Scan.GetCol());
                 else
                     break;
             }
@@ -115,24 +115,24 @@ public class Lexer
     /**
      * Gets the next char to feed into the DFA.
      */
-    private char getNextChar() throws LexerError
+    private char GetNextChar() throws LexerError
     {
         char ch;
         // If the stack is empty, get the next character from the reader.
         // Otherwise, we push back buy popping a character off the stack.
-        if (pushBack.isEmpty())
+        if (PushBack.isEmpty())
         {
             try
             {
-                ch = scan.GetNextChar();
+                ch = Scan.GetNextChar();
             } catch (IOException ioe)
             {
-                throw LexErr.ioError(ioe.getMessage());
+                throw LexErr.IoError(ioe.getMessage());
             }
         } else
         {
-            ch = pushBack.pop();
-            scan.SetMinCol(-1);
+            ch = PushBack.pop();
+            Scan.SetMinCol(-1);
         }
 
         return ch;
@@ -141,7 +141,7 @@ public class Lexer
     /**
      * Implements a DFA to read identifiers and keywords
      */
-    private Token readIdentifier(char ch) throws LexerError
+    private Token ReadIdentifier(char ch) throws LexerError
     {
         StringBuilder buffer = new StringBuilder();
 
@@ -149,26 +149,26 @@ public class Lexer
         while (Character.isDigit(ch) || Character.isLetter(ch))
         {
             buffer.append(ch);
-            ch = getNextChar();
+            ch = GetNextChar();
         }
 
         // If the next character is not whitespace, it's non-aphanumeric, and
         // so we push it back
         if (!(ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'))
         {
-            pushBack.push(ch);
-            scan.SetMinCol(1);
+            PushBack.push(ch);
+            Scan.SetMinCol(1);
         }
 
         // Cap keywords at length 32
         if (buffer.length() >= 32)
-            throw LexErr.idTooLong(buffer.toString(), scan.GetRow(), scan.GetCol());
+            throw LexErr.IdTooLong(buffer.toString(), Scan.GetRow(), Scan.GetCol());
 
         String str = buffer.toString();
         // Check in table to see if we have a keyword, otherwise its an identifier
-        if (table.containsKey(str))
+        if (Table.containsKey(str))
         {
-            TokenType type = table.get(str);
+            TokenType type = Table.get(str);
             switch (str)
             {
                 case "OR": // OR falls through to div
@@ -189,7 +189,7 @@ public class Lexer
      * DFA to read a digit and decide if there's an int, float, or double dot.
      * Here, the DFA is a bit more complex so we'll define a transition table.
      */
-    private Token readDigit(char ch) throws LexerError
+    private Token ReadDigit(char ch) throws LexerError
     {
         // Buffer to build string
         StringBuilder buffer = new StringBuilder();
@@ -215,7 +215,7 @@ public class Lexer
 
         while (true)
         {
-            ch = getNextChar();
+            ch = GetNextChar();
             // Index into state table
             int idx;
             if (Character.isDigit(ch))
@@ -243,8 +243,8 @@ public class Lexer
         if (accept_state[state])
         {
             // Push back last character
-            pushBack.push(ch);
-            scan.SetMinCol(1);
+            PushBack.push(ch);
+            Scan.SetMinCol(1);
             // If we only saw digits, we have an int
             if (state == 0)
                 return new Token<>(TokenType.INTCONSTANT, buffer.toString());
@@ -254,31 +254,31 @@ public class Lexer
                 // Must be state 6, double dot.
             else
             {
-                pushBack.push('.');
-                pushBack.push('.');
-                scan.SetMinCol(2);
+                PushBack.push('.');
+                PushBack.push('.');
+                Scan.SetMinCol(2);
                 // Buffer looks like 'INT..x' where x is some char, so our int is the start of the buffer
                 // Until 4 from the end
                 return new Token<>(TokenType.INTCONSTANT, buffer.substring(0, buffer.length() - 3));
             }
         } else
-            throw LexErr.invalidConstant(scan.GetRow(), scan.GetCol());
+            throw LexErr.InvalidConstant(Scan.GetRow(), Scan.GetCol());
     }
 
     /**
      * Reads tokens beginning with '<'
      */
-    private Token readLeftAngle() throws LexerError
+    private Token ReadLeftAngle() throws LexerError
     {
         // Lookahead one char to see if '<>' or '<='
-        char ch = getNextChar();
+        char ch = GetNextChar();
         if (ch == '>')
             return new Token<>(TokenType.RELOP, 2);
         else if (ch == '=')
             return new Token<>(TokenType.RELOP, 5);
         else
         {
-            pushBack.push(ch);
+            PushBack.push(ch);
             return new Token<>(TokenType.RELOP, 3);
         }
     }
@@ -286,15 +286,15 @@ public class Lexer
     /**
      * Reads tokens beginning with '<'
      */
-    private Token readRightAngle() throws LexerError
+    private Token ReadRightAngle() throws LexerError
     {
         // Lookahead one char to see if '<='
-        char ch = getNextChar();
+        char ch = GetNextChar();
         if (ch == '=')
             return new Token<>(TokenType.RELOP, 6);
         else
         {
-            pushBack.push(ch);
+            PushBack.push(ch);
             return new Token<>(TokenType.RELOP, 4);
         }
     }
@@ -302,9 +302,9 @@ public class Lexer
     /**
      * Reads tokens beginning with '+' or '-'
      */
-    private Token readPlusMinus(char ch)
+    private Token ReadPlusMinus(char ch)
     {
-        TokenType type = prevToken.getType();
+        TokenType type = PrevToken.GetType();
 
         // Use previous token to determine if we have an addop or unaryop
         if (type == TokenType.RPAREN || type == TokenType.RBRACKET || type == TokenType.IDENTIFIER ||
@@ -318,15 +318,15 @@ public class Lexer
     /**
      * Reads tokens beginning with ':'
      */
-    private Token readColon() throws LexerError
+    private Token ReadColon() throws LexerError
     {
         // Lookahead one char to see if ':='
-        char ch = getNextChar();
+        char ch = GetNextChar();
         if (ch == '=')
             return new Token<>(TokenType.ASSIGNOP);
         else
         {
-            pushBack.push(ch);
+            PushBack.push(ch);
             return new Token<>(TokenType.COLON);
         }
     }
@@ -334,15 +334,15 @@ public class Lexer
     /**
      * Reads tokens beginning with '.'
      */
-    private Token readDot() throws LexerError
+    private Token ReadDot() throws LexerError
     {
         // Lookahead one char to see if '..'
-        char ch = getNextChar();
+        char ch = GetNextChar();
         if (ch == '.')
             return new Token<>(TokenType.DOUBLEDOT);
         else
         {
-            pushBack.push(ch);
+            PushBack.push(ch);
             return new Token<>(TokenType.ENDMARKER);
         }
     }
@@ -374,36 +374,36 @@ public class Lexer
             case '=':
                 return new Token<>(TokenType.RELOP, 1);
             default:
-                throw LexErr.invalidCharacter(ch, scan.GetRow(), scan.GetCol());
+                throw LexErr.InvalidCharacter(ch, Scan.GetRow(), Scan.GetCol());
         }
     }
 
     /**
      * Initializes HashTable mapping keywords to their token type
      */
-    private void initTable()
+    private void InitTable()
     {
-        table.put("PROGRAM", TokenType.PROGRAM);
-        table.put("BEGIN", TokenType.BEGIN);
-        table.put("END", TokenType.END);
-        table.put("VAR", TokenType.VAR);
-        table.put("FUNCTION", TokenType.FUNCTION);
-        table.put("PROCEDURE", TokenType.PROCEDURE);
-        table.put("RESULT", TokenType.RESULT);
-        table.put("INTEGER", TokenType.INTEGER);
-        table.put("ARRAY", TokenType.ARRAY);
-        table.put("OF", TokenType.OF);
-        table.put("NOT", TokenType.NOT);
-        table.put("IF", TokenType.IF);
-        table.put("THEN", TokenType.THEN);
-        table.put("ELSE", TokenType.ELSE);
-        table.put("WHILE", TokenType.WHILE);
-        table.put("DO", TokenType.DO);
-        table.put("REAL", TokenType.REAL);
-        table.put("DIV", TokenType.MULOP);
-        table.put("MOD", TokenType.MULOP);
-        table.put("AND", TokenType.MULOP);
-        table.put("OR", TokenType.ADDOP);
+        Table.put("PROGRAM", TokenType.PROGRAM);
+        Table.put("BEGIN", TokenType.BEGIN);
+        Table.put("END", TokenType.END);
+        Table.put("VAR", TokenType.VAR);
+        Table.put("FUNCTION", TokenType.FUNCTION);
+        Table.put("PROCEDURE", TokenType.PROCEDURE);
+        Table.put("RESULT", TokenType.RESULT);
+        Table.put("INTEGER", TokenType.INTEGER);
+        Table.put("ARRAY", TokenType.ARRAY);
+        Table.put("OF", TokenType.OF);
+        Table.put("NOT", TokenType.NOT);
+        Table.put("IF", TokenType.IF);
+        Table.put("THEN", TokenType.THEN);
+        Table.put("ELSE", TokenType.ELSE);
+        Table.put("WHILE", TokenType.WHILE);
+        Table.put("DO", TokenType.DO);
+        Table.put("REAL", TokenType.REAL);
+        Table.put("DIV", TokenType.MULOP);
+        Table.put("MOD", TokenType.MULOP);
+        Table.put("AND", TokenType.MULOP);
+        Table.put("OR", TokenType.ADDOP);
     }
 }
 

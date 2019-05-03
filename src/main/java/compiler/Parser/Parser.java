@@ -41,7 +41,7 @@ public class Parser
         stack.push("<Goal>");
         try
         {
-            initTables();
+            InitTables();
         } catch (IOException e)
         {
             e.printStackTrace();
@@ -56,29 +56,29 @@ public class Parser
      * @throws ParserError when we've reached the end of the file and if any errors occured.
      *                     //TODO MAYBE PRINT TVI AS YOU GO
      */
-    public String parse() throws LexerError, ParserError, SymbolTableError, SemanticError
+    public String Parse() throws LexerError, ParserError, SymbolTableError, SemanticError
     {
-        Token input = lexer.getNextToken();
+        Token input = lexer.GetNextToken();
 
         // If the next token is EOF, stop
         while (!stack.isEmpty())
         {
             // Get the token's type as a string as the stack is of Strings
-            String inType = input.getType().name();
+            String inType = input.GetType().name();
             String top = stack.pop();
             // If the top of the stack a terminal (i.e. it matches a TokenType value),
             // then the input token must be that terminal
             if (Stream.of(TokenType.values()).anyMatch(x -> x.name().equals(top)))
             {
                 if (!inType.equals(top))
-                    panicMode();
+                    PanicMode();
                 else if (debug)
-                    dumpStack(top, input, "");
+                    DumpStack(top, input, "");
                 // If the stack is empty after matching, we're done
                 if (stack.isEmpty())
                     break;
                 prevToken = input;
-                input = lexer.getNextToken();
+                input = lexer.GetNextToken();
                 // Top of the stack is a non-terminal
             } else if (top.charAt(0) == '<')
             {
@@ -99,27 +99,27 @@ public class Parser
                         for (int i = rules.length - 1; i >= 0; i--)
                             stack.push(rules[i]);
                         if (debug)
-                            dumpStack(top, input, Arrays.toString(rules));
+                            DumpStack(top, input, Arrays.toString(rules));
                     }
                 } else
                 {
-                    panicMode();
-                    input = lexer.getNextToken();
+                    PanicMode();
+                    input = lexer.GetNextToken();
                 }
             }
             // Otherwise its a semantic action
             else
             {
-                action.execute(Integer.parseInt(top.substring(1)), input, prevToken);
+                action.Execute(Integer.parseInt(top.substring(1)), input, prevToken);
                 if (debug)
-                    dumpStack(top, input, "");
+                    DumpStack(top, input, "");
             }
         }
         // If there were errors during parsing, throw them
         if (!errors.isEmpty())
             ThrowErrors();
         // Otherwise get the generated intermediate code
-        return action.getInterCode();
+        return action.GetInterCode();
     }
 
     /**
@@ -128,7 +128,7 @@ public class Parser
      *
      * @throws ParserError if the end of file is reached
      */
-    private void panicMode() throws LexerError, ParserError
+    private void PanicMode() throws LexerError, ParserError
     {
         // Add the row and col of previous token to the list of error tokens
         errors.add(prevToken);
@@ -137,11 +137,11 @@ public class Parser
         // Get tokens until a semicolon or the end of the file is reached
         do
         {
-            token = lexer.getNextToken();
-        } while (token.getType() != TokenType.SEMICOLON && token.getType() != TokenType.ENDOFFILE);
+            token = lexer.GetNextToken();
+        } while (token.GetType() != TokenType.SEMICOLON && token.GetType() != TokenType.ENDOFFILE);
 
         // If its the end of the file, nothing we can do, throw the errors
-        if (token.getType() == TokenType.ENDOFFILE)
+        if (token.GetType() == TokenType.ENDOFFILE)
             ThrowErrors();
 
             // Otherwise, continue parsing by adding correct rules back to stack
@@ -158,7 +158,7 @@ public class Parser
     /**
      * Reads the parseTable and grammar from disk
      */
-    private void initTables() throws IOException
+    private void InitTables() throws IOException
     {
         Path path = Paths.get("src", "main", "resources");
         productions.add(null);
@@ -207,40 +207,39 @@ public class Parser
         for (Token error : errors)
         {
             builder.append("Syntax error");
-            builder.append(" at line").append(error.getRow()).append(" column ").append(error.getCol());
+            builder.append(" at line").append(error.GetRow()).append(" column ").append(error.GetCol());
         }
         throw new ParserError(builder.toString());
     }
 
     /**
      * Print out relevant debug info
-     *
-     * @param top   top of the stack
+     *  @param top   top of the stack
      * @param token token from the lexer
      * @param push  what (if anything) to push onto stack
      */
-    private void dumpStack(String top, Token token, String push)
+    private void DumpStack(String top, Token token, String push)
     {
         String out = "";
         out += "Popped " + top + " with token ";
-        TokenType type = token.getType();
+        TokenType type = token.GetType();
         if (type == TokenType.IDENTIFIER)
-            out += type + ", " + token.getValue().toString().toLowerCase();
+            out += type + ", " + token.GetValue().toString().toLowerCase();
         else
             out += type;
-        out += " at " + token.getRow() + ":" + token.getCol() + "\n";
+        out += " at " + token.GetRow() + ":" + token.GetCol() + "\n";
         if (push.isEmpty())
             if (top.charAt(0) == '#')
                 out += "Semantic Action " + top.substring(1) + "\n" +
-                        "Semantic Stack " + action.getStack() + "\n";
+                        "Semantic Stack " + action.GetStack() + "\n";
             else
                 out += "Match! \n";
         else
             out += "Pushing " + push + " \n";
         out += "Stack: " + stack + "\n";
         System.out.print(out);
-        System.out.println("Global Table: " + action.getGlobalTable());
-        System.out.println("Local Table: " + action.getLocalTable());
-        System.out.println("Constant Table: " + action.getConstantTable() + "\n");
+        System.out.println("Global Table: " + action.GetGlobalTable());
+        System.out.println("Local Table: " + action.GetLocalTable());
+        System.out.println("Constant Table: " + action.GetConstantTable() + "\n");
     }
 }

@@ -29,7 +29,7 @@ class Compiler
     {
         try
         {
-            System.out.println(parser.parse());
+            System.out.println(parser.Parse());
         } catch (CompilerError e)
         {
             System.out.println("ERROR: " + e.getMessage());

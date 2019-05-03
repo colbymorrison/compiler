@@ -89,7 +89,7 @@ class ParserTest {
     private String[] getCodes(File f) throws CompilerError {
         Lexer lexer = new Lexer(f.getAbsolutePath());
         Parser parser = new Parser(lexer, false);
-        String intCode = parser.parse();
+        String intCode = parser.Parse();
         System.out.println(intCode);
 
         return intCode.split("\n");
@@ -103,7 +103,7 @@ class ParserTest {
             System.out.println(f.getAbsolutePath());
             Lexer lexer = new Lexer(f.getAbsolutePath());
             Parser parser = new Parser(lexer, false);
-            parser.parse();
+            parser.Parse();
         }
     }
 }

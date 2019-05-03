@@ -13,7 +13,7 @@ public class GenSemanticErr
 {
     public SemanticError undeclaredVariable(Token token)
     {
-        return new SemanticError("Variable " + token.getValue() + " is undeclared", token);
+        return new SemanticError("Variable " + token.GetValue() + " is undeclared", token);
     }
 
     public SemanticError typeMismatch(String t1, String t2, Token token)

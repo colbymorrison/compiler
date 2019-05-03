@@ -14,7 +14,7 @@ public class GenLexErr
      * @param col column in file error occurred
      * @return LexerError object to be thrown
      */
-    public LexerError invalidCharacter(char ch, int row, int col)
+    public LexerError InvalidCharacter(char ch, int row, int col)
     {
         return new LexerError("Invalid character " + ch, row, col);
     }
@@ -26,7 +26,7 @@ public class GenLexErr
      * @param col column in file error occurred
      * @return LexerError object to be thrown
      */
-    public LexerError invalidConstant(int row, int col)
+    public LexerError InvalidConstant(int row, int col)
     {
         return new LexerError("Invalid Constant", row, col);
     }
@@ -38,10 +38,11 @@ public class GenLexErr
      * @param col column in file error occurred
      * @return LexerError object to be thrown
      */
-    public LexerError invalidComment(int row, int col)
+    public LexerError InvalidComment(int row, int col)
     {
         return new LexerError("Invalid Comment", row, col);
     }
+
 
     /**
      * Error case for an id that's too long
@@ -50,7 +51,7 @@ public class GenLexErr
      * @param col column in file error occurred
      * @return LexerError object to be thrown
      */
-    public LexerError idTooLong(String id, int row, int col)
+    public LexerError IdTooLong(String id, int row, int col)
     {
         return new LexerError("Identifier '" + id + "' is too long", row, col);
     }
@@ -60,8 +61,9 @@ public class GenLexErr
      *
      * @return LexerError object to be thrown
      */
-    public LexerError ioError(String s)
+    public LexerError IoError(String s)
     {
         return new LexerError("Lexer Error: IO Error, " + s);
     }
+
 }
