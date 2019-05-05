@@ -3,7 +3,7 @@ package compiler.Lexer;
 import java.io.*;
 
 /**
- * This class scans input and returns the next non-comment character in the file
+ * This class scans input and returns the next character in the file
  * and keeps track of the current Row and Column.
  */
 class Scan

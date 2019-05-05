@@ -4,6 +4,10 @@ import compiler.Exception.SymbolTableError;
 
 import java.util.Hashtable;
 
+/**
+ * Models a Symbol Table. Essentially a Symbol Table is just a Hashtable
+ * mapping the Names of entries to their SymbolTableEntry Objects.
+ */
 public class SymbolTable
 {
     private final Hashtable<String, SymbolTableEntry> table;
@@ -22,7 +26,7 @@ public class SymbolTable
      * @param key the key to search for
      * @return the value associated with that key or null if no such value exists
      */
-    public SymbolTableEntry search(String key)
+    public SymbolTableEntry Search(String key)
     {
         return table.getOrDefault(key, null);
     }
@@ -31,17 +35,21 @@ public class SymbolTable
      * Insert an entry into the symbol table
      *
      * @param value the entry to insert
-     * @throws SymbolTableError if an entry with that name already exists
+     * @throws SymbolTableError if an entry with that Name already exists
      */
-    public void insert(SymbolTableEntry value) throws SymbolTableError
+    public void Insert(SymbolTableEntry value) throws SymbolTableError
     {
-        if (table.containsKey(value.name))
-            throw new SymbolTableError(value.name);
+        if (table.containsKey(value.Name))
+            throw new SymbolTableError(value.Name);
         else
-            // The name field of the entry is the id
-            table.put(value.name, value);
+            // The Name field of the entry is the id
+            table.put(value.Name, value);
     }
 
+    /**
+     * toString, uses the HashTable's toString
+     */
+    @Override
     public String toString()
     {
         return table.toString();

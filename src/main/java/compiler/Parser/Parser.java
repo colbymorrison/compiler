@@ -15,6 +15,10 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
+/**
+ * This class implements a Top-Down parser for the Vascal Language.
+ * It uses tokens created from a Lexer and calls the appropriate Semantic Actions.
+ */
 public class Parser
 {
     private final String EPSILON = "*E*";
@@ -54,7 +58,6 @@ public class Parser
      * Conforms to the grammar for the Vascal language.
      *
      * @throws ParserError when we've reached the end of the file and if any errors occured.
-     *                     //TODO MAYBE PRINT TVI AS YOU GO
      */
     public String Parse() throws LexerError, ParserError, SymbolTableError, SemanticError
     {

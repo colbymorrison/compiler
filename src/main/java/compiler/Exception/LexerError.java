@@ -1,12 +1,11 @@
 package compiler.Exception;
 
 /**
- * Lexer errors, we define static methods to create various specific error cases.
+ * Lexer error class.
  */
 public class LexerError extends CompilerError
 {
     //Constructors
-
     LexerError(String message)
     {
         super(message);

@@ -1,9 +1,13 @@
 package compiler.Exception;
-
 import compiler.Lexer.Token;
 
+/**
+ * Semantic Action Error.
+ */
 public class SemanticError extends CompilerError
 {
+    // Constructors
+
     SemanticError(String message)
     {
         super(message);

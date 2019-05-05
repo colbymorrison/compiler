@@ -17,7 +17,7 @@ public class Token<T>
      *
      * @param tokenType Type of this token.
      */
-    public Token(TokenType tokenType)
+    Token(TokenType tokenType)
     {
         this.Type = tokenType;
     }
@@ -28,7 +28,7 @@ public class Token<T>
      * @param tokenType Type of this token
      * @param value     value associated with this token
      */
-    public Token(TokenType tokenType, T value)
+    Token(TokenType tokenType, T value)
     {
         this.Type = tokenType;
         this.Value = value;
@@ -53,7 +53,7 @@ public class Token<T>
     }
 
     // Sets column
-    public void SetCol(int col)
+    void SetCol(int col)
     {
         this.Col = col;
     }
@@ -65,7 +65,7 @@ public class Token<T>
     }
 
     // Sets row
-    public void SetRow(int row)
+    void SetRow(int row)
     {
         this.Row = row;
     }

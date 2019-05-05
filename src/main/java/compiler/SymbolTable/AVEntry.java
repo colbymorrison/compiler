@@ -1,39 +1,66 @@
 package compiler.SymbolTable;
 
+/**
+ * Abstract class for array and variable entries.
+ * They share common functionality and are often used together in the Semantic Actions.
+ */
 public abstract class AVEntry extends SymbolTableEntry
 {
-    private int address;
-    private boolean parameter;
+    // Address of entry
+    private int Address;
+    // Is this entry a parameter?
+    private boolean Parameter;
 
+    /**
+     * Constructor.
+     * @param name name of the entry
+     * @param address address of the entry
+     */
     AVEntry(String name, int address)
     {
         super(name);
-        this.address = address;
+        this.Address = address;
     }
 
+    /**
+     * Constructor.
+     * @param name name of the entry.
+     */
     AVEntry(String name)
     {
         super(name);
     }
 
-    public boolean isParameter()
+    /**
+     * Getter for parameter.
+     */
+    public boolean IsParameter()
     {
-        return parameter;
+        return Parameter;
     }
 
-    public void setParameter()
+    /**
+     * Set parameter to true.
+     */
+    public void SetParameter()
     {
-        this.parameter = true;
+        this.Parameter = true;
     }
 
-    public void setAddress(int address)
+    /**
+     * Setter for address.
+     */
+    public void SetAddress(int address)
     {
-        this.address = address;
+        this.Address = address;
     }
 
-    public int getAddress()
+    /**
+     * Getter for address.
+     */
+    public int GetAddress()
     {
-        return address;
+        return Address;
     }
 
 }

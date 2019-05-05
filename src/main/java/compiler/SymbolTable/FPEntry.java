@@ -3,40 +3,66 @@ package compiler.SymbolTable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Abstract class for a Function or Procedure Symbol Table Entry.
+ * These share functionality and are often used together in the Semantic Actions.
+ */
 public abstract class FPEntry extends SymbolTableEntry
 {
-    private int params;
-    private List<AVEntry> paramInfo = new ArrayList<>();
+    private int Params;
+    private List<AVEntry> ParamInfo = new ArrayList<>();
 
+    /**
+     * Constructor.
+     * @param name name of the entry.
+     * @param params number of parameters in the entry.
+     * @param paramInfo List of parameters, which are either arrays or variables.
+     */
     FPEntry(String name, int params, List<AVEntry> paramInfo)
     {
         super(name);
-        this.params = params;
-        this.paramInfo = paramInfo;
+        this.Params = params;
+        this.ParamInfo = paramInfo;
     }
 
+    /**
+     * Constructor
+     * @param name name of the entry.
+     */
     FPEntry(String name)
     {
         super(name);
     }
 
-    public int getParams()
+    /**
+     * Getter for number of parameters.
+     */
+    public int GetParams()
     {
-        return params;
+        return Params;
     }
 
-    public void setParams(int params)
+    /**
+     * Setter for number of parameters.
+     */
+    public void SetParams(int params)
     {
-        this.params = params;
+        this.Params = params;
     }
 
-    public void addParameter(AVEntry param)
+    /**
+     * Add a parameter to the list of parameters.
+     */
+    public void AddParameter(AVEntry param)
     {
-        paramInfo.add(param);
+        ParamInfo.add(param);
     }
 
-    public List<AVEntry> getParamInfo()
+    /**
+     * Getter for parameter list.
+     */
+    public List<AVEntry> GetParamInfo()
     {
-        return paramInfo;
+        return ParamInfo;
     }
 }

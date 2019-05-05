@@ -2,34 +2,56 @@ package compiler.SymbolTable;
 
 import compiler.Lexer.TokenType;
 
+/**
+ * Function Symbol Table Entry.
+ */
 public class FunctionEntry extends FPEntry
 {
-    private VariableEntry result;
+    // Return value
+    private VariableEntry Result;
 
+    /**
+     * Constructor
+     * @param name name of the function.
+     * @param result return value of the function.
+     */
     public FunctionEntry(String name, VariableEntry result)
     {
         super(name);
-        this.result = result;
+        this.Result = result;
     }
 
-    public void setResultType(TokenType type)
+    /**
+     * Set return type.
+     */
+    public void SetResultType(TokenType type)
     {
-        this.result.setType(type);
+        this.Result.setType(type);
     }
 
-    public VariableEntry getResult()
+    /**
+     * Get return value.
+     */
+    public VariableEntry GetResult()
     {
-        return result;
+        return Result;
     }
 
+    /**
+     * This is a function!
+     */
     @Override
-    public boolean isFunction()
+    public boolean IsFunction()
     {
         return true;
     }
 
+    /**
+     * toString for debugging.
+     */
+    @Override
     public String toString()
     {
-        return "Function[# params: " + getParams() + ", paramInfo: " + getParamInfo() + "result: " + result + "]";
+        return "Function[# params: " + GetParams() + ", paramInfo: " + GetParamInfo() + "result: " + Result + "]";
     }
 }

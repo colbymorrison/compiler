@@ -49,14 +49,14 @@ public class SemanticAction
             {
                 entry = new ProcedureEntry(res, 0, new ArrayList<>());
                 entry.setReserved(true);
-                globalTable.insert(entry);
+                globalTable.Insert(entry);
             }
 
             for (String res : new String[]{"INPUT", "OUTPUT"})
             {
                 entry = new IODeviceEntry(res);
                 entry.setReserved(true);
-                globalTable.insert(entry);
+                globalTable.Insert(entry);
             }
         } catch (SymbolTableError e)
         {
@@ -240,7 +240,7 @@ public class SemanticAction
     private void Three() throws SymbolTableError
     {
         TokenType type = ((Token) stack.pop()).GetType();
-        SymbolTableEntry entry;
+        AVEntry entry;
         int memorySize = 1;
         int upperBound = 0;
         int lowerBound = 0;
@@ -264,13 +264,13 @@ public class SemanticAction
             // Add to local or global symbol table
             if (global)
             {
-                entry.setAddress(-1 * globalMemory);
-                globalTable.insert(entry);
+                entry.SetAddress(-1 * globalMemory);
+                globalTable.Insert(entry);
                 globalMemory += memorySize;
             } else
             {
-                entry.setAddress(localMemory);
-                localTable.insert(entry);
+                entry.SetAddress(localMemory);
+                localTable.Insert(entry);
                 localMemory += memorySize;
             }
         }
@@ -290,7 +290,7 @@ public class SemanticAction
     }
 
     /**
-     * Semantic action 9, adds the name of the program to the global table
+     * Adds the name of the program to the global table.
      */
     private void Nine() throws SymbolTableError
     {
@@ -300,7 +300,7 @@ public class SemanticAction
 
         SymbolTableEntry entry = new ProcedureEntry(id3.toString(), 0, new ArrayList<>());
         entry.setReserved(true);
-        globalTable.insert(entry);
+        globalTable.Insert(entry);
 
         Generate("call", "main", "0");
         Generate("exit");
@@ -322,7 +322,7 @@ public class SemanticAction
     }
 
     /**
-     * Creates function name
+     * Creates function name.
      */
     private void Fifteen(Token token) throws SymbolTableError
     {
@@ -331,7 +331,7 @@ public class SemanticAction
         // create a new function entry with name from the token
         // from the parser and the result variable just created
         FPEntry id = new FunctionEntry(token.GetValue().toString(), result);
-        globalTable.insert(id);
+        globalTable.Insert(id);
         global = false;
         localMemory = 0;
         currentFunction = id;
@@ -339,7 +339,7 @@ public class SemanticAction
     }
 
     /**
-     * sets the type of the function and its result
+     * Sets the type of the function and its result.
      */
     private void Sixteen()
     {
@@ -347,7 +347,7 @@ public class SemanticAction
         FunctionEntry id = (FunctionEntry) stack.peek();
         id.setType(type.GetType());
         // set the type of the result variable of id
-        id.setResultType(type.GetType());
+        id.SetResultType(type.GetType());
         currentFunction = id;
     }
 
@@ -359,7 +359,7 @@ public class SemanticAction
         // create a new procedure entry with the name of the token
         // from the parser
         FPEntry id = new ProcedureEntry(token.GetValue().toString());
-        globalTable.insert(id);
+        globalTable.Insert(id);
         global = false;
         localMemory = 0;
         currentFunction = id;
@@ -383,7 +383,7 @@ public class SemanticAction
         FPEntry id = (FPEntry) stack.peek();
         int numParams = paramCount.pop();
         // id is a function entry or a procedure entry
-        id.setParams(numParams);
+        id.SetParams(numParams);
     }
 
     /**
@@ -425,10 +425,10 @@ public class SemanticAction
             else
                 var = new VariableEntry(param.GetValue().toString(), localMemory, type.GetType());
 
-            var.setParameter();
-            localTable.insert(var);
+            var.SetParameter();
+            localTable.Insert(var);
             // current function is either a procedure or function entry
-            currentFunction.addParameter(var);
+            currentFunction.AddParameter(var);
             localMemory++;
             // increment the top of paramCount
             paramCount.push(paramCount.pop() + 1);
@@ -580,13 +580,13 @@ public class SemanticAction
         if (etype != EType.ARITHMETIC)
             throw SemErr.eTypeError(etype, token);
 
-        if (!id.isArray())
+        if (!id.IsArray())
             throw SemErr.idIsNotArray(id, token);
 
     }
 
     /**
-     * Set up array offset
+     * Set up array offset.
      */
     private void ThirtyThree(Token token) throws SemanticError, SymbolTableError
     {
@@ -604,19 +604,19 @@ public class SemanticAction
         VariableEntry temp1 = CreateTemp(TokenType.INTEGER);
         // Memory offset
         VariableEntry temp2 = CreateTemp(TokenType.INTEGER);
-        Generate("move", Integer.toString(array.getLowBound()), temp1);
+        Generate("move", Integer.toString(array.GetLowBound()), temp1);
         Generate("sub", id, temp1, temp2);
         stack.push(temp2);
     }
 
     /**
-     * Function or procedure
+     * Function or procedure.
      */
     private void ThirtyFour(Token token) throws SemanticError, SymbolTableError
     {
         EType etype = (EType) stack.pop();
         SymbolTableEntry id = (SymbolTableEntry) stack.peek();
-        if (id.isFunction())
+        if (id.IsFunction())
         {
             stack.push(etype);
             Execute(52, null, token);
@@ -625,7 +625,7 @@ public class SemanticAction
     }
 
     /**
-     * Set up to call a procedure
+     * Set up to call a procedure.
      */
     private void ThirtyFive()
     {
@@ -634,7 +634,7 @@ public class SemanticAction
         FPEntry id = (ProcedureEntry) stack.peek();
         stack.push(etype);
         paramCount.push(0);
-        paramStack.push(id.getParamInfo());
+        paramStack.push(id.GetParamInfo());
     }
 
     /**
@@ -644,15 +644,15 @@ public class SemanticAction
     {
         stack.pop();
         ProcedureEntry id = (ProcedureEntry) stack.pop();
-        if (id.getParams() != 0)
+        if (id.GetParams() != 0)
         {
-            throw SemErr.badNumberParams(id, 0, id.getParams(), token);
+            throw SemErr.badNumberParams(id, 0, id.GetParams(), token);
         }
         Generate("call", id.getName(), "0");
     }
 
     /**
-     * Consume actual parameters in a list of parameters
+     * Consume actual parameters in a list of parameters.
      */
     private void ThirtySeven(Token token) throws SemanticError
     {
@@ -663,9 +663,9 @@ public class SemanticAction
         }
 
         SymbolTableEntry id = (SymbolTableEntry) stack.peek();
-        if (id.isProcedure() || id.isFunction())
+        if (id.IsProcedure() || id.IsFunction())
         {
-            throw SemErr.badParameterType(currentFunction, token);
+            throw SemErr.badParameterType(currentFunction, id, token);
         }
 
         // increment the top of paramCount
@@ -674,7 +674,7 @@ public class SemanticAction
         // find the name of the procedure/function on the bottom of the stack
         Stack<Object> parameters = new Stack<>();
         // Add parameters to temp stack until we hit a function or procedure
-        while (!(stack.peek() instanceof SymbolTableEntry) || !(((SymbolTableEntry) stack.peek()).isFunction() || ((SymbolTableEntry) stack.peek()).isProcedure()))
+        while (!(stack.peek() instanceof SymbolTableEntry) || !(((SymbolTableEntry) stack.peek()).IsFunction() || ((SymbolTableEntry) stack.peek()).IsProcedure()))
         {
             parameters.push(stack.pop());
         }
@@ -696,11 +696,13 @@ public class SemanticAction
         }
 
         String name = funcId.getName();
+        // Consume parameters from stack and ensure they match number and type
+        // required by the function or procedure.
         if (!(name.equals("READ") || name.equals("WRITE")))
         {
-            if (paramCount.peek() > funcId.getParams())
+            if (paramCount.peek() > funcId.GetParams())
             {
-                throw SemErr.badNumberParams(funcId, funcId.getParams(), paramCount.peek(), token);
+                throw SemErr.badNumberParams(funcId, funcId.GetParams(), paramCount.peek(), token);
             }
             SymbolTableEntry param = paramStack.peek().get(nextParam);
             TokenType retType = param.getType();
@@ -708,11 +710,11 @@ public class SemanticAction
             {
                 throw SemErr.badParameterType(funcId, id, param, token);
             }
-            if (param.isArray())
+            if (param.IsArray())
             {
                 ArrayEntry paramArr = (ArrayEntry) param;
                 ArrayEntry idArr = (ArrayEntry) id;
-                if ((idArr.getLowBound() != paramArr.getLowBound()) || (idArr.getUpBound() != paramArr.getUpBound()))
+                if ((idArr.GetLowBound() != paramArr.GetLowBound()) || (idArr.GetUpBound() != paramArr.GetUpBound()))
                 {
                     throw SemErr.badParameterType(funcId, id, param, token);
                 }
@@ -816,7 +818,7 @@ public class SemanticAction
     }
 
     /**
-     * Backpatches or blocks
+     * Backpatches 'or' blocks.
      */
     private void FourtyTwo(Token token) throws SemanticError
     {
@@ -903,7 +905,7 @@ public class SemanticAction
     }
 
     /**
-     * Evaluate multiplication, division, modular arithmetic, and AND
+     * Evaluate multiplication, division, modular arithmetic, and AND.
      */
     private void FourtyFive() throws SymbolTableError, SemanticError
     {
@@ -937,7 +939,7 @@ public class SemanticAction
             if (TypeCheck(id1, id2) != 0 && (opcode.equals("div") || opcode.equals("MOD")))
             {
                 // MOD and DIV require integer operands
-                throw SemErr.badParameter("Operands of the " + opcode.toLowerCase() +
+                throw SemErr.badParameterType("Operands of the " + opcode.toLowerCase() +
                         " operator must both be integers", operator);
             }
 
@@ -1028,12 +1030,12 @@ public class SemanticAction
         } else if (token.GetType() == TokenType.INTCONSTANT || token.GetType() == TokenType.REALCONSTANT)
         {
             // look for the token in the constant symbol table
-            SymbolTableEntry id = constantTable.search(token.GetValue().toString());
+            SymbolTableEntry id = constantTable.Search(token.GetValue().toString());
             // if not found add it to the constant table
             if (id == null)
             {
                 id = new ConstantEntry(token.GetValue().toString(), token.GetType());
-                constantTable.insert(id);
+                constantTable.Insert(id);
             }
             stack.push(id);
         }
@@ -1041,7 +1043,7 @@ public class SemanticAction
     }
 
     /**
-     * Handles NOT reserved word
+     * Handles NOT reserved word.
      */
     private void FourtySeven(Token token) throws SemanticError
     {
@@ -1059,14 +1061,14 @@ public class SemanticAction
 
 
     /**
-     * Array lookup
+     * Array lookup.
      */
     private void FourtyEight(Token token) throws SymbolTableError, SemanticError
     {
         SymbolTableEntry offset = (SymbolTableEntry) stack.pop();
         if (offset != null)
         {
-            if (offset.isFunction())
+            if (offset.IsFunction())
             {
                 // call action 52 with the token from the parser
                 Execute(52, null, token);
@@ -1094,12 +1096,12 @@ public class SemanticAction
         {
             throw SemErr.eTypeError(etype, token);
         }
-        if (!id.isFunction())
+        if (!id.IsFunction())
         {
             throw SemErr.illegalProcedure(id);
         }
         paramCount.push(0);
-        paramStack.push(((FPEntry) id).getParamInfo());
+        paramStack.push(((FPEntry) id).GetParamInfo());
     }
 
     /**
@@ -1124,9 +1126,9 @@ public class SemanticAction
         // Ensure correct number of parameters
         FunctionEntry id = (FunctionEntry) stack.pop();
         int numParams = paramCount.pop();
-        if (numParams > id.getParams())
+        if (numParams > id.GetParams())
         {
-            throw SemErr.badNumberParams(id, id.getParams(), numParams, token);
+            throw SemErr.badNumberParams(id, id.GetParams(), numParams, token);
         }
 
         // If so, Generate a call to the function
@@ -1134,8 +1136,8 @@ public class SemanticAction
         paramStack.pop();
         nextParam = 0;
 
-        VariableEntry temp = CreateTemp(id.getResult().getType());
-        Generate("move", id.getResult(), temp);
+        VariableEntry temp = CreateTemp(id.GetResult().getType());
+        Generate("move", id.GetResult(), temp);
         stack.push(temp);
         stack.push(EType.ARITHMETIC);
     }
@@ -1172,9 +1174,9 @@ public class SemanticAction
         {
             // Ensure correct number of parameters
             int numParams = paramCount.pop();
-            if (numParams != id.getParams())
+            if (numParams != id.GetParams())
             {
-                throw SemErr.badNumberParams(id, id.getParams(), numParams, token);
+                throw SemErr.badNumberParams(id, id.GetParams(), numParams, token);
             }
 
             // Generate code for each parameter
@@ -1194,7 +1196,7 @@ public class SemanticAction
 
     /**
      * Helper function for actions 50 and 51.
-     * Gets parameters from stack in correct order
+     * Gets parameters from stack in correct order.
      */
     private Stack<SymbolTableEntry> CreateParamStack()
     {
@@ -1202,7 +1204,7 @@ public class SemanticAction
 
         // for each parameter on the stack
         SymbolTableEntry top = (SymbolTableEntry) stack.peek();
-        while (top.isArray() || top.isConstant() || top.isVariable())
+        while (top.IsArray() || top.isConstant() || top.isVariable())
         {
             parameters.push((SymbolTableEntry) stack.pop());
             if (!(stack.peek() instanceof SymbolTableEntry))
@@ -1298,37 +1300,37 @@ public class SemanticAction
     {
         stack.pop();
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
-        if (!id.isFunction())
+        if (!id.IsFunction())
         {
             throw SemErr.illegalProcedure(id);
         }
         FunctionEntry idF = (FunctionEntry) id;
-        if (idF.getParams() > 0)
+        if (idF.GetParams() > 0)
         {
-            throw SemErr.badNumberParams(idF, 0, idF.getParams(), token);
+            throw SemErr.badNumberParams(idF, 0, idF.GetParams(), token);
         }
         Generate("call", id.getName(), "0");
         VariableEntry temp = CreateTemp(id.getType());
-        Generate("move", idF.getResult(), temp);
+        Generate("move", idF.GetResult(), temp);
         stack.push(temp);
         stack.push(null);
     }
 
 
     /**
-     * Lookup variable or function result
+     * Lookup variable or function result.
      */
     private void FiftyThree() throws SemanticError
     {
         EType etype = (EType) stack.pop();
         SymbolTableEntry id = (SymbolTableEntry) stack.pop();
-        if (id.isFunction())
+        if (id.IsFunction())
         {
             FunctionEntry fnId = (FunctionEntry) id;
             if (fnId != currentFunction)
                 throw SemErr.illegalProcedure(id);
 
-            stack.push(fnId.getResult());
+            stack.push(fnId.GetResult());
             stack.push(EType.ARITHMETIC);
 
         } else
@@ -1339,14 +1341,14 @@ public class SemanticAction
     }
 
     /**
-     * Confirm statement is a procedure call
+     * Confirm statement is a procedure call.
      */
     private void FiftyFour() throws SemanticError
     {
         EType etype = (EType) stack.pop();
         SymbolTableEntry id = (SymbolTableEntry) stack.peek();
         stack.push(etype);
-        if (!id.isProcedure())
+        if (!id.IsProcedure())
         {
             throw SemErr.illegalProcedure(id);
         }
@@ -1364,7 +1366,7 @@ public class SemanticAction
     }
 
     /**
-     * Adds the first couple instructions
+     * Adds the first couple instructions.
      */
     private void FiftySix()
     {
@@ -1386,11 +1388,11 @@ public class SemanticAction
     private int GetSTEAddress(SymbolTableEntry ste) throws SymbolTableError
     {
         int address = 0;
-        if (ste.isArray() || ste.isVariable())
+        if (ste.IsArray() || ste.isVariable())
         {
             // array entries and variable entries are
             // assigned address when they are initialized
-            address = Math.abs(ste.getAddress());
+            address = Math.abs(ste.GetAddress());
         } else if (ste.isConstant())
         {
             // constants do not have an address, and a
@@ -1400,7 +1402,7 @@ public class SemanticAction
             // move the constant into the temporary variable
             Generate("move", ste.getName(), temp);
             // return the address of the temporary variable
-            address = Math.abs(temp.getAddress());
+            address = Math.abs(temp.GetAddress());
         }
         return address;
     }
@@ -1420,12 +1422,12 @@ public class SemanticAction
             // If it's a constant we're about to Generate the temp in getSTEAddr
             if (ste.isConstant())
                 return "%";
-            SymbolTableEntry entry = localTable.search(ste.getName());
+            SymbolTableEntry entry = localTable.Search(ste.getName());
             if (entry == null)  // entry is a global variable
                 return "_";
             else
             {
-                if (ste.isParameter())
+                if (ste.IsParameter())
                     return "^%";
                 else
                     return "%";
@@ -1439,6 +1441,7 @@ public class SemanticAction
 
     /**
      * Universal Generate method. Called by other Generate methods.
+     * @param operands any number of string operands to be put in a quadruple
      */
     private void Generate(String... operands)
     {
@@ -1452,23 +1455,36 @@ public class SemanticAction
         quads.add(quadEntry);
     }
 
+    /**
+     * Generate method with all SymbolTableEntry parameters.
+     */
     private void Generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2, SymbolTableEntry
             operand3) throws SymbolTableError
     {
+        // Get the TVI address representation of each entry and call universal generate.
         Generate(tviCode, SteAddr(operand1), SteAddr(operand2), SteAddr(operand3));
     }
 
+    /**
+     * Generate method.
+     */
     private void Generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2, String operand3) throws SymbolTableError
     {
         Generate(tviCode, SteAddr(operand1), SteAddr(operand2), operand3);
     }
 
+    /**
+     * Generate method.
+     */
     private void Generate(String tviCode, SymbolTableEntry operand1, SymbolTableEntry operand2) throws
             SymbolTableError
     {
         Generate(tviCode, SteAddr(operand1), SteAddr(operand2));
     }
 
+    /**
+     * Generate method.
+     */
     private void Generate(String tviCode, String operand1, SymbolTableEntry operand2) throws SymbolTableError
     {
         Generate(tviCode, operand1, SteAddr(operand2));
@@ -1484,20 +1500,27 @@ public class SemanticAction
         return GetSTEPrefix(ste) + GetSTEAddress(ste);
     }
 
+    /**
+     * Creates a new Variable. Mostly used to create temporary variables.
+     * @param name name of the variable
+     * @param type type of the variable
+     * @return VariableEntry object for this variable
+     * @throws SymbolTableError if variable with the requested name was already declared in the scope
+     */
     private VariableEntry Create(String name, TokenType type) throws SymbolTableError
     {
         VariableEntry ve = new VariableEntry(name, type);
         // Global or local?
         if (global)
         {
-            ve.setAddress(-1 * globalMemory);
+            ve.SetAddress(-1 * globalMemory);
             globalMemory++;
-            globalTable.insert(ve);
+            globalTable.Insert(ve);
         } else
         {
-            ve.setAddress(localMemory);
+            ve.SetAddress(localMemory);
             localMemory++;
-            localTable.insert(ve);
+            localTable.Insert(ve);
         }
         return ve;
     }
@@ -1545,18 +1568,18 @@ public class SemanticAction
     /**
      * Looks up an id in the symbol table
      *
-     * @param token with type Identifier ??
+     * @param token with type Identifier
      * @return the symbol table entry if it exists or null otherwise
      */
     private SymbolTableEntry LookupId(Token token)
     {
         String id = token.GetValue().toString();
         // first look in the local table
-        SymbolTableEntry ste = localTable.search(id);
+        SymbolTableEntry ste = localTable.Search(id);
         // if id is not in the local table
         if (ste == null)
             // then look in the global table
-            ste = globalTable.search(id);
+            ste = globalTable.Search(id);
 
         return ste;
     }
@@ -1564,7 +1587,7 @@ public class SemanticAction
     /**
      * Replaces second index of quadruple with a new address.
      * Used for when we don't know the address when the quad is
-     * Generated.
+     * generated.
      *
      * @param i index of quadruple to replace.
      * @param x address to insert.
@@ -1648,19 +1671,27 @@ public class SemanticAction
         return " ";
     }
 
+    /**
+     * Merges two Lists
+     */
     private List Merge(List l1, List l2)
     {
         // Going to some length to avoid an unchecked type warning, ensuring type safety
         return Stream.of(l1.toArray(), l2.toArray()).flatMap(Stream::of).collect(Collectors.toList());
     }
 
+    /**
+     * Gets the TVI prefix for a parameter's address.
+     * @param param parameter.
+     * @return "@_" if global, "%" if local, "@%" if local but not tagged as a parameter.
+     */
     private String GetParamPrefix(SymbolTableEntry param)
     {
         if (global)
             return "@_";
         else
         { // local
-            if (param.isParameter())
+            if (param.IsParameter())
                 return "%";
             else
                 return "@%";

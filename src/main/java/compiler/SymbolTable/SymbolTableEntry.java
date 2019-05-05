@@ -7,73 +7,105 @@ import compiler.Lexer.TokenType;
  */
 public abstract class SymbolTableEntry
 {
-    String name;
-    TokenType type;
+    String Name;
+    TokenType Type;
     private boolean reserved = false;
 
     SymbolTableEntry(String name)
     {
-        this.name = name;
+        this.Name = name;
     }
 
+    /**
+     * Is this a variable?
+     */
     public boolean isVariable()
     {
         return false;
     }
 
-    public boolean isProcedure()
+    /**
+     * Is this a procedure?
+     */
+    public boolean IsProcedure()
     {
         return false;
     }
 
-    public boolean isFunction()
+    /**
+     * Is this a function?
+     */
+    public boolean IsFunction()
     {
         return false;
     }
 
-    public boolean isParameter()
+    /**
+     * Is this a parameter?
+     */
+    public boolean IsParameter()
     {
         return false;
     }
 
-    public boolean isArray()
+    /**
+     * Is this a array?
+     */
+    public boolean IsArray()
     {
         return false;
     }
 
+    /**
+     * Is this a constant?
+     */
     public boolean isConstant()
     {
         return false;
     }
 
+    /**
+     * Is this a reserved word?
+     */
     public void setReserved(boolean res)
     {
         this.reserved = res;
     }
 
+    /**
+     * Getter for the name.
+     */
     public String getName()
     {
-        return name;
+        return Name;
     }
 
+    /**
+     * Setter for type.
+     */
     public void setType(TokenType type)
     {
-        this.type = type;
+        this.Type = type;
     }
 
+    /**
+     * Getter for type.
+     */
     public TokenType getType()
     {
-        return type;
+        return Type;
     }
 
-    // Will be overridden by STEs that have addresses
-    public int getAddress()
+    /**
+     * Getter for address, will be overridden by STEs that have addresses
+     */
+    public int GetAddress()
     {
         return 0;
     }
 
-    public void setAddress(int address)
-    {
-    }
+    //public void SetAddress(int address)
+   // {
+   // }
 
 }
