@@ -1,4 +1,5 @@
 package compiler.Exception;
+
 import compiler.Lexer.Token;
 
 /**
@@ -6,13 +7,18 @@ import compiler.Lexer.Token;
  */
 public class SemanticError extends CompilerError
 {
-    // Constructors
 
+    /**
+     * Constructor
+     */
     SemanticError(String message)
     {
         super(message);
     }
 
+    /**
+     * Constructor
+     */
     SemanticError(String message, Token token)
     {
         super(message, token.GetRow(), token.GetCol());

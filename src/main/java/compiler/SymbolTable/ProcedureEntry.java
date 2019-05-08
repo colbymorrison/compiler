@@ -9,8 +9,9 @@ public class ProcedureEntry extends FPEntry
 {
     /**
      * Constructor
-     * @param name name of the procedure.
-     * @param params number of parameters.
+     *
+     * @param name      name of the procedure.
+     * @param params    number of parameters.
      * @param paramInfo list of parameters.
      */
     public ProcedureEntry(String name, int params, List<AVEntry> paramInfo)
@@ -20,6 +21,7 @@ public class ProcedureEntry extends FPEntry
 
     /**
      * Constructor
+     *
      * @param name name of the procedure.
      */
     public ProcedureEntry(String name)

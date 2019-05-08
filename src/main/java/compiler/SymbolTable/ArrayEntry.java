@@ -18,9 +18,10 @@ public class ArrayEntry extends AVEntry
 
     /**
      * Constructor.
-     * @param name name of the array.
-     * @param type Type of values in the array.
-     * @param upBound upper size bound.
+     *
+     * @param name     name of the array.
+     * @param type     Type of values in the array.
+     * @param upBound  upper size bound.
      * @param lowBound lower size bound.
      */
     public ArrayEntry(String name, TokenType type, int upBound, int lowBound)
@@ -33,10 +34,11 @@ public class ArrayEntry extends AVEntry
 
     /**
      * Constructor.
-     * @param name name of the array.
-     * @param address address of the array.
-     * @param type Type of values in the array.
-     * @param upBound upper size bound.
+     *
+     * @param name     name of the array.
+     * @param address  address of the array.
+     * @param type     Type of values in the array.
+     * @param upBound  upper size bound.
      * @param lowBound lower size bound.
      */
     public ArrayEntry(String name, int address, TokenType type, int upBound, int lowBound)

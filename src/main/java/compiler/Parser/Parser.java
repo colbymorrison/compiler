@@ -83,7 +83,8 @@ public class Parser
                 prevToken = input;
                 input = lexer.GetNextToken();
                 // Top of the stack is a non-terminal
-            } else if (top.charAt(0) == '<')
+            }
+            else if (top.charAt(0) == '<')
             {
                 List<String> pair = Arrays.asList(top, inType);
                 // Is the <top of stack, input token> pair in the parse table?
@@ -104,7 +105,8 @@ public class Parser
                         if (debug)
                             DumpStack(top, input, Arrays.toString(rules));
                     }
-                } else
+                }
+                else
                 {
                     PanicMode();
                     input = lexer.GetNextToken();
@@ -210,14 +212,15 @@ public class Parser
         for (Token error : errors)
         {
             builder.append("Syntax error");
-            builder.append(" at line").append(error.GetRow()).append(" column ").append(error.GetCol());
+            builder.append(" at line ").append(error.GetRow()).append(" column ").append(error.GetCol());
         }
         throw new ParserError(builder.toString());
     }
 
     /**
      * Print out relevant debug info
-     *  @param top   top of the stack
+     *
+     * @param top   top of the stack
      * @param token token from the lexer
      * @param push  what (if anything) to push onto stack
      */
@@ -232,11 +235,13 @@ public class Parser
             out += type;
         out += " at " + token.GetRow() + ":" + token.GetCol() + "\n";
         if (push.isEmpty())
+        {
             if (top.charAt(0) == '#')
                 out += "Semantic Action " + top.substring(1) + "\n" +
                         "Semantic Stack " + action.GetStack() + "\n";
             else
                 out += "Match! \n";
+        }
         else
             out += "Pushing " + push + " \n";
         out += "Stack: " + stack + "\n";

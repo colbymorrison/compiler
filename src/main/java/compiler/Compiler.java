@@ -4,12 +4,15 @@ import compiler.Exception.CompilerError;
 import compiler.Lexer.Lexer;
 import compiler.Parser.Parser;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+
 /**
- * Main wrapper class for the whole compiler
+ * Compiler class, wraps lexer and parser classes
  */
 class Compiler
 {
-    private final Parser parser;
+    private final Parser Prser;
 
     /**
      * Create a parser with a lexer that uses the file path
@@ -17,9 +20,14 @@ class Compiler
      * @param filePath file path to Compile
      * @param debug    should parser/semantic action debug info be printed?
      */
-    Compiler(String filePath, boolean debug)
+    Compiler(String filePath, boolean debug) throws FileNotFoundException
     {
-        this.parser = new Parser(new Lexer(filePath), debug);
+        File file = new File(filePath);
+
+        if (!file.exists())
+            throw new FileNotFoundException();
+
+        this.Prser = new Parser(new Lexer(file), debug);
     }
 
     /**
@@ -29,10 +37,10 @@ class Compiler
     {
         try
         {
-            System.out.println(parser.Parse());
+            System.out.println(Prser.Parse());
         } catch (CompilerError e)
         {
-            System.out.println("ERROR: " + e.getMessage());
+            System.out.println("Error: " + e.getMessage());
         }
     }
 }

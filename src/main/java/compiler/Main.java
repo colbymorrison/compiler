@@ -1,5 +1,7 @@
 package compiler;
 
+import java.io.FileNotFoundException;
+
 public class Main
 {
     /**
@@ -12,15 +14,22 @@ public class Main
     {
         if (args.length == 0)
         {
-            System.out.println("Enter the path of the file to Compile as a command line argument");
+            System.out.println("Error: no input file provided.");
+            System.out.println("Usage: compiler file [--debug | -d]");
             return;
         }
 
         // Is debug mode on?
         boolean debug = args.length >= 2 && (args[1].equals("--debug") || args[1].equals("-d"));
 
-        // Go!
-        Compiler compiler = new Compiler(args[0], debug);
-        compiler.Compile();
+        // Compile the file if it exists
+        try
+        {
+            Compiler compiler = new Compiler(args[0], debug);
+            compiler.Compile();
+        } catch (FileNotFoundException e)
+        {
+            System.out.println("The file " + args[0] + " does not exist. Try again.");
+        }
     }
 }

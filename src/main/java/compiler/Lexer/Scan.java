@@ -16,18 +16,17 @@ class Scan
     /**
      * Constructor
      *
-     * @param fileName of file to parse
+     * @param file the file to parse
      */
-    Scan(String fileName)
+    Scan(File file)
     {
         try
         {
-            Reader = new BufferedReader(new FileReader(fileName));
-        } // If the file doesn't exist, there's not much we can do
+            Reader = new BufferedReader(new FileReader(file));
+        } // We've already checked if the file exists, so this error shouldn't get thrown
         catch (FileNotFoundException e)
         {
-            System.out.println("The file " + fileName + " does not exist. Try again.");
-            System.exit(1);
+            e.printStackTrace();
         }
     }
 
@@ -41,6 +40,9 @@ class Scan
         return Row;
     }
 
+    /**
+     * Decrements column by a certian amount
+     */
     void SetMinCol(int col)
     {
         this.Col -= col;
@@ -80,7 +82,7 @@ class Scan
             Col = 0;
             Row++;
         }
-        // Case is not signifigant
+        // Case is not significant
         return Character.toUpperCase(ch);
     }
 }

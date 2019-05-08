@@ -13,7 +13,8 @@ public abstract class AVEntry extends SymbolTableEntry
 
     /**
      * Constructor.
-     * @param name name of the entry
+     *
+     * @param name    name of the entry
      * @param address address of the entry
      */
     AVEntry(String name, int address)
@@ -24,6 +25,7 @@ public abstract class AVEntry extends SymbolTableEntry
 
     /**
      * Constructor.
+     *
      * @param name name of the entry.
      */
     AVEntry(String name)

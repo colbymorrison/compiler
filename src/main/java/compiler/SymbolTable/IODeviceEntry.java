@@ -7,6 +7,7 @@ public class IODeviceEntry extends SymbolTableEntry
 {
     /**
      * Constructor
+     *
      * @param name name of the device.
      */
     public IODeviceEntry(String name)

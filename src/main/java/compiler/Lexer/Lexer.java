@@ -1,5 +1,6 @@
 package compiler.Lexer;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Stack;
@@ -25,12 +26,12 @@ public class Lexer
     /**
      * Constructor
      *
-     * @param pathName The pathname of the file to read
+     * @param file The file to read
      */
-    public Lexer(String pathName)
+    public Lexer(File file)
     {
-        // Create a new scan object from the pathname
-        Scan = new Scan(pathName);
+        // Create a new scan object for the file
+        Scan = new Scan(file);
         InitTable();
     }
 
@@ -129,7 +130,8 @@ public class Lexer
             {
                 throw LexErr.IoError(ioe.getMessage());
             }
-        } else
+        }
+        else
         {
             ch = PushBack.pop();
             Scan.SetMinCol(-1);
@@ -181,7 +183,8 @@ public class Lexer
                 default:
                     return new Token<String>(type);
             }
-        } else
+        }
+        else
             return new Token<>(TokenType.IDENTIFIER, str);
     }
 
@@ -261,7 +264,8 @@ public class Lexer
                 // Until 4 from the end
                 return new Token<>(TokenType.INTCONSTANT, buffer.substring(0, buffer.length() - 3));
             }
-        } else
+        }
+        else
             throw LexErr.InvalidConstant(Scan.GetRow(), Scan.GetCol());
     }
 

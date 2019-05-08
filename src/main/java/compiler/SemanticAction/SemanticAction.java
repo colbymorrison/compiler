@@ -24,14 +24,13 @@ public class SemanticAction
     private SymbolTable localTable = new SymbolTable();
     private FPEntry currentFunction;
     private boolean global = true;
-    // --Commented out by Inspection (2019-04-16 11:10):private boolean insert = true;
     private boolean array = false;
     private int nextParam;
     private int localStore = 0;
     private int globalStore = 0;
     private int globalMemory = 0;
     private int localMemory = 0;
-    private int tempCt = -1; //TODO -1 for testing purposes, change to 0
+    private int tempCt = 0;
     private GenSemanticErr SemErr = new GenSemanticErr();
 
     /**
@@ -189,7 +188,7 @@ public class SemanticAction
                 FourtyFive();
                 break;
             case 46:
-                fourtySix(prevToken);
+                FourtySix(prevToken);
                 break;
             case 47:
                 FourtySeven(token);
@@ -267,7 +266,8 @@ public class SemanticAction
                 entry.SetAddress(-1 * globalMemory);
                 globalTable.Insert(entry);
                 globalMemory += memorySize;
-            } else
+            }
+            else
             {
                 entry.SetAddress(localMemory);
                 localTable.Insert(entry);
@@ -322,7 +322,7 @@ public class SemanticAction
     }
 
     /**
-     * Creates function name.
+     * Store result of function
      */
     private void Fifteen(Token token) throws SymbolTableError
     {
@@ -461,7 +461,7 @@ public class SemanticAction
      */
     private void TwentyFive(Token token) throws SemanticError
     {
-        TwentyTwo(token); // They're exactly the same??
+        TwentyTwo(token);
     }
 
     /**
@@ -478,7 +478,7 @@ public class SemanticAction
     }
 
     /**
-     * Handles else statement.
+     * Sets up else case
      */
     private void TwentySeven()
     {
@@ -561,7 +561,8 @@ public class SemanticAction
                 Generate("move", temp, id1);
             else
                 Generate("stor", temp, offset, id1);
-        } else
+        }
+        else
         {
             if (offset == null)
                 Generate("move", id2, id1);
@@ -586,7 +587,7 @@ public class SemanticAction
     }
 
     /**
-     * Set up array offset.
+     * Calculate memory offset for array element.
      */
     private void ThirtyThree(Token token) throws SemanticError, SymbolTableError
     {
@@ -620,7 +621,8 @@ public class SemanticAction
         {
             stack.push(etype);
             Execute(52, null, token);
-        } else
+        }
+        else
             stack.push(null);
     }
 
@@ -686,7 +688,8 @@ public class SemanticAction
             EType type = (EType) stack.pop();
             funcId = (FPEntry) stack.peek();
             stack.push(type);
-        } else
+        }
+        else
             funcId = (FPEntry) stack.peek();
 
         // Add parameters to stack (now in correct order)
@@ -725,7 +728,7 @@ public class SemanticAction
     }
 
     /**
-     * Ensure arithmetic operation
+     * Ensure arithmetic operation and push
      */
     private void ThirtyEight(Token token) throws SemanticError
     {
@@ -737,7 +740,7 @@ public class SemanticAction
     }
 
     /**
-     * Handle RelOp expressions
+     * Change to relational and add ETrue/EFalse as required
      */
     private void ThirtyNine(Token token) throws SemanticError, SymbolTableError
     {
@@ -758,12 +761,14 @@ public class SemanticAction
             VariableEntry temp = CreateTemp(TokenType.REAL);
             Generate("ltof", id2, temp);
             Generate(opcode, id1, temp, "_");
-        } else if (TypeCheck(id1, id2) == 3)
+        }
+        else if (TypeCheck(id1, id2) == 3)
         {
             VariableEntry temp = CreateTemp(TokenType.REAL);
             Generate("ltof", id1, temp);
             Generate(opcode, temp, id2, "_");
-        } else
+        }
+        else
             Generate(opcode, id1, id2, "_");
 
         Generate("goto", "_");
@@ -776,7 +781,7 @@ public class SemanticAction
     }
 
     /**
-     * Evaluate unary operators
+     * Apply unary plus/minus
      */
     private void FourtyOne(Token token) throws SymbolTableError, SemanticError
     {
@@ -795,7 +800,8 @@ public class SemanticAction
                 Generate("fuminus", id, temp);
 
             stack.push(temp);
-        } else
+        }
+        else
             stack.push(id);
 
         stack.push(EType.ARITHMETIC);
@@ -831,7 +837,8 @@ public class SemanticAction
             // the top of the stack should be a list of integers
             List EFalse = (List) stack.peek();
             Backpatch(EFalse, quads.size());
-        } else
+        }
+        else
         {
             if (etype != EType.ARITHMETIC)
                 throw SemErr.eTypeError(etype, token);
@@ -859,9 +866,9 @@ public class SemanticAction
             stack.push(ETrue);
             stack.push(E2False);
             stack.push(EType.RELATIONAL);
-        } else
+        }
+        else
         { // if etype == EType.ARITHMETIC
-
             SymbolTableEntry id2 = (SymbolTableEntry) stack.pop();
             // this is one place where the operator from action 42 is popped
             Token operator = (Token) stack.pop();
@@ -876,7 +883,8 @@ public class SemanticAction
                 VariableEntry temp = CreateTemp(TokenType.INTEGER);
                 Generate(opcode, id1, id2, temp);
                 stack.push(temp);
-            } else
+            }
+            else
                 CheckAdd(id1, id2, opcode);
             stack.push(EType.ARITHMETIC);
         }
@@ -926,7 +934,8 @@ public class SemanticAction
                 stack.push(EFalse);
                 stack.push(EType.RELATIONAL);
             }
-        } else
+        }
+        else
         {
             // Pushed in #46
             SymbolTableEntry id2 = (SymbolTableEntry) stack.pop();
@@ -956,7 +965,8 @@ public class SemanticAction
                     Generate("mul", id2, temp1, temp2);
                     Generate("sub", id1, temp2, temp3);
                     stack.push(temp3);
-                } else if (opcode.equals("DIV"))
+                }
+                else if (opcode.equals("DIV"))
                 {
                     VariableEntry temp1 = CreateTemp(TokenType.REAL);
                     VariableEntry temp2 = CreateTemp(TokenType.REAL);
@@ -965,14 +975,16 @@ public class SemanticAction
                     Generate("ltof", id2, temp2);
                     Generate("fdiv", temp1, temp2, temp3);
                     stack.push(temp3);
-                } else
+                }
+                else
                 {
                     // Generate for 2 integers
                     VariableEntry temp = CreateTemp(TokenType.INTEGER);
                     Generate(opcode, id1, id2, temp);
                     stack.push(temp);
                 }
-            } else
+            }
+            else
                 CheckAdd(id1, id2, opcode);
             stack.push(EType.ARITHMETIC);
         }
@@ -993,14 +1005,16 @@ public class SemanticAction
             VariableEntry temp = CreateTemp(TokenType.REAL);
             Generate("f" + opcode, id1, id2, temp);
             stack.push(temp);
-        } else if (typeCheck == 2)
+        }
+        else if (typeCheck == 2)
         { // id1 and id2 are different types of numbers
             VariableEntry temp1 = CreateTemp(TokenType.REAL);
             VariableEntry temp2 = CreateTemp(TokenType.REAL);
             Generate("ltof", id2, temp1);
             Generate("f" + opcode, id1, temp1, temp2);
             stack.push(temp2);
-        } else
+        }
+        else
         {
             VariableEntry temp1 = CreateTemp(TokenType.REAL);
             VariableEntry temp2 = CreateTemp(TokenType.REAL);
@@ -1012,11 +1026,11 @@ public class SemanticAction
 
 
     /**
-     * Push identifiers & constants onto the stack for evaluation in an expression
+     * Look up value of variable or constant from the SymbolTable
      *
      * @param token identifier or constant
      */
-    private void fourtySix(Token token) throws SemanticError, SymbolTableError
+    private void FourtySix(Token token) throws SemanticError, SymbolTableError
     {
         if (token.GetType() == TokenType.IDENTIFIER)
         {
@@ -1027,7 +1041,8 @@ public class SemanticAction
                 throw SemErr.undeclaredVariable(token);
 
             stack.push(id);
-        } else if (token.GetType() == TokenType.INTCONSTANT || token.GetType() == TokenType.REALCONSTANT)
+        }
+        else if (token.GetType() == TokenType.INTCONSTANT || token.GetType() == TokenType.REALCONSTANT)
         {
             // look for the token in the constant symbol table
             SymbolTableEntry id = constantTable.Search(token.GetValue().toString());
@@ -1166,11 +1181,13 @@ public class SemanticAction
             if (name.equals("READ"))
             {
                 Execute(57, null, token);
-            } else
+            }
+            else
             { // id is WRITE
                 Execute(58, null, token);
             }
-        } else
+        }
+        else
         {
             // Ensure correct number of parameters
             int numParams = paramCount.pop();
@@ -1236,7 +1253,8 @@ public class SemanticAction
             if (id.getType() == TokenType.REAL)
             {
                 Generate("finp", GetSTEPrefix(id) + GetSTEAddress(id));
-            } else
+            }
+            else
             {
                 Generate("inp", GetSTEPrefix(id) + GetSTEAddress(id));
             }
@@ -1271,17 +1289,20 @@ public class SemanticAction
                 if (id.getType() == TokenType.REAL)
                 {
                     Generate("foutp", id.getName());
-                } else
+                }
+                else
                 { // id.getType() == INTEGER
                     Generate("outp", id.getName());
                 }
-            } else
+            }
+            else
             { // id is a variable entry
                 Generate("print", "\"" + id.getName() + " = \"");
                 if (id.getType() == TokenType.REAL)
                 {
                     Generate("foutp", GetSTEPrefix(id) + GetSTEAddress(id));
-                } else
+                }
+                else
                 { // id.getType() == INTEGER
                     Generate("outp", GetSTEPrefix(id) + GetSTEAddress(id));
                 }
@@ -1333,7 +1354,8 @@ public class SemanticAction
             stack.push(fnId.GetResult());
             stack.push(EType.ARITHMETIC);
 
-        } else
+        }
+        else
         {
             stack.push(id);
             stack.push(etype);
@@ -1366,7 +1388,7 @@ public class SemanticAction
     }
 
     /**
-     * Adds the first couple instructions.
+     * Generate start of main, adds the first couple instructions.
      */
     private void FiftySix()
     {
@@ -1393,7 +1415,8 @@ public class SemanticAction
             // array entries and variable entries are
             // assigned address when they are initialized
             address = Math.abs(ste.GetAddress());
-        } else if (ste.isConstant())
+        }
+        else if (ste.isConstant())
         {
             // constants do not have an address, and a
             // temporary variable must be created to store it
@@ -1441,6 +1464,7 @@ public class SemanticAction
 
     /**
      * Universal Generate method. Called by other Generate methods.
+     *
      * @param operands any number of string operands to be put in a quadruple
      */
     private void Generate(String... operands)
@@ -1502,6 +1526,7 @@ public class SemanticAction
 
     /**
      * Creates a new Variable. Mostly used to create temporary variables.
+     *
      * @param name name of the variable
      * @param type type of the variable
      * @return VariableEntry object for this variable
@@ -1516,7 +1541,8 @@ public class SemanticAction
             ve.SetAddress(-1 * globalMemory);
             globalMemory++;
             globalTable.Insert(ve);
-        } else
+        }
+        else
         {
             ve.SetAddress(localMemory);
             localMemory++;
@@ -1682,6 +1708,7 @@ public class SemanticAction
 
     /**
      * Gets the TVI prefix for a parameter's address.
+     *
      * @param param parameter.
      * @return "@_" if global, "%" if local, "@%" if local but not tagged as a parameter.
      */
@@ -1723,22 +1750,33 @@ public class SemanticAction
         return out.toString();
     }
 
-    // Getters
+    /**
+     * Getter for global table
+     */
     public SymbolTable GetGlobalTable()
     {
         return globalTable;
     }
 
+    /**
+     * Getter for constant table
+     */
     public SymbolTable GetConstantTable()
     {
         return constantTable;
     }
 
+    /**
+     * Getter for local table
+     */
     public SymbolTable GetLocalTable()
     {
         return localTable;
     }
 
+    /**
+     * Getter for stack
+     */
     public Stack<Object> GetStack()
     {
         return stack;

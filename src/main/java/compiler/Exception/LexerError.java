@@ -5,12 +5,17 @@ package compiler.Exception;
  */
 public class LexerError extends CompilerError
 {
-    //Constructors
+    /**
+     * Constructor
+     */
     LexerError(String message)
     {
         super(message);
     }
 
+    /**
+     * Constructor
+     */
     LexerError(String message, int row, int col)
     {
         super(message, row, col);
