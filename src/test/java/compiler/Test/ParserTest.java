@@ -17,20 +17,23 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class ParserTest {
+class ParserTest
+{
     private final String RESPATH = "src/test/resources/";
 
     @Test
-    void testSemAct2() throws CompilerError, IOException {
+    void testSemAct2() throws CompilerError, IOException
+    {
         List<String> failing = new ArrayList<>();
-        for(int i = 2; i <= 5; i++)
-            failing.add("phase2-"+i+"_ns.vas");
+        for (int i = 2; i <= 5; i++)
+            failing.add("phase2-" + i + "_ns.vas");
         failing.add("phase2-7_ns.vas");
         testParserHard(RESPATH + "SemAct2", failing, ".vas");
     }
 
     @Test
-    void testSemAct3() throws CompilerError, IOException {
+    void testSemAct3() throws CompilerError, IOException
+    {
         List<String> failing = new ArrayList<>();
         failing.add("phase3-5.vas");
         failing.add("phase3-6.vas");
@@ -38,7 +41,8 @@ class ParserTest {
     }
 
     @Test
-    void testSemAct4() throws CompilerError, IOException{
+    void testSemAct4() throws CompilerError, IOException
+    {
         List<String> failing = new ArrayList<>();
         failing.add("missing-semicolon.pas");
         testParserHard(RESPATH + "SemAct4", failing, ".pas");
@@ -47,13 +51,16 @@ class ParserTest {
     /**
      * Tests parser for correct opcodes
      */
-    void testParserHard(String path, List<String> failing, String ext) throws CompilerError, IOException {
-        for (File f : Objects.requireNonNull(new File(path + "/in").listFiles())) {
+    void testParserHard(String path, List<String> failing, String ext) throws CompilerError, IOException
+    {
+        for (File f : Objects.requireNonNull(new File(path + "/in").listFiles()))
+        {
             String name = f.getName();
             System.out.println("---------------------------");
             System.out.println(name);
-             //If the file shouldn't throw an error, check it against correct file
-            if (!failing.contains(name)) {
+            //If the file shouldn't throw an error, check it against correct file
+            if (!failing.contains(name))
+            {
                 String[] generatedCodes = getCodes(f);
 
                 // Read test file to get codes to check against
@@ -64,10 +71,13 @@ class ParserTest {
                 assertArrayEquals(generatedCodes, testCodes);
             }
             // Others throw an error
-            else {
-                try {
+            else
+            {
+                try
+                {
                     getCodes(f);
-                } catch (CompilerError e) {
+                } catch (CompilerError e)
+                {
                     System.out.println(e.getMessage());
                 }
                 assertThrows(CompilerError.class, () -> getCodes(f));
@@ -80,14 +90,16 @@ class ParserTest {
      * Fails only if an error is thrown
      */
     @Test
-    void testParserLight() throws CompilerError {
+    void testParserLight() throws CompilerError
+    {
         testParser(new File(RESPATH + "Parser"));
         testParser(new File(RESPATH + "Code"));
     }
 
     // Runs parser and returns generated intermediate code
-    private String[] getCodes(File f) throws CompilerError {
-        Lexer lexer = new Lexer(f.getAbsolutePath());
+    private String[] getCodes(File f) throws CompilerError
+    {
+        Lexer lexer = new Lexer(new File(f.getAbsolutePath()));
         Parser parser = new Parser(lexer, false);
         String intCode = parser.Parse();
         System.out.println(intCode);
@@ -97,11 +109,13 @@ class ParserTest {
 
 
     // Runs parser and fails if any errors are thrown
-    private void testParser(File dir) throws CompilerError {
-        for (File f : dir.listFiles()) {
+    private void testParser(File dir) throws CompilerError
+    {
+        for (File f : dir.listFiles())
+        {
 //            if(f.getName().equals("func.vas")) {
             System.out.println(f.getAbsolutePath());
-            Lexer lexer = new Lexer(f.getAbsolutePath());
+            Lexer lexer = new Lexer(new File(f.getAbsolutePath()));
             Parser parser = new Parser(lexer, false);
             parser.Parse();
         }

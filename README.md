@@ -76,6 +76,12 @@ I created 2 new abstract classes in the `SymbolTable` package, `AVEntry` and `FP
 `FPEntry` defines features between Functions and Procedures. These pairs of entries share common features and there were many times in the
  semantic actions where something one one of the two types (i.e. variable or array or function or procedure). This makes it so there is substantially less casting in the actions.
  I also cleaned up my error messages a little bit.
+ 
+ ## Submission 7 (Complete Compiler) Notes
+ Most of the work I did was making my code comply with the style guidelines. Aside from that, I added a couple Error Generator classes to avoid
+ generating errors via static methods in the various error classes themselves, and instead generate them from an object. I also added a Main class
+ as was requested. I changed the check for if the Vascal file exists or not from the Scan class to the Compiler class. It makes sense to not start the 
+ compilation process at all if the file does not exist.  
 
 
 

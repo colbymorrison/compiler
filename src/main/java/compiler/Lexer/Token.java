@@ -34,43 +34,57 @@ public class Token<T>
         this.Value = value;
     }
 
-    // Gets type
+    /**
+     * Getter for type
+     */
     public TokenType GetType()
     {
         return Type;
     }
 
-    // Gets value
+    /**
+     * Getter for value
+     */
     public T GetValue()
     {
         return Value;
     }
 
-    // Gets column
+    /**
+     * Getter for column
+     */
     public int GetCol()
     {
         return Col;
     }
 
-    // Sets column
+    /**
+     * Setter for column
+     */
     void SetCol(int col)
     {
         this.Col = col;
     }
 
-    // Gets row
+    /**
+     * Getter for row
+     */
     public int GetRow()
     {
         return Row;
     }
 
-    // Sets row
+    /**
+     * Setter for row
+     */
     void SetRow(int row)
     {
         this.Row = row;
     }
 
-    // To String
+    /**
+     * toString for debugging
+     */
     @Override
     public String toString()
     {

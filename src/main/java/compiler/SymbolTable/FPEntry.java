@@ -14,8 +14,9 @@ public abstract class FPEntry extends SymbolTableEntry
 
     /**
      * Constructor.
-     * @param name name of the entry.
-     * @param params number of parameters in the entry.
+     *
+     * @param name      name of the entry.
+     * @param params    number of parameters in the entry.
      * @param paramInfo List of parameters, which are either arrays or variables.
      */
     FPEntry(String name, int params, List<AVEntry> paramInfo)
@@ -27,6 +28,7 @@ public abstract class FPEntry extends SymbolTableEntry
 
     /**
      * Constructor
+     *
      * @param name name of the entry.
      */
     FPEntry(String name)

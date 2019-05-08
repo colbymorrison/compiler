@@ -104,8 +104,4 @@ public abstract class SymbolTableEntry
         return 0;
     }
 
-    //public void SetAddress(int address)
-   // {
-   // }
-
 }

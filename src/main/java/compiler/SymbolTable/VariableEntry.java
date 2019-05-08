@@ -9,6 +9,7 @@ public class VariableEntry extends AVEntry
 {
     /**
      * Constructor
+     *
      * @param name name of the variable.
      * @param type type of the variable
      */
@@ -20,9 +21,10 @@ public class VariableEntry extends AVEntry
 
     /**
      * Constructor
-     * @param name name of the variable.
+     *
+     * @param name    name of the variable.
      * @param address address of the variable.
-     * @param type type of the variable.
+     * @param type    type of the variable.
      */
     public VariableEntry(String name, int address, TokenType type)
     {

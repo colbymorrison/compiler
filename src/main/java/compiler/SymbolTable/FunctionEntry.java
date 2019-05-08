@@ -12,7 +12,8 @@ public class FunctionEntry extends FPEntry
 
     /**
      * Constructor
-     * @param name name of the function.
+     *
+     * @param name   name of the function.
      * @param result return value of the function.
      */
     public FunctionEntry(String name, VariableEntry result)

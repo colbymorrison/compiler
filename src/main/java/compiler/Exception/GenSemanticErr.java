@@ -7,7 +7,7 @@ import compiler.SymbolTable.SymbolTableEntry;
 
 /**
  * A factory for Semantic Errors, allows Semantic Errors to be generated from an object
- * instead of being static in the SemanticError class
+ * instead of being static in the SemanticError class.
  */
 public class GenSemanticErr
 {
