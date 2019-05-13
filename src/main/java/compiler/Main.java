@@ -1,6 +1,6 @@
 package compiler;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 
 public class Main
 {
@@ -22,14 +22,17 @@ public class Main
         // Is debug mode on?
         boolean debug = args.length >= 2 && (args[1].equals("--debug") || args[1].equals("-d"));
 
-        // Compile the file if it exists
-        try
+        File file = new File(args[0]);
+
+        // Check if the file exists
+        if (!file.exists())
         {
-            Compiler compiler = new Compiler(args[0], debug);
-            compiler.Compile();
-        } catch (FileNotFoundException e)
-        {
-            System.out.println("The file " + args[0] + " does not exist. Try again.");
+            System.out.println("The file \""+ args[0] + "\" does not exist. Try again.");
+            return;
         }
+
+        // Compile the file!
+        Compiler compiler = new Compiler(file, debug);
+        compiler.Compile();
     }
 }

@@ -80,7 +80,7 @@ I created 2 new abstract classes in the `SymbolTable` package, `AVEntry` and `FP
  ## Submission 7 (Complete Compiler) Notes
  Most of the work I did was making my code comply with the style guidelines. Aside from that, I added a couple Error Generator classes to avoid
  generating errors via static methods in the various error classes themselves, and instead generate them from an object. I also added a Main class
- as was requested. I changed the check for if the Vascal file exists or not from the Scan class to the Compiler class. It makes sense to not start the 
+ as was requested. I changed the check for if the Vascal file exists or not from the Scan class to the Main class. It makes sense to not start the 
  compilation process at all if the file does not exist.  
 
 
